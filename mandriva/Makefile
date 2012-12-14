@@ -7,7 +7,6 @@ ROOT=/
 LOCALSRPM=/SRPMS/main/release
 ARCH := $(shell uname -m)
 SH := $(shell echo *.sh) listhome $(shell echo mandrake_*) rc.modules lookupdm mdv-network-event network-up
-PL = supermount
 mandir=/usr/share
 VERSION:=$(shell rpm -q --qf '%{VERSION}\n' --specfile ../$(NAME).spec | head -n 1)
 RELEASE:=$(shell rpm -q --qf '%{RELEASE}\n' --specfile ../$(NAME).spec | head -n 1)
@@ -24,7 +23,6 @@ all:
 
 check:
 	@for i in $(SH);do /bin/bash -n $$i || exit 1;echo $$i syntax OK;done
-	@for i in $(PL);do perl -c $$i ||exit 1;done
 	@for i in $(SUBDIRS);do	make -C $$i check;done
 
 clean:
