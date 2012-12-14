@@ -58,10 +58,6 @@ install: all check
 	install -m755 hibernate-cleanup.sh $(ROOT)/sbin/
 	install -m755 lsb-init-functions $(ROOT)/lib/lsb/init-functions
 	install -m755 mdv-network-event $(ROOT)/usr/sbin/
-# For Netscrape
-ifeq ($(ARCH), alpha)
-	@echo -e '\nbinfmt_aout' >> $(ROOT)/etc/modules
-endif
 
 
 localchangelog:
