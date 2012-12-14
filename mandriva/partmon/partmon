@@ -1,0 +1,59 @@
+#!/bin/sh
+#
+# Checks if a partition is close to full up
+#
+# description: Checks if a partition is close to full up
+# chkconfig: 345 13 20
+#
+### BEGIN INIT INFO
+# Provides: partmon
+# Default-Start: 3 4 5
+# Short-Description: Checks if a partition is close to full up
+# Description: Checks if a partition is close to full up
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# The following file prevents from "starting" again when changing
+# runlevel
+SYSCONF_FILE=/var/lock/subsys/partmon
+
+# See how we were called.
+case "$1" in
+  start)
+	gprintf "Checking if partitions have enough free diskspace: "
+	str=`/usr/bin/partmon`
+	if [ "$str" = "" ]; then
+	    echo_success
+	    touch $SYSCONF_FILE
+	else
+	    echo            # to start to print problems at column 0
+	    echo $str
+	    echo_failure
+	    echo
+	    exit 1
+	fi
+	echo
+	;;
+  stop)
+	rm -f $SYSCONF_FILE
+	;;
+  status)
+	if [ -f $SYSCONF_FILE ]
+	then
+		gprintf "partmon has been started"
+	else
+		gprintf "partmon has not been started, or check gave a failure"
+	fi
+	;;
+  restart)
+	$0 stop
+	$0 start
+	;;
+  *)
+	gprintf "Usage: %s\n" "$0 {start|stop|restart|status}"
+	exit 1
+esac
+
+exit 0

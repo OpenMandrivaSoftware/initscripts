@@ -6,6 +6,15 @@
 # description: Initializes network console logging
 # config: /etc/sysconfig/netconsole
 #
+### BEGIN INIT INFO
+# Provides: netconsole
+# Required-Start: $network
+# Required-Stop: $network
+# Short-Description: Initializes network console logging
+# Description: By starting this service you allow a remote syslog daemon 
+#              to record console output from this system.
+### END INIT INFO
+
 # Copyright 2002 Red Hat, Inc.
 #
 # Based in part on a shell script by
@@ -33,7 +42,7 @@ kernel=$(uname -r | cut -d. -f1-2)
 
 usage ()
 {
-	echo $"Usage: $0 {start|stop|status|restart|condrestart}" 1>&2
+	gprintf "Usage: %s {start|stop|status|restart|condrestart}\n" $0 1>&2
 	RETVAL=2
 }
 
@@ -73,13 +82,13 @@ start ()
 		fi
 	fi
 	if [ -z "$SYSLOGADDR" ] ; then
-		echo $"Server address not specified in /etc/sysconfig/netconsole" 1>&2
+		gprintf "Server address not specified in /etc/sysconfig/netconsole\n" 1>&2
 		exit 6
 	fi
 	eval $(print_address_info $SYSLOGADDR)
 	
 	if [ -z "$SYSLOGMACADDR" ]; then
-		echo $"netconsole: can't resolve MAC address of $SYSLOGADDR" 1>&2
+		gprintf "netconsole: can't resolve MAC address of %s\n" $SYSLOGADDR 1>&2
 		exit 1
 	fi
 
@@ -88,7 +97,7 @@ start ()
 	/usr/bin/logger -p daemon.info -t netconsole: inserting netconsole module with arguments \
 	$SYSLOGOPTS
 	if [ -n "$SYSLOGOPTS" ]; then
-		action $"Initializing netconsole" modprobe netconsole \
+		action "Initializing netconsole" modprobe netconsole \
 			$SYSLOGOPTS
 		[ "$?" != "0" ] && RETVAL=1
 	fi
@@ -98,7 +107,7 @@ start ()
 stop ()
 {
 	if /sbin/lsmod | grep netconsole >/dev/null 2>&1 ; then
-	    action $"Disabling netconsole" rmmod netconsole;
+	    action "Disabling netconsole" rmmod netconsole;
 	    [ "$?" != "0" ] && RETVAL=1
 	fi
 
@@ -108,10 +117,10 @@ stop ()
 status ()
 {
 	if /sbin/lsmod | grep netconsole >/dev/null 2>&1 ; then
-		echo $"netconsole module loaded"
+		gprintf "netconsole module loaded\n"
 		RETVAL=0
 	else
-		echo $"netconsole module not loaded"
+		gprintf "netconsole module not loaded\n"
 		RETVAL=3
 	fi
 }

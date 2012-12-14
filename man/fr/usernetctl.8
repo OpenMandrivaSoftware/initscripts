@@ -1,0 +1,44 @@
+.TH USERNETCTL 8 "Red Hat, Inc." "RHS" \" -*- nroff -*-
+.SH NOM
+usernetctl \- permet à un utilisateur de manipuler une interface réseau
+.SH SYNOPSIS
+.B usernetctl
+\fInom-interface\fP up\fI|\fPdown\fI|\fPreport
+.SH DESCRIPTION
+.B usernetctl
+vérifie si les utilisateurs sont autorisés à manipuler l'interface réseau
+spécifiée par \fInom-interface\fP, puis essaye d'activer (up) ou désactiver
+(down) l'interface réseau, selon que "up" ou "down" ait été indiqué sur la
+ligne de commande, ou renvoie vrai ou faux (respectivement) si l'option
+"report" a été spécifiée.
+
+.B usernetctl
+n'est pas vraiment fait pour être appelé directement par les utilisateurs,
+bien qu'il fonctionne bien comme cela. Il sert simplement aux scripts ifup
+et ifdown pour que les utilisateurs puissent taper exactement les mêmes
+commandes que le super-utilisateur :
+.nf
+ifup \fInom-interface\fP
+ifdown \fInom-interface\fP
+.fi
+et \fBifup\fP et \fBifdown\fP seront appelés par usernetctl automatiquement
+pour permettre le changement de statut de l'interface.
+.SH OPTIONS
+.TP
+.I "\fInom-interface"
+Le nom de l'interface réseau à vérifier; par exemple, "ppp0".  Pour la
+compatibilité ascendante, "ifcfg-ppp0" et
+"/etc/sysconfig/network-scripts/ifcfg-ppp0" fonctionnent aussi.
+.TP
+up\fI|\fPdown
+Tente de démarrer ou d'arrêter l'interface, respectivement.
+.TP
+report
+Indique si les utilisateurs peuvent ou non démarrer/stopper l'interface.
+
+.SH FICHIERS
+.IR /etc/sysconfig/network-scripts/ifcfg-*
+
+.SH NOTES
+Les configurations d'autres interfaces peuvent hériter des permissions
+de la configuration par défaut.

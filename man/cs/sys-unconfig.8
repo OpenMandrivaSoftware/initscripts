@@ -1,0 +1,31 @@
+.TH  SYS-UNCONFIG 8 "Stř Čec 28 1999"
+.SH NÁZEV
+sys-unconfig \- skript shellu na přenastavení systému při příštím startu
+.SH SYNAPSE
+\fBsys-unconfig\fR
+.SH POPIS
+Skript \fBsys-unconfig\fR poskytuje jednoduchou metodu pro přenastavení systému
+v novém prostředí. Po spuštění skript sys-unconfig zastaví váš systém, a při příštím
+zavádění systému spustí následující programy pro nastavení:
+passwd (pro změnu hesla uživatele root), netconfig, timeconfig,
+authconfig a ntsysv.
+
+.SH SOUBORY
+.PD 0
+.TP 20
+\fI/.unconfigured\fR
+Přítomnost tohoto souboru způsobí, že skript /etc/rc.d/rc.sysinit spustí
+výše uvedené programy.
+
+.PD
+.SH "VIZ TAKÉ"
+.BR passwd (1),
+.BR netconfig (8),
+.BR timeconfig (8),
+.BR authconfig (8),
+.BR ntsysv(8)
+
+.SH AUTOŘI
+.nf
+H.J. Lu <hjl@valinux.com>
+.fi

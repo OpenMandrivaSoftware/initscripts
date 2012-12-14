@@ -1,0 +1,17 @@
+.TH DETECTLOADER 8 "Dub 2000" "initscripts" "MandrakeSoft"
+.SH NÁZEV
+detectloader \- Detekuje typ zavaděče, který máte na svém disku..
+.SH POPIS
+.PP
+Program \fBdetectloader\fR detekuje typ zavaděče, který máte na svém záznamu 
+\fBMBR\fR. Nalezne první disk pomocí souboru /proc/partitions a pomocí magického
+sériového čísla se snaží zjistit, který typ zavaděče máte nainstalovaný.
+.SH OMEZENÍ
+.PP
+Podporuje pouze zavaděče grub, lilo, a yaboot (zavaděče, které používáme v distribuci \fBMandrake
+Linux\fR). Uvítáme změnové soubory pro jiné zavaděče.
+.SH COPYRIGHT
+Copyright \(co 1999/2000 MandrakeSoft.
+.PP
+Toto je volně šiřitelný software; viz zdrojový kód, kde se nacházejí podmínky pro kopírování. Je zcela
+BEZ záruky; není zaručena ani OBCHODOVATELNOST, ani VHODNOST pro určitý způsob užití

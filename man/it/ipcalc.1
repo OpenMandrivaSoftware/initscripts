@@ -1,0 +1,65 @@
+.TH IPCALC 1 "Red Hat, Inc." "RHS" \" -*- nroff -*-
+.SH NOME
+ipcalc \- Esegue semplici azioni su indirizzi IP
+.SH SINTASSI
+.B ipcalc
+[\fIOPZIONI\fR]... <\fBindirizzo IP\fR>[\fI/prefisso\fR] [\fInetmask\fR]
+
+.SH DESCRIZIONE
+\fBipcalc\fR fornisce un modo semplice per calcolare informazioni IP per un host.
+Le varie opzioni specificano quali informazioni \fBipcalc\fR dovrà mostrare
+sullo standard output. Può essere specificata più di una opzione. 
+Deve essere sempre specificato un indirizzo IP su cui operare.
+Molte operazioni richiedono inoltre una netmask o anche un prefisso CIDR.
+
+.SH OPZIONI
+.TP
+.TP
+\fB\-b\fR, \fB\-\-broadcast\fR 
+Mostra l'indirizzo di broadcast per l'IP e la netmask dati.
+
+.TP
+\fB\-h\fR, \fB\-\-hostname\fR 
+Mostra il nome dell'host per l'indirizzo IP dato.
+
+.TP
+\fB\-m\fR, \fB\-\-netmask\fR
+Calcola la netmask per l'indirizzo IP dato. Assume che l'indirizzo IP
+sia in una rete di classe A, B, o C completa. Molte reti non usano
+le netmask di default, in tali casi sarà ritornato un valore inappropriato.
+
+.TP
+\fB\-p\fR, \fB\-\-prefix\fR
+Mostra il prefisso per la mask/indirizzo IP dati.
+
+.TP
+\fB\-n\fR, \fB\-\-network\fR 
+Mostra l'indirizzo di rete per indirizzo IP e netmask dati.
+
+.TP
+\fB\-s\fR, \fB\-\-silent\fR 
+Non mostra i messaggi d'errore.
+
+.SH AUTORI
+.nf
+Erik Troan <ewt@redhat.com>
+.nf
+Preston Brown <pbrown@redhat.com>
+
+.SH TRADUTTORE
+.nf
+Salvatore Di Pietro <salvuz78@virgilio.it>
+
+.fi
+.SH "SEGNALAZIONE BUG"
+Segnala i bug al nostro sistema di bugtracking:
+http://bugzilla.redhat.com/bugzilla.
+.SH COPYRIGHT
+Copyright \(co 1997-2001 Red Hat, Inc.
+.br
+Questo è software libero; vedi le condizioni di distribuzione allegate 
+al sorgente. Non viene data alcuna garanzia, neppure quella implicita di 
+NEGOZIABILITÀ o di APPLICABILITÀ PER UN PARTICOLARE SCOPO.
+
+.SH "VEDI ANCHE"
+ipcalc(3)

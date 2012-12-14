@@ -1,0 +1,197 @@
+.TH "ipcalc.c" 3 "30 Apr 2001" "initscripts" \" -*- nroff -*-
+.ad l
+.nh
+.SH NOM
+ipcalc.c \- fournit des utilitaires pour manipuler des adresses IP. 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <ctype.h>\fR
+.br
+\fC#include <popt.h>\fR
+.br
+\fC#include <stdio.h>\fR
+.br
+\fC#include <stdlib.h>\fR
+.br
+\fC#include <string.h>\fR
+.br
+\fC#include <sys/socket.h>\fR
+.br
+\fC#include <netinet/in.h>\fR
+.br
+\fC#include <arpa/inet.h>\fR
+.br
+\fC#include <netdb.h>\fR
+.br
+
+.SS Définitions
+
+.in +1c
+.ti -1c
+.RI "#define \fBIPBITS\fR  (sizeof(unsigned long int) * 8)"
+.br
+.RI "\fIle nombre de bits dans un adresse IP.\fR"
+.ti -1c
+.RI "#define \fBIPBYTES\fR  (sizeof(unsigned long int))"
+.br
+.RI "\fIle nombre d'octets dans une adresse IP.\fR"
+.in -1c
+.SS Fonctions
+
+.in +1c
+.ti -1c
+.RI "unsigned long int \fBprefix2mask\fR (int prefix)"
+.br
+.RI "\fIcrée un masque réseau d'un nombre de bits spécifié.\fR"
+.ti -1c
+.RI "int \fBmask2prefix\fR (unsigned long int mask)"
+.br
+.RI "\fIcalcule le nombre de bits masqués par un masque réseau.\fR"
+.ti -1c
+.RI "unsigned long int \fBdefault_netmask\fR (unsigned long int addr)"
+.br
+.RI "\fIrenvoie le masque réseau par défaut (canonique) associé à l'adresse IP spécifiée.\fR"
+.ti -1c
+.RI "unsigned long int \fBcalc_broadcast\fR (unsigned long int addr, int prefix)"
+.br
+.RI "\fIcalcule l'adresse de diffusion à partir d'une adresse IP et d'une longueur de préfixe.\fR"
+.ti -1c
+.RI "unsigned long int \fBcalc_network\fR (unsigned long int addr, int prefix)"
+.br
+.RI "\fIcalcule l'adresse réseau pour une adresse IP et un préfixe donnés.\fR"
+.ti -1c
+.RI "const char* \fBget_hostname\fR (unsigned long int addr)"
+.br
+.RI "\fIretourne le nom d'hôte associé à l'adresse IP indiquée.\fR"
+.ti -1c
+.RI "int \fBmain\fR (int argc, const char **argv)"
+.br
+.RI "\fIprogramme d'appel (NdT : "wrapper") pour les fonctions ipcalc.\fR"
+.in -1c
+.SH DESCRIPTION DÉTAILLÉE
+.PP 
+fournit des utilitaires pour manipuler des adresses IP.
+.PP
+.PP
+ ipcalc fournit des utilitaires et une interface en ligne de commande pour la manipulation d'adresses IP, et le calcul de divers aspects liés à IP, addresse/masque-réseau/adresse-réseau/préfixe/etc.
+.PP
+Les fonctions peuvent être accédées à partir de l'interface de la bibliothèque dans d'autres langages, comme documenté ici. Pour utiliser ipcalc à partir du shell, lisez la page de manuel ipcalc(1).
+.PP
+Lorsque vous passez des paramètres aux diverses fonctions, veuillez noter si elles prennent l'ordre d'octet hôte (NdT : "host byte order") ou l'ordre d'octet réseau (NdT : "network byte order"). La plupart prennent l'ordre d'octet hôte, et renvoient l'ordre d'octet hôte, mais il y a des exceptions.
+.PP
+.SH DOCUMENTATION DES FONCTIONS
+.PP 
+.SS unsigned long int calc_broadcast (unsigned long int addr, int prefix)
+.PP
+calcule l'adresse de diffusion à partir d'une adresse IP et d'une longueur de préfixe donnés.
+.PP
+.PP
+ 
+.PP
+\fBParamètres: \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+une adresse IP dans l'ordre d'octet réseau. 
+.TP
+\fB\fIprefix\fR\fR
+une longueur de préfixe.
+.PP
+\fBRenvoie: \fR
+.in +1c
+l'adresse de diffusion calculée pour le réseau, dans l'ordre d'octet réseau. 
+.SS unsigned long int calc_network (unsigned long int addr, int prefix)
+.PP
+calcule l'adresse réseau pour une adresse et un préfixe spécifiés.
+.PP
+.PP
+ 
+.PP
+\fBParamètres : \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+une adresse IP, dans l'ordre d'octet réseau 
+.TP
+\fB\fIprefix\fR\fR
+le préfixe réseau 
+.PP
+\fBRenvoie : \fR
+.in +1c
+l'adresse de base du réseau avec lequel addr est associé, dans l'ordre d'octet réseau. 
+.SS unsigned long int default_netmask (unsigned long int addr)
+.PP
+renvoie le masque réseau par défaut (canonique) associé avec l'adresse IP spécifiée.
+.PP
+.PP
+Quand Internet a été créé, les adresses IP furent segmentées en trois classes de réseau : A, B, et C. Cette fonction renvoie un masque réseau qui est associé avec l'adresse IP spécifiée, ce qui définit dans quelle classe elle se trouve.
+.PP
+\fBParamètres : \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+une adresse IP dans l'ordre d'octet réseau. 
+.PP
+\fBRenvoie : \fR
+.in +1c
+un masque réseau dans l'ordre d'octet réseau. 
+.SS const char * get_hostname (unsigned long int addr)
+.PP
+renvoie le nom d'hôte associé avec l'adresse IP spécifiée.
+.PP
+.PP
+ 
+.PP
+\fBParamètres : \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+une adresse IP pour laquelle on veut un nom d'hôte, dans l'ordre d'octet réseau
+.PP
+\fBRenvoie : \fR
+.in +1c
+un nom d'hôte, ou NULL s'il ne peut être déterminé. Le nom d'hôte est stocké dans un buffer statique qui pourra disparaître à n'importe quel moment, l'appelant devra copier la donnée si elle doit être conservée de manière permanente.
+.SS main (int argc, const char ** argv)
+.PP
+programme d'appel ("wrapper") pour les fonctions ipcalc.
+.PP
+.PP
+ C'est un programme d'appel ("wrapper") pour les fonctions que la bibliothèque ipcalc fournit. Il peut être utilisé à partir de shells scripts ou directement à partir de la ligne de commande.
+.PP
+Pour plus d'information, veuillez vous référer à la page de manuel ipcalc(1). 
+.SS int mask2prefix (unsigned long int mask)
+.PP
+calcule le nombre de bits masqués par un masque réseau.
+.PP
+.PP
+ Cette fonction calcule les bits significatifs d'une adresse IP en fonction d'un masque réseau. Voir aussi \fBprefix2mask\fR.
+.PP
+\fBParamètres: \fR
+.in +1c
+.TP
+\fB\fImask\fR\fR
+est le masque réseau, specifié comme un entier long non signé dans l'ordre d'octet réseau. 
+.PP
+\fBRenvoie : \fR
+.in +1c
+le nombre de bits significatifs. 
+.SS unsigned long int prefix2mask (int bits)
+.PP
+crée un masque réseau à partir d'un nombre de bits spécifié.
+.PP
+.PP
+ Cette fonction convertir une longueur de préfixe en masque réseau. Comme le CIDR (classless internet domain internet domain routing) has taken off, de plus en plus d'adresses IP données dans le format addresse/préfixe (i.e. 192.168.2.3/24, avec masque réseau correspondant 255.255.255.0). Si vous voulez voir quel masque réseau correspond à la partie préfixe, c'est cette fonction qu'il vous faut. Voir aussi \fBmask2prefix\fR.
+.PP
+\fBParamètres : \fR
+.in +1c
+.TP
+\fB\fIprefix\fR\fR
+est le nombre de bits pour lesquels il faut créer un masque réseau. 
+.PP
+\fBRenvoie : \fR
+.in +1c
+un masque réseau, dans l'ordre d'octet réseau. 
+.SH AUTEUR
+.PP 
+Généré automatiquement par Doxygen pour initscripts à partir du code source (NdT : je comprends mieux :)).

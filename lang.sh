@@ -1,19 +1,37 @@
 # /etc/profile.d/lang.sh - set i18n stuff
 
-sourced=0
-
-if [ -n "$LANG" ]; then
-    saved_lang="$LANG"
-    [ -f "$HOME/.i18n" ] && . "$HOME/.i18n" && sourced=1
-    LANG="$saved_lang"
-    unset saved_lang
-else
-    for langfile in /etc/locale.conf "$HOME/.i18n" ; do
-        [ -f $langfile ] && . $langfile && sourced=1
-    done
+# revert special console/X11 settings if needed
+if [ "$LC_SOURCED_CONSOLE" = 1 -a -n "$DISPLAY" ]; then
+	unset LC_SOURCED
+	unset LC_SOURCED_CONSOLE
+elif [ "$LC_SOURCED_X11" = 1 -a -z "$DISPLAY" ]; then
+	unset LC_SOURCED
+	unset LC_SOURCED_X11
 fi
 
-if [ "$sourced" = 1 ]; then
+# if GDM_LANG is defined that means a language other than the user default
+# has been chosen trough gdm login for the session; so we define
+# LC_SOURCED=1 to not read the system/user i18n files
+if [ -n "$GDM_LANG" ]; then
+    LANG="$GDM_LANG"
+    LC_SOURCED=1
+    export LC_SOURCED
+fi
+
+# only source one of the possible files, and in that order;
+# if system wide and user config are mixed and different, umpredictable
+# things will happen...
+for langfile in "$HOME/.i18n" /etc/locale.conf ; do
+	[ -f $langfile -a "$LC_SOURCED" != 1 ] && . $langfile && LC_SOURCED=1 && export LC_SOURCED
+done    
+
+if [ "$LC_SOURCED" = 1 ]; then
+    if [ -n "$LANG" ] ; then
+       [ "$LANG" = "C" ] && LANG="en_US"
+       export LANG
+    else
+       unset LANG
+    fi
     [ -n "$LANG" ] && export LANG || unset LANG
     [ -n "$LC_ADDRESS" ] && export LC_ADDRESS || unset LC_ADDRESS
     [ -n "$LC_CTYPE" ] && export LC_CTYPE || unset LC_CTYPE

@@ -1,0 +1,52 @@
+#!/bin/sh
+# LSB compliant init functions
+
+# source standard Mandrake init functions
+. /etc/init.d/functions
+
+start_daemon() {
+    # Start daemons.
+    local force= nicelevel=
+    while [ "$1" != "${1##[-+]}" ]; do
+        case $1 in
+	  -f)
+             force="--force"
+	     shift
+             ;;
+	  -n)
+	     nicelevel=$2
+	     shift 2
+	     ;;
+        esac
+    done
+    if [ -z "$1" ]; then
+	gprintf "%s: Usage: start_daemon [-f] [-n nicelevel] {program} [args]\n" $0
+        return 1
+    fi
+    gprintf "Starting %s: " $1
+    daemon $force $nicelevel $*
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ]; then
+        touch /var/lock/subsys/$1
+    fi
+    echo
+    return $RETVAL
+}
+
+# killproc is handled by the normal init.d/functions
+
+# pidofproc is handled by the normal init.d/functions
+
+log_success_msg() {
+    success
+}
+
+log_failure_msg() {
+    failure
+}
+
+log_warning_msg() {
+    echo_warning
+}
+
+

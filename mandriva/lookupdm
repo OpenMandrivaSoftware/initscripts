@@ -1,0 +1,36 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva
+# Module          : initscripts
+# File            : lookupdm
+# Version         : $Id$
+# Author          : Frederic Lepied
+# Created On      : Mon May 30 08:50:45 2005
+# Purpose         : Lookup the display manager according to the
+#                 argument or find the first available one.
+#---------------------------------------------------------------
+
+TARGET_DM=$1
+DIR=/usr/share/X11/dm.d
+
+if [ -n "$TARGET_DM" ]; then
+    for f in `grep -l "^NAME=$TARGET_DM$" $DIR/*.conf`; do
+	EXEC=
+	eval `grep '^EXEC=' "$f"`
+	if [ -x "$EXEC" ]; then
+	    echo $EXEC
+	    exit 0
+	fi
+    done
+fi
+
+for f in $DIR/*.conf; do
+    EXEC=
+    eval `grep '^EXEC=' "$f"`
+    if [ -x "$EXEC" ]; then
+	echo $EXEC
+	exit 0
+    fi
+done
+
+# lookupdm.sh ends here

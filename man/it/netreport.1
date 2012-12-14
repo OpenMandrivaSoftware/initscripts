@@ -1,0 +1,22 @@
+.TH NETREPORT 1 "Red Hat, Inc." "RH" \" -*- nroff -*-
+.SH NOME
+netreport \- chiede notifica dei cambi di interfacce di rete
+.SH SINTASSI
+.B netreport
+\fI[\fP-r\fI]\fP
+.SH DESCRIZIONE
+.B netreport
+dice agli scripts di gestione della rete di mandare un segnale SIGIO
+al processo che ha chiamato netreport ogniqualvolta avvengano
+cambiamenti di stato nelle interfacce di rete.
+.SH OPZIONI
+.TP
+.B -r
+Rimuove la richiesta corrente (se esiste) per il processo chiamante..
+.PP
+.SH NOTE
+Se un programma non chiama netreport con l'opzione
+.B -r
+prima di uscire, e un altro processo è creato con lo stesso PID prima che
+abbia luogo un cambiamento nello stato dell'interfaccia,
+ è possibile che il nuovo processo riceva un segnale SIGIO spurio.

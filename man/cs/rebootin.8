@@ -1,0 +1,36 @@
+.TH rebootin 8 "03 Bře 2001" "Mandrakesoft" "Linux-Mandrake"
+.IX rebootin
+.SH NÁZEV
+rebootin \- Znovu nastartuje počítač s přednastavením určitého záznamu zavaděče
+.SH SYNAPSE
+.B rebootin [\fIVOLBY\fR] <\fIlabel\fP>
+.SH POPIS
+Program \fBrebootin\fP restartuje počítač, na kterém je spuštěn. Při použití
+jednoduchého příkazu \fBreboot\fP potřebujete při startu počítače ručně vybrat položku ze zavaděče, kterou chcete použít. Příkaz \fBrebootin\fP vám umožní z příkazového řádku zadat, která položka zavaděče se má při startu použít.
+.PP
+<\fIlabel\fP> je název položky, jak je pojmenovaná v souboru s nastavením zavaděče.
+Příkaz \fBrebootin\fP v současné době podporuje zavaděče \fBLILO\fP a \fBGrub\fP.
+.PP
+Spuštění příkazu \fBrebootin\fP bez dalších parametrů zobrazí seznam položek zavaděče, které jsou k dispozici, a které jsou podporovány aktuálním zavaděčem.
+.SH VOLBY
+.TP
+.I -f
+Vytvoří soubor /fastboot, aby byl proveden restart ve zrychleném režimu (např.: žádný \fBfsck(8)\fP).
+.SH SOUBORY
+/etc/lilo.conf
+/boot/grub/menu.lst
+.br
+Spustitelný soubor \fBrebootin\fP (skript jazyka Perl)
+.PP
+.SH "VIZ TAKÉ"
+grub(8),
+lilo(8),
+fsck(8)
+.SH AUTOŘI
+Pascal Rigaux, Mandrakesoft
+.br
+pixel@mandrakesoft.com
+.PP
+Chmouel Boudjnah, Mandrakesoft
+.br
+chmouel@mandrakesoft.com

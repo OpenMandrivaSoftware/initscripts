@@ -1,0 +1,53 @@
+.TH IPCALC 1 "Duben 30 2001" "Red Hat, Inc." RH \" -*- nroff -*-
+.SH NÁZEV
+ipcalc \- provádí jednoduché manipulace s IP adresami
+.SH SYNAPSE
+.B ipcalc
+[\fIVOLBA\fR]... <\fBIP adresa\fR>[\fI/prefix\fR] [\fIsíťová_maska\fR]
+
+.SH POPIS
+Program \fBipcalc\fR poskytuje jednoduchý způsob, jak vypočítat IP informace pro počítač. Různými volbami lze udat, kterou informaci by měl program \fBipcalc\fR zobrazit na standardním výstupu.
+Lze udat více voleb najednou. Vždy musí být zadána IP adresa. Většina operací také vyžaduje síťovou masku nebo prefix CIDR.
+
+.SH VOLBY
+.TP
+.TP
+\fB\-b\fR, \fB\-\-broadcast\fR 
+Zobrazí adresu pro všesměrové vysílání pro danou IP adresu a síťovou masku.
+
+.TP
+\fB\-h\fR, \fB\-\-hostname\fR 
+Zobrazí název počítače pro danou IP adresu.
+
+.TP
+\fB\-m\fR, \fB\-\-netmask\fR
+Vypočítá síťovou masku pro danou IP adresu. Předpokládá, že IP adresa je v kompletní třídě sítě A, B nebo C. Mnoho sítí nepoužívá výchozí síťovou masku, a v těchto případech bude navrácená hodnota nesprávná.
+
+.TP
+\fB\-p\fR, \fB\-\-prefix\fR
+Zobrazí předponu (prefix) pro danou masku/IP adresu.
+
+.TP
+\fB\-n\fR, \fB\-\-network\fR 
+Zobrazí síťovou adresu pro danou IP adresu a síť.
+
+.TP
+\fB\-s\fR, \fB\-\-silent\fR 
+Za žádných okolností nezobrazí chybové zprávy.
+
+.SH AUTOŘI
+.nf
+Erik Troan <ewt@redhat.com>
+.nf
+Preston Brown <pbrown@redhat.com>
+.fi
+.SH CHYBY
+Nahlaste chyby do našeho systému na sledování chyb:
+http://bugzilla.redhat.com/bugzilla.
+.SH COPYRIGHT
+Copyright (c) 1997-2001 Red Hat, Inc.
+.br
+Toto je volně šiřitelný software, viz podmínky pro kopírování uvedené ve zdrojovém kódu. Je dodáván BEZ ZÁRUK; 
+včetně záruky OBCHODOVATELNOSTI nebo VHODNOSTI pro určitý účel.
+.SH "VIZ TAKÉ"
+ipcalc(3)

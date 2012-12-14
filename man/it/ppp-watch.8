@@ -1,0 +1,30 @@
+.TH PPP-WATCH 8 "Red Hat, Inc." "RHS" \" -*- nroff -*-
+.SH NOME
+ppp-watch \- demone per far sì che le interfacce PPP si comportino
+in modo simile alle altre interfacce
+
+.SH SINTASSI
+.B ppp-watch
+\fInome-interfaccia\fP \fInome-interfaccia\fP [boot]
+
+.SH DESCRIZIONE
+.B ppp-watch
+si occupa di una connessione PPP, compresi l'avvio, l'arresto, 
+e la ricomposizione del numero.
+Rende attività sincrone l'avvio e l'arresto della connessione.
+
+.B ppp-watch
+Non è stato pensato per essere chiamato direttamente.
+Dovrebbe essere usato solamente all'interno dello script ifup-ppp.
+
+.SH OPZIONI
+.TP
+.I nome-interfaccia
+Il nome dell'interfaccia PPP da attivare.
+
+.TP
+boot
+ppp-watch sarà chiamato al boot e dovrebbe andare in timeout
+dopo in certo tempo se la connessione PPP non si attiva,
+in modo da non bloccare la sequenza di avvio.
+

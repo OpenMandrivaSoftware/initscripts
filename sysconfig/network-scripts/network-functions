@@ -9,6 +9,8 @@ export PATH
 
 [ -z "$__sed_discard_ignored_files" ] && . /etc/init.d/functions
 
+RESOLVCONF_FLAGFILE=/var/run/resolvconf/enable-updates
+
 get_hwaddr ()
 {
     if [ -f /sys/class/net/${1}/address ]; then
@@ -141,6 +143,9 @@ source_config ()
 	CTC)
 		DEVICETYPE="ctc"
 		;;
+	IUCV)
+		DEVICETYPE="iucv"
+		;;
 	GRE | IPIP)
 		DEVICETYPE="tunnel"
 		;;
@@ -268,17 +273,25 @@ do_netreport ()
 
 is_nm_running ()
 {
-    [ "$(LANG=C nmcli -t --fields running nm status 2>/dev/null)" = "running" ]
+    [ -x /usr/bin/nmcli ] && \
+    [ "$(LANG=C LC_ALL=C nmcli -t --fields running nm status 2>/dev/null)" = "running" ]
+}
+
+is_nm_device_unavailable ()
+{
+    [ -x /usr/bin/nmcli ] && \
+    LANG=C LC_ALL=C nmcli -t --fields device,state  dev status 2>/dev/null | grep -q "^${1}:unavailable$"
 }
 
 is_nm_active ()
 {
-    LANG=C nmcli -t --fields device,state  dev status 2>/dev/null | grep -q "^${1}:connected$"
+    [ -x /usr/bin/nmcli ] && \
+    LANG=C LC_ALL=C nmcli -t --fields device,state  dev status 2>/dev/null | grep -q "^${1}:connected$"
 }
 
 is_nm_device_unmanaged ()
 {
-    LANG=C nmcli -t --fields GENERAL dev list iface "${1}"  2>/dev/null | awk -F ':' '/GENERAL.STATE/ { if ($2 == "unmanaged") exit 0 ; else exit 1; }'
+    LANG=C LC_ALL=C nmcli -t --fields GENERAL dev list iface "${1}"  2>/dev/null | awk -F ':' '/GENERAL.STATE/ { if ($2 == "unmanaged") exit 0 ; else exit 1; }'
 }
 
 # Sets $alias to the device module if $? != 0
@@ -344,6 +357,9 @@ set_hostname ()
 		/bin/rm -f $rsctmp
 	fi	
     fi
+    if [ -d /etc/sysconfig/network-scripts/hostname.d -a -x /usr/bin/run-parts ]; then
+	/usr/bin/run-parts --arg $1 /etc/sysconfig/network-scripts/hostname.d
+    fi
 }
 
 check_device_down ()
@@ -358,7 +374,10 @@ check_device_down ()
 
 check_link_down ()
 {
-        if ! LC_ALL=C ip link show dev $1 2>/dev/null| grep -q ",UP" ; then
+    if [ "${MII_NOT_SUPPORTED}" = yes ]; then
+	return 1
+    fi
+        if ! LC_ALL=C ip link show dev $1 2>/dev/null| grep -q UP ; then
 	   ip link set dev $1 up >/dev/null 2>&1
 	fi
 	timeout=0
@@ -459,21 +478,37 @@ change_resolv_conf ()
 	    fi;
 	    n_args=$(($n_args-1));
          done;       
-    elif [ $# -eq 1 ]; then
+    elif [ $# -eq 1 -a -r "$1" ]; then
        if [ "x$s" != "x" ]; then
 	  s="$s"$(/bin/grep -vF "$s" $1);
        else
 	  s=$(cat $1);
        fi;
+    else
+       return
     fi;
-    (echo "$s" > /etc/resolv.conf;) >/dev/null 2>&1;
+    if [ -e "$RESOLVCONF_FLAGFILE" ]; then
+	echo "$s" | /sbin/resolvconf -a ${DEVICE}
+    else
+	(echo "$s" > /etc/resolv.conf;) >/dev/null 2>&1;
+    fi
     r=$?
     if [ $r -eq 0 ]; then
 	[ -x /sbin/restorecon ] && /sbin/restorecon /etc/resolv.conf >/dev/null 2>&1 # reset the correct context
 	/usr/bin/logger -p local7.notice -t "NET" -i "$0 : updated /etc/resolv.conf";
-	[ -e /var/lock/subsys/nscd ] && /usr/sbin/nscd -i hosts; # invalidate cache
+	[ -n "$(/bin/pidof nscd)" ] && [ ! -e "$RESOLVCONF_FLAGFILE" ] && /usr/sbin/nscd -i hosts; # invalidate cache
     fi;
     return $r;
+}
+
+clear_resolv_conf ()
+{
+    if [ -e "$RESOLVCONF_FLAGFILE" ]; then
+	/sbin/resolvconf -d ${DEVICE}
+    elif [ -f /etc/resolv.conf.save ]; then
+	change_resolv_conf /etc/resolv.conf.save
+	rm -f /etc/resolv.conf.save
+    fi
 }
 
 # Logging function

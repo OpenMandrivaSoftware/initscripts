@@ -1,0 +1,32 @@
+.TH  SYS-UNCONFIG 8 "Wed Jul 28 1999"
+.SH NOM
+sys-unconfig \- script pour reconfigurer le système au prochain démarrage
+.SH SYNOPSIS
+\fBsys-unconfig\fR
+.SH DESCRIPTION
+\fBsys-unconfig\fR offre une méthode simple pour reconfigurer un 
+système dans un nouvel environnement. En s'exécutant, sys-unconfig 
+arrêtera votre système, et lancera les programmes de configuration 
+suivants au démarrage :
+passwd (pour changer le mot de passe super-utilisateur), netconfig,
+timeconfig, authconfig, et ntsysv.
+
+.SH FICHIERS
+.PD 0
+.TP 20
+\fI/.unconfigured\fR
+La présence de ce fichier indiquera à /etc/rc.d/rc.sysinit d'exécuter 
+les programmes mentionnés ci-dessus.
+
+.PD
+.SH "VOIR AUSSI"
+.BR passwd (1),
+.BR netconfig (8),
+.BR timeconfig (8),
+.BR authconfig (8),
+.BR ntsysv(8)
+
+.SH AUTEURS
+.nf
+H.J. Lu <hjl@valinux.com>
+.fi

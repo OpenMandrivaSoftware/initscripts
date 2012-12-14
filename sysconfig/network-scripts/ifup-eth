@@ -15,21 +15,33 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+TEXTDOMAIN=initscripts
+
 . /etc/init.d/functions
 
 cd /etc/sysconfig/network-scripts
 . ./network-functions
 
-[ -f ../network ] && . ../network
+[ -f /etc/sysconfig/network ] && . /etc/sysconfig/network
 
 CONFIG=${1}
+boot=${2}
+daemon=
+[ "foo${boot}" = "fooboot" -o "foo${boot}" = "foodaemon" ] && daemon=1
 
 need_config "${CONFIG}"
 
 source_config
 
+# Old BOOTP variable
+if [ "${BOOTP}" = "yes" ]; then
+    BOOTPROTO=bootp
+fi
+
 if [ "${BOOTPROTO}" = "bootp" -o "${BOOTPROTO}" = "dhcp" ]; then
     DYNCONFIG=true
+    [ "${BOOTPROTO}" = bootp ] && DHCP_CLIENT=/sbin/pump
 fi
 
 # load the module associated with that device
@@ -41,6 +53,7 @@ if [ -n "${HWADDR}" ]; then
     FOUNDMACADDR=$(get_hwaddr ${REALDEVICE})
     if [ "${FOUNDMACADDR}" != "${HWADDR}" -a "${FOUNDMACADDR}" != "${MACADDR}" ]; then
 	    net_log $"Device ${DEVICE} has different MAC address than expected, ignoring."
+	    mdv-network-event connection_failure ${DEVICE}
 	    exit 1
     fi
 fi
@@ -49,6 +62,7 @@ fi
 if [ "${TYPE}" = "Bridge" ]; then
       if [ ! -x /usr/sbin/brctl ]; then
 	  net_log $"Bridge support not available: brctl not found"
+	  mdv-network-event connection_failure ${DEVICE}
 	  exit 1
       fi
       if [ ! -d /sys/class/net/${DEVICE}/bridge ]; then
@@ -66,12 +80,22 @@ fi
 
 # If the device is a tap device, create it with tunctl, if available.
 if [ "${TYPE}" = "Tap" ]; then
-      if [ ! -x /usr/sbin/tunctl ]; then
+      if [ ! -x /usr/sbin/tunctl -a ! -x /usr/bin/tunctl ]; then
           net_log  $"Tap support not available: tunctl not found"
+	  mdv-network-event connection_failure ${DEVICE}
           exit 1
       fi
+      # load the correct module if necessary (#54748)
+      if [ ! -c /dev/net/tun ]; then
+          if ! modprobe tun > /dev/null 2>&1; then
+               echo $"No TUN/TAP support available in kernel for device ${DEVICE}"
+               mdv-network-event connection_failure ${DEVICE}
+               exit 1
+          fi
+      fi
+
       [ -n "${OWNER}" ] && OWNER="-u ${OWNER}"
-      /usr/sbin/tunctl ${OWNER} -t ${DEVICE} > /dev/null
+      tunctl ${OWNER} -t ${DEVICE} > /dev/null
 fi
 
 # now check the real state
@@ -81,9 +105,67 @@ is_available ${REALDEVICE} || {
       else
          net_log $"Device ${DEVICE} does not seem to be present, delaying initialization."
       fi
+      mdv-network-event connection_failure ${DEVICE}
       exit 1
 }
 
+# is the device wireless? If so, configure wireless device specifics
+IS_WIRELESS=
+if is_wireless_device ${DEVICE}; then
+    # ralink devices need to be up for wireless-tools to work
+    ip link set dev ${DEVICE} up
+    if [ -n "${daemon}" -o "$MII_NOT_SUPPORTED" = "yes" ]; then
+        # try to trigger association (and always load wireless settings)
+	WIRELESS_CONFIG="wireless.d/$WIRELESS_ESSID"
+	[ -f "$WIRELESS_CONFIG" ] && source "$WIRELESS_CONFIG"
+	. ./ifup-wireless
+        if [ -n "$WIRELESS_WPA_DRIVER" -a -x /usr/sbin/wpa_supplicant -a -f /etc/wpa_supplicant.conf ]; then
+            if wpa_cli -i${DEVICE} status &>/dev/null; then
+                echo "Another wpa_supplicant instance is already running for device $DEVICE"
+            else
+                /usr/sbin/wpa_supplicant -B -i ${DEVICE} \
+                    -c /etc/wpa_supplicant.conf  \
+                    -D ${WIRELESS_WPA_DRIVER}
+            fi
+            if [ "$WIRELESS_WPA_REASSOCIATE" = "yes" ]; then
+                sleep 2
+                wpa_cli reassociate
+            fi
+	fi
+    elif [ -n "$WIRELESS_WPA_DRIVER" ]; then
+        # roaming enabled, on association
+        # source interface parameters related to current ESSID or AP if any
+        WIRELESS_CURRENT_ESSID=`iwgetid -r ${DEVICE}`
+        if [ -n "$WIRELESS_CURRENT_ESSID" ]; then
+            WIRELESS_CONFIG="wireless.d/$WIRELESS_CURRENT_ESSID"
+            if [ ! -f "$WIRELESS_CONFIG" ]; then
+                WIRELESS_CURRENT_AP=`iwgetid -r -a ${DEVICE}`
+                WIRELESS_CONFIG="wireless.d/$WIRELESS_CURRENT_AP"
+            fi
+            if [ -f "$WIRELESS_CONFIG" ]; then
+                source "$WIRELESS_CONFIG"
+            else
+                echo "Wireless device $DEVICE is associated with $WIRELESS_CURRENT_ESSID but configuration is missing"
+            fi
+        else
+            echo "Wireless device $DEVICE is configured with a roaming daemon but isn't associated"
+        fi
+    fi
+    IS_WIRELESS=1
+fi
+
+# DVB Card
+if [ -n "${DVB_ADAPTER_ID}" -a -n "${DVB_NETWORK_DEMUX}" -a -n "${DVB_NETWORK_PID}" ]; then
+       dvbnet -a ${DVB_ADAPTER_ID} -n ${DVB_NETWORK_DEMUX} -p ${DVB_NETWORK_PID}
+fi
+
+# ATMARP protocol support, enabled if ATM_ADDR is defined (VCI.VPI)
+# useful for modems using the atm kernel module (e.g. Speedtouch)
+# and ISP using "RFC 1483 Routed VC MUX" (e.g. Free Degroupe)
+if [ -n "${ATM_ADDR}" -a -x /usr/sbin/atmarpd -a -x /usr/sbin/atmarp ]; then
+      pidof atmarpd >/dev/null 2>&1 || /usr/sbin/atmarpd -b -l syslog >/dev/null 2>&1
+      atmarp -c ${DEVICE} 2>/dev/null
+fi 
 
 # this isn't the same as the MAC in the configuration filename.  It is
 # available as a configuration option in the config file, forcing the kernel
@@ -94,9 +176,6 @@ fi
 if [ -n "${MTU}" ]; then
    ip link set dev ${DEVICE} mtu ${MTU}
 fi
-
-# is the device wireless? If so, configure wireless device specifics
-is_wireless_device ${DEVICE} && . ./ifup-wireless
 
 # slave device?
 if [ "${SLAVE}" = yes -a "${ISALIAS}" = no -a "${MASTER}" != "" ]; then
@@ -177,28 +256,149 @@ if [ -n "${BRIDGE}" ] && [ -x /usr/sbin/brctl ]; then
       exit 0
 fi
 		     
-if [ -n "${DYNCONFIG}" ] && [ -x /sbin/dhclient ]; then
-    if [[ "${PERSISTENT_DHCLIENT}" =  [yY1]* ]]; then
-       ONESHOT="";
+# exec ifplugd daemon at boot if supported
+if [ -n "${daemon}" -a "$MII_NOT_SUPPORTED" != "yes" ]; then
+    IFPLUGD_ARGS="${IFPLUGD_ARGS=-I -b}"
+    exec /sbin/ifplugd $IFPLUGD_ARGS -i $DEVICE
+fi
+
+
+BLURB="# temporary ifup addition"
+
+if [ -n "$DYNCONFIG" -a "XXX$DHCP_CLIENT" = "XXX" ];then
+    if [ -x /sbin/dhclient ];then
+	DHCP_CLIENT=/sbin/dhclient
+	# Remove any temporary references which were previously added to dhclient config
+	if [ -w /etc/dhclient-${DEVICE}.conf -a -x /sbin/dhclient ] ; then
+	    grep -v "$BLURB" /etc/dhclient-${DEVICE}.conf > /etc/dhclient-${DEVICE}.conf.ifupnew 2> /dev/null
+	    cat /etc/dhclient-${DEVICE}.conf.ifupnew > /etc/dhclient-${DEVICE}.conf
+	    rm -f /etc/dhclient-${DEVICE}.conf.ifupnew
+	fi
+    elif [ -x /sbin/dhcpcd ];then
+	DHCP_CLIENT=/sbin/dhcpcd
+    elif [ -x /sbin/pump ];then
+	DHCP_CLIENT=/sbin/pump
+    elif [ -x /sbin/dhcpxd ];then
+	DHCP_CLIENT=/sbin/dhcpxd
+    else 
+	echo $"Can't find a dhcp client"
+	mdv-network-event connection_failure ${DEVICE}
+	exit 1;
+    fi
+fi  
+
+if [ "$DHCP_HOSTNAME" ] && [ "$DOMAINNAME" ]
+then
+	DHCP_HOSTNAME=`echo $DHCP_HOSTNAME | sed -e "s/\.$DOMAINNAME//g"`
+fi
+
+DHCP_ARGS=
+if [ "XXX$DHCP_CLIENT" != "XXX" ];then
+case $(basename $DHCP_CLIENT) in
+    dhcpcd)
+    DHCP_ARGS="--waitip"
+    [ -n "${DHCP_HOSTNAME}" ] && DHCP_ARGS="${DHCP_ARGS} -h ${DHCP_HOSTNAME}"
+    [ "${PEERDNS}" = "no" ] && DHCP_ARGS="${DHCP_ARGS} -C resolv.conf"
+    [ "${PEERGATEWAY}" = "no" ] && DHCP_ARGS="${DHCP_ARGS} -G"
+    [ -n "${DHCP_TIMEOUT}" ] && DHCP_ARGS="${DHCP_ARGS} -t ${DHCP_TIMEOUT}"
+    [ "${NEEDHOSTNAME}" = "no" ] && DHCP_ARGS="${DHCP_ARGS} -C lookup-hostname"
+    if [ "${PEERNTPD}" = "yes" ]; then
+        DHCP_ARGS="${DHCP_ARGS} -o ntp_servers"
     else
-       ONESHOT="-1";
-    fi;
+        DHCP_ARGS="${DHCP_ARGS} -C ntp.conf -O ntp_servers"
+    fi
+    if [ "${PEERYP}" = "yes" ]; then
+        DHCP_ARGS="${DHCP_ARGS} -o nis_domain -o nis_servers"
+    else
+        DHCP_ARGS="${DHCP_ARGS} -C yp.conf -C ypbind -O nis_domain -O nis_servers"
+    fi
+
+    DHCP_ARGS="${DHCP_ARGS} ${DEVICE}"
+    PIDF=/var/run/dhcpcd-${DEVICE}.pid
+    if [[ -f ${PIDF} ]]; then
+        PID=$(cat ${PIDF})
+        if [[ -n ${PID} ]]; then
+            echo "dhcpcd is running, ifdown the interface first"
+            exit;
+        fi
+        /bin/rm -f ${PIDF}; #clear it
+    fi
+    ;;
+    pump)
+    [ -n "$DHCP_HOSTNAME" ] && DHCP_ARGS="-h $DHCP_HOSTNAME"
+    [ "${NEEDHOSTNAME}" = "yes" ] && DHCP_ARGS="$DHCP_ARGS --lookup-hostname"
+    [ "${PEERDNS}" = "no" ] && DHCP_ARGS="$DHCP_ARGS -d"
+    [ "${PEERGATEWAY}" = "no" ] && DHCP_ARGS="$DHCP_ARGS --no-gateway"
+    DHCP_ARGS="$DHCP_ARGS -i $DEVICE"
+    ;;
+    dhcpxd)
+    # dhcpxd don't support NEEDHOSTNAME, PEERGATEWAY
+    [ -n "$DHCP_HOSTNAME" ] && DHCP_ARGS="-H $HOSTNAME"
+    DHCP_ARGS="$DHCP_ARGS --wait $DEVICE"
+    ;;
+    dhclient)
+    if [[ "${PERSISTENT_DHCLIENT}" = [yY1]* ]]; then
+	ONESHOT=
+    else
+	ONESHOT="-1"
+    fi
     generate_config_file_name
     generate_lease_file_name
-    DHCLIENTARGS="${DHCLIENTARGS} -H ${DHCP_HOSTNAME:-${HOSTNAME%%.*}} ${ONESHOT} -q ${DHCLIENTCONF} -lf ${LEASEFILE} -pf /var/run/dhclient-${DEVICE}.pid"
+    DHCP_ARGS="$DHCP_ARGS $ONESHOT -q ${DHCLIENTCONF} -lf ${LEASEFILE} -pf /var/run/dhclient-${DEVICE}.pid $DEVICE"
+    if [ -n "$DHCP_HOSTNAME" ]; then
+	if [ ! -e /etc/dhclient-${DEVICE}.conf ] || ! grep -q "[^# ]*send *host-name" /etc/dhclient-${DEVICE}.conf; then
+	    echo "send host-name \"${DHCP_HOSTNAME}\";  $BLURB" >> /etc/dhclient-${DEVICE}.conf
+	fi
+    fi
+    if [ -n "$DHCP_TIMEOUT" ]; then
+	if [ ! -e /etc/dhclient-${DEVICE}.conf ] || ! grep -q "[^# ]*timeout" /etc/dhclient-${DEVICE}.conf; then
+	    echo "timeout $DHCP_TIMEOUT;  $BLURB" >> /etc/dhclient-${DEVICE}.conf
+	fi
+    fi	
+    ;;
+esac
+fi
+
+# Remove any temporary references which were previously added to dhclient config
+if [ -w /etc/dhclient-${DEVICE}.conf ] && [ -x /sbin/dhclient ] ; then
+   LC_ALL=C grep -v "# temporary MDK ifup addition" /etc/dhclient-${DEVICE}.conf > /etc/dhclient-${DEVICE}.conf.ifupnew 2> /dev/null
+   cat /etc/dhclient-${DEVICE}.conf.ifupnew > /etc/dhclient-${DEVICE}.conf
+   rm -f /etc/dhclient-${DEVICE}.conf.ifupnew
+fi
+		     
+if [ -n "${DYNCONFIG}" ]; then
     echo
     echo -n $"Determining IP information for ${DEVICE}..."
     if [[ "${PERSISTENT_DHCLIENT}" !=  [yY1]* ]] && check_link_down ${DEVICE}; then
 	echo $" failed; no link present.  Check cable?"
+	ip link set dev ${DEVICE} down >/dev/null 2>&1
+	mdv-network-event connection_failure ${DEVICE}
 	exit 1
     fi
 
     ethtool_set
 
-    if /sbin/dhclient ${DHCLIENTARGS} ${DEVICE} ; then
+    mdv-network-event dhcp_request ${DEVICE}
+    if $DHCP_CLIENT $DHCP_ARGS ; then
+        mdv-network-event dhcp_success ${DEVICE}
 	echo $" done."
     else
+        mdv-network-event dhcp_failure ${DEVICE}
+	# Associate a zeroconf IP address to an alias of the interface
+	if [ -x /sbin/zcip ]; then
+            mdv-network-event zcip_request ${DEVICE}
+	    if /sbin/zcip -s -i $DEVICE:${ZEROCONF_ALIAS_NUMER=9}; then
+                mdv-network-event zcip_success ${DEVICE}
+		echo $" done."
+		if [ -x /etc/init.d/tmdns ]; then
+		    /etc/init.d/tmdns reload > /dev/null 2>&1
+		fi
+		exit 0
+	    fi
+	fi
+        mdv-network-event zcip_failure ${DEVICE}
 	echo $" failed."
+	mdv-network-event connection_failure ${DEVICE}
 	exit 1
     fi
 # end dynamic device configuration
@@ -217,6 +417,7 @@ else
    
     if ! ip link set dev ${REALDEVICE} up ; then
 	net_log $"Failed to bring up ${DEVICE}."
+	mdv-network-event connection_failure ${DEVICE}
 	exit 1
     fi
 
@@ -236,6 +437,7 @@ else
        SRC=
     fi
     
+    if [ "${REALDEVICE}" != "lo" ]; then
     # set IP address(es)
     for idx in {0..256} ; do
 	if [ -z "${ipaddr[$idx]}" ]; then
@@ -246,6 +448,7 @@ else
             [ "${REALDEVICE}" != "lo" ] && [ "${arpcheck[$idx]}" != "no" ] && \
             if ! /sbin/arping -q -c 2 -w 3 -D -I ${REALDEVICE} ${ipaddr[$idx]} ; then
                 net_log $"Error, some other host already uses address ${ipaddr[$idx]}."
+                mdv-network-event connection_failure ${DEVICE}
                 exit 1
             fi
 
@@ -266,11 +469,18 @@ else
             /sbin/arping -q -U -c 1 -I ${REALDEVICE} ${ipaddr[$idx]} ) > /dev/null 2>&1 < /dev/null &
         fi
     done
+    fi
 
     # Set a default route.
     if [ "${DEFROUTE}" != "no" ] && [ -z "${GATEWAYDEV}" -o "${GATEWAYDEV}" = "${REALDEVICE}" ]; then
 	# set up default gateway. replace if one already exists
 	if [ -n "${GATEWAY}" ] && [ "$(ipcalc --network ${GATEWAY} ${netmask[0]} 2>/dev/null)" = "NETWORK=${NETWORK}" ]; then
+	    if [ -n "${ATM_ADDR}" -a -x /usr/sbin/atmarpd -a -x /usr/sbin/atmarp ]; then
+		ip link set dev ${REALDEVICE} down
+		ip link set dev ${REALDEVICE} up
+		sleep 2
+		atmarp -s ${GATEWAY} ${ATM_ADDR} null 2>/dev/null
+	    fi 
 	    ip route replace default ${METRIC:+metric $METRIC} \
 		via ${GATEWAY} ${WINDOW:+window $WINDOW} ${SRC} \
 		${GATEWAYDEV:+dev $GATEWAYDEV} ||
@@ -285,7 +495,7 @@ else
 fi
 
 # Add Zeroconf route.
-if [ -z "${NOZEROCONF}" -a "${ISALIAS}" = "no" -a "${REALDEVICE}" != "lo" ]; then
+if [ "${NOZEROCONF}" != "yes" -a "${ISALIAS}" = "no" -a "${REALDEVICE}" != "lo" ]; then
     ip route add 169.254.0.0/16 dev ${REALDEVICE} metric $((1000 + $(cat /sys/class/net/${REALDEVICE}/ifindex))) scope link
 fi
 

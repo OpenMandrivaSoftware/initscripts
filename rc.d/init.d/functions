@@ -5,6 +5,13 @@
 #
 
 TEXTDOMAIN=initscripts
+TEXTDOMAINDIR=/etc/locale
+LOCPATH=/etc/locale
+export TEXTDOMAINDIR LOCPATH
+
+TMP=/tmp
+TMPDIR=/tmp
+export TMP TMPDIR
 
 # Make sure umask is sane
 umask 022
@@ -44,13 +51,17 @@ systemctl_redirect () {
 	esac
 
         if [ -n "$SYSTEMCTL_IGNORE_DEPENDENCIES" ] ; then
-                options="--ignore-dependencies"
+                options="$options --ignore-dependencies"
+        fi
+        if [ -n "$SYSTEMCTL_NO_BLOCK" ] ; then
+                options="$options --no-block"
         fi
 
 	action "$s" /bin/systemctl $options $command "$prog.service"
 }
 
-# Get a sane screen width
+# Get a sane screen width, and default to 80 when exact info not available
+[ -z "${COLUMNS:-}" ] && COLUMNS=`stty -a 2>/dev/null | sed -n 's/.*columns \([0-9]*\);.*/\1/p'`
 [ -z "${COLUMNS:-}" ] && COLUMNS=80
 
 if [ -z "${CONSOLETYPE:-}" ]; then
@@ -61,11 +72,35 @@ if [ -z "${CONSOLETYPE:-}" ]; then
   fi
 fi
 
-if [ -z "${NOLOCALE:-}" ] && [ -z "${LANGSH_SOURCED:-}" ] && [ -f /etc/sysconfig/i18n -o -f /etc/locale.conf ] ; then
-  . /etc/profile.d/lang.sh 2>/dev/null
-  # avoid propagating LANGSH_SOURCED any further
-  unset LANGSH_SOURCED
-fi
+load_i18_settings() {
+    if [ -f /etc/sysconfig/i18n -o -f /etc/locale.conf ]; then
+        if [ -z "$NOLOCALE" ]; then
+            if [ -f /etc/locale.conf ]; then
+                . /etc/locale.conf
+            else
+                . /etc/sysconfig/i18n
+            fi
+            if [ "$CONSOLETYPE" != "pty" ]; then
+                [ "$CONSOLE_NOT_LOCALIZED" = "yes" ] && GP_LANG=C
+                [ "$CONSOLE_NOT_LOCALIZED" = "yes" ] && GP_LANGUAGE=C
+            fi
+            if [ -z "$GP_LANG" ]; then
+                [ -n "$LC_CTYPE" ] && GP_LANG=$LC_CTYPE || GP_LANG=$LC_MESSAGES
+            fi
+            if [ -z "$GP_LANGUAGE" ]; then
+                [ -n "$LANGUAGE" ] && GP_LANGUAGE=$LANGUAGE || GP_LANGUAGE=$GP_LANG
+            fi
+        fi
+    fi
+}
+
+reset_i18_settings() {
+    local CONSOLE_NOT_LOCALIZED=yes
+    LC_ALL=C
+    load_i18_settings
+}
+
+load_i18_settings
 
 # Read in our configuration
 if [ -z "${BOOTUP:-}" ]; then
@@ -75,7 +110,7 @@ if [ -z "${BOOTUP:-}" ]; then
     # This all seem confusing? Look in /etc/sysconfig/init,
     # or in /usr/share/doc/initscripts-*/sysconfig.txt
     BOOTUP=color
-    RES_COL=60
+    RES_COL=$((COLUMNS - 15))
     MOVE_TO_COL="echo -en \\033[${RES_COL}G"
     SETCOLOR_SUCCESS="echo -en \\033[1;32m"
     SETCOLOR_FAILURE="echo -en \\033[1;31m"
@@ -92,6 +127,59 @@ if [ -z "${BOOTUP:-}" ]; then
       SETCOLOR_NORMAL=
   fi
 fi
+
+gprintf() {
+        if [ -x /bin/gettext -a -n "$1" ]; then 
+	   if [ -n "$GP_LANG" ]; then
+	       local TEXT=`LC_ALL=$GP_LANG LANGUAGE=$GP_LANGUAGE gettext -e --domain=$TEXTDOMAIN -- "$1"`
+	   else
+	       local TEXT=`gettext -e --domain=$TEXTDOMAIN -- "$1"`
+	   fi
+	else
+	   local TEXT=$1
+	fi
+	[ "${1#*\\n}" ] || TEXT="$TEXT\n"
+
+	shift
+	printf -- "$TEXT" "$@"
+}	
+
+# Frontend to gprintf (support up to 4 %s in format string)
+# returns the message transleted in GPRINTF_MSG and
+# the resting parms in GPRINTF_REST
+# This simplifies a lot the call of functions like action,
+# now with i18n support
+gprintf_msg_rest() {
+case "$1" in
+       *%s*%s*%s*%s*)
+               GPRINTF_MSG=$(gprintf "$1" "$2" "$3" "$4" "$5")
+               shift 5;;
+       *%s*%s*%s*)
+               GPRINTF_MSG=$(gprintf "$1" "$2" "$3" "$4")
+               shift 4;;
+       *%s*%s*)
+               GPRINTF_MSG=$(gprintf "$1" "$2" "$3")
+               shift 3;;
+       *%s*)
+               GPRINTF_MSG=$(gprintf "$1" "$2")
+               shift 2;;
+       *)
+               GPRINTF_MSG=$(gprintf "$1")
+               shift;;
+esac
+GPRINTF_REST="$@"
+}
+
+# Check if $pid (could be plural) are running with
+# the same root as this script
+inmyroot() {
+	local i r
+
+	for i in $* ; do
+		[ "/proc/$i/root" -ef "/proc/$$/root" ] && r="$r $i"
+	done
+	echo "$r"
+}
 
 # Check if any of $pid (could be plural) are running
 checkpid() {
@@ -148,7 +236,7 @@ daemon() {
 	nicelevel=0
 	while [ "$1" != "${1##[-+]}" ]; do
 	  case $1 in
-	    '')    echo $"$0: Usage: daemon [+/-nicelevel] {program}"
+	    '')    gprintf "%s: Usage: daemon [+/-nicelevel] {program}\n" $0
 	           return 1;;
 	    --check)
 		   base=$2
@@ -184,7 +272,7 @@ daemon() {
 	    	   nice="nice -n $1"
 	           shift
 		   ;;
-	    *)     echo $"$0: Usage: daemon [+/-nicelevel] {program}"
+	    *)     gprintf "%s: Usage: daemon [+/-nicelevel] {program}\n" $0
 	           return 1;;
 	  esac
 	done
@@ -223,10 +311,11 @@ daemon() {
 	if [ -z "$user" ]; then
 	   $cgroup $nice /bin/bash -c "$corelimit >/dev/null 2>&1 ; $*"
 	else
-	   $cgroup $nice runuser -s /bin/bash $user -c "$corelimit >/dev/null 2>&1 ; $*"
+	   $cgroup $nice su -s /bin/bash - $user -c "$corelimit >/dev/null 2>&1 ; $*"
 	fi
-
-	[ "$?" -eq 0 ] && success $"$base startup" || failure $"$base startup"
+	rc=$?
+	[ $rc = 0 ] && success "%s startup" $base || failure "%s startup" $base
+	return $rc
 }
 
 # A function to stop a program.
@@ -236,7 +325,7 @@ killproc() {
 	RC=0; delay=3; try=0
 	# Test syntax.
 	if [ "$#" -eq 0 ]; then
-		echo $"Usage: killproc [-p pidfile] [ -d delay] {program} [-signal]"
+		gprintf "Usage: killproc [-p pidfile] [ -d delay] {program} [-signal]"
 		return 1
 	fi
 	if [ "$1" = "-p" ]; then
@@ -270,6 +359,9 @@ killproc() {
 		fi
 	fi
 
+	# Avoid killing processes not running in the same root
+	[ -n "$pid" ] && pid="`inmyroot $pid`"
+	
         # Kill it.
         if [ -n "$pid" ] ; then
                 [ "$BOOTUP" = "verbose" -a -z "${LSB:-}" ] && echo -n "$base "
@@ -293,14 +385,14 @@ killproc() {
 		        fi
 			checkpid $pid
 			RC=$?
-			[ "$RC" -eq 0 ] && failure $"$base shutdown" || success $"$base shutdown"
+			[ "$RC" -eq 0 ] && failure "%s shutdown" $base || success "%s shutdown" $base
 			RC=$((! $RC))
 		# use specified level only
 		else
 		        if checkpid $pid; then
 	                	kill $killlevel $pid >/dev/null 2>&1
 				RC=$?
-				[ "$RC" -eq 0 ] && success $"$base $killlevel" || failure $"$base $killlevel"
+				[ "$RC" -eq 0 ] && success "%s %s" $base $killlevel || failure "%s %s" $base $killlevel
 			elif [ -n "${LSB:-}" ]; then
 				RC=7 # Program is not running
 			fi
@@ -309,7 +401,7 @@ killproc() {
 		if [ -n "${LSB:-}" -a -n "$killlevel" ]; then
 			RC=7 # Program is not running
 		else
-			failure $"$base shutdown"
+			failure "%s shutdown" $base
 			RC=0
 		fi
 	fi
@@ -326,8 +418,8 @@ pidfileofproc() {
 	local pid
 
 	# Test syntax.
-	if [ "$#" = 0 ] ; then
-		echo $"Usage: pidfileofproc {program}"
+	if [ "$#" -eq 0 ] ; then
+		gprintf "Usage: pidfileofproc {program}\n"
 		return 1
 	fi
 
@@ -342,7 +434,7 @@ pidofproc() {
 
 	# Test syntax.
 	if [ "$#" = 0 ]; then
-		echo $"Usage: pidofproc [-p pidfile] {program}"
+		gprintf "Usage: pidofproc [-p pidfile] {program}\n"
 		return 1
 	fi
 	if [ "$1" = "-p" ]; then
@@ -368,7 +460,7 @@ status() {
 
 	# Test syntax.
 	if [ "$#" = 0 ] ; then
-		echo $"Usage: status [-p pidfile] {program}"
+		gprintf "Usage: status [-p pidfile] {program}\n"
 		return 1
 	fi
 	if [ "$1" = "-p" ]; then
@@ -393,21 +485,21 @@ status() {
 		pid="$(__pids_pidof "$1")"
 	fi
 	if [ -n "$pid" ]; then
-	        echo $"${base} (pid $pid) is running..."
+	        gprintf "%s (pid %s) is running...\n" ${base} "$pid"
 	        return 0
 	fi
 
 	case "$RC" in
 		0)
-			echo $"${base} (pid $pid) is running..."
+			gprintf "%s (pid %s) is running...\n" ${base} "$pid"
 			return 0
 			;;
 		1)
-	                echo $"${base} dead but pid file exists"
+	                gprintf "%s dead but pid file exists\n" ${base}
 	                return 1
 			;;
 		4)
-			echo $"${base} status unknown due to insufficient privileges."
+			gprintf "%s status unknown due to insufficient privileges." ${base}
 			return 4
 			;;
 	esac
@@ -416,10 +508,10 @@ status() {
 	fi
 	# See if /var/lock/subsys/${lock_file} exists
 	if [ -f /var/lock/subsys/${lock_file} ]; then
-		echo $"${base} dead but subsys locked"
+		gprintf "%s dead but subsys locked\n" ${base}
 		return 2
 	fi
-	echo $"${base} is stopped"
+	gprintf "%s is stopped\n" ${base}
 	return 3
 }
 
@@ -427,7 +519,7 @@ echo_success() {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
   [ "$BOOTUP" = "color" ] && $SETCOLOR_SUCCESS
-  echo -n $"  OK  "
+  gprintf "  OK  "
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo -n "]"
   echo -ne "\r"
@@ -438,7 +530,7 @@ echo_failure() {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
   [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
-  echo -n $"FAILED"
+  gprintf "FAILED"
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo -n "]"
   echo -ne "\r"
@@ -449,7 +541,7 @@ echo_passed() {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
   [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
-  echo -n $"PASSED"
+  gprintf "PASSED"
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo -n "]"
   echo -ne "\r"
@@ -460,7 +552,7 @@ echo_warning() {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
   [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
-  echo -n $"WARNING"
+  gprintf "WARNING"
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo -n "]"
   echo -ne "\r"
@@ -469,14 +561,15 @@ echo_warning() {
 
 # Inform the graphical boot of our current state
 update_boot_stage() {
-  if [ -x /bin/plymouth ]; then
-      /bin/plymouth --update="$1"
-  fi
-  return 0
+  rc_splash "$1"
 }
 
 # Log that something succeeded
 success() {
+  gprintf_msg_rest "$@"
+  #if [ -z "${IN_INITLOG:-}" ]; then
+  #   initlog $INITLOG_ARGS -n $0 -s "$GPRINTF_MSG" -e 1
+  #fi
   [ "$BOOTUP" != "verbose" -a -z "${LSB:-}" ] && echo_success
   return 0
 }
@@ -484,14 +577,21 @@ success() {
 # Log that something failed
 failure() {
   local rc=$?
+  gprintf_msg_rest "$@"
+  #if [ -z "${IN_INITLOG:-}" ]; then
+  #   initlog $INITLOG_ARGS -n $0 -s "$GPRINTF_MSG" -e 2
+  #fi
   [ "$BOOTUP" != "verbose" -a -z "${LSB:-}" ] && echo_failure
-  [ -x /bin/plymouth ] && /bin/plymouth --details
   return $rc
 }
 
 # Log that something passed, but may have had errors. Useful for fsck
 passed() {
   local rc=$?
+  gprintf_msg_rest "$@"
+  #if [ -z "${IN_INITLOG:-}" ]; then
+  #   initlog $INITLOG_ARGS -n $0 -s "$GPRINTF_MSG" -e 1
+  #fi
   [ "$BOOTUP" != "verbose" -a -z "${LSB:-}" ] && echo_passed
   return $rc
 }  
@@ -499,18 +599,21 @@ passed() {
 # Log a warning
 warning() {
   local rc=$?
+  gprintf_msg_rest "$@"
+  #if [ -z "${IN_INITLOG:-}" ]; then
+  #   initlog $INITLOG_ARGS -n $0 -s "$1" -e 1
+  #fi
   [ "$BOOTUP" != "verbose" -a -z "${LSB:-}" ] && echo_warning
   return $rc
 }  
 
 # Run some action. Log its output.
 action() {
-  local STRING rc
+  local rc
+  gprintf_msg_rest "$@"
+  echo -n "$GPRINTF_MSG "
 
-  STRING=$1
-  echo -n "$STRING "
-  shift
-  "$@" && success $"$STRING" || failure $"$STRING"
+  $GPRINTF_REST && success "$GPRINTF_MSG" || failure "$GPRINTF_MSG"
   rc=$?
   echo
   return $rc

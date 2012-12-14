@@ -1,0 +1,17 @@
+#!/bin/sh
+# Description: Launch Mandriva Configuration for the first time.
+# (c) Mandriva, Chmouel Boudjnah <chmouel@mandriva.com>
+# 	$Id$	
+
+FLO=/var/log/first_boot_log
+touch $FLO
+
+. /etc/rc.d/init.d/functions
+
+# If fail erase the temporary file
+trap 'rm -f /var/lock/TMP_1ST' 1 2 3 15
+
+[ -s $FLO ] || rm -f $FLO
+
+# Finish
+rm -f /var/lock/TMP_1ST

@@ -1,0 +1,18 @@
+#!/bin/sh
+
+TYPE=$1
+NAME=$2
+if [ -z "$TYPE" ] || [ -z "$NAME" ]; then
+   echo "usage: $0: <VPN type> <VPN name>"
+fi
+
+PID=/var/run/"$TYPE"-"$NAME".pid
+
+. /etc/init.d/functions
+if [ -e "$PID" ]; then
+    gprintf "Stopping VPN connection: "
+    killproc -p "$PID"
+    echo
+else
+    gprintf "Connection isn't started.\n"
+fi

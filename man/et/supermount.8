@@ -1,0 +1,36 @@
+.TH "SUPERMOUNT" "8" "Dets. 1999" "initscripts" "MandrakeSoft"
+.SH "NIMI"
+supermount \- Võimaluse Supermount sisse\- või väljalülitamine
+.SH "KOKKUVÕTE"
+.B supermount 
+[\fIVÕTI\fR]... <\fIdisable | enable\fR>
+.SH "KIRJELDUS"
+.PP 
+\fBsupermount\fR võimaldab administraatoril lubada või tühistada võimaluse \fBsupermount\fR, mida pakuvad viimased mandrake kernelid. See võimalus haagib ja lahutab vajaduse korral automaatselt eemaldatavaid andmekandjaid. Skript lihtsalt lisab või eemaldab võtme \fBsupermount\fR faili \fI/etc/fstab\fR kirjetes. Ilma võtmeta \fB\-i\fR näidatakse muudetud faili standardväljundis.
+.PP 
+\fBsupermount\fR tuleb käivitada ühega järgmistest argumentidest:
+.TP 
+\fBenable\fR lubab selle vastavatel ketastel (cdrom\- ja flopikettad),
+.TP 
+\fBdisable\fR tühistab selle kõigil ketastel.
+.SH "VÕTMED"
+.TP 
+\fB\-f=FAIL\fR, \fB\-\-file=FAIL\fR Osutab alternatiivsele failile, kust võtta muudatused. Vaikimisi on selleks \fI/etc/fstab\fR.
+.TP 
+\fB\-i\fR, \fB\-\-infile\fR Muudatused tehakse otse faili \fI/etc/fstab\fR või FAILI, mis on määratud võtmega \fB\-f\fR, mitte aga ei väljastata standardväljundisse.
+.TP 
+\fB\-h\fR, \fB\-\-help\fR, \fB\-?\fR näitab abiteadet.
+.SH "VAATA KA"
+\fIfstab\fR(5), \fImount\fR(8), \fIumount\fR(8),
+.SH "AUTOR"
+Chmouel Boudjnah  \- chmouel@mandrakesoft.com
+.br 
+
+.br 
+Tõlge eesti keelde 2002: Marek Laane
+.br 
+bald@online.ee
+.SH "AUTORIÕIGUS"
+Copyright \(co 1999/2000 MandrakeSoft.
+.br 
+See on vaba tarkvara; kopeerimistingimusi vaadake lähtetekstist. Sellega ei kaasne MINGIT garantiid, isegi mitte KESKMISE/TAVALISE KVALITEEDI või TEATUD EESMÄRGIKS SOBIVUSE garantiid.

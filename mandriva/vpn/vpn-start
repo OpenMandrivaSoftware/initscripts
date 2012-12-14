@@ -1,0 +1,36 @@
+#!/bin/sh
+
+TYPE=$1
+NAME=$2
+shift 2
+if [ -z "$TYPE" ] || [ -z "$NAME" ]; then
+   echo "usage: $0: <VPN type> <VPN name> [parameters]"
+fi
+
+DIR=/etc/sysconfig/network-scripts/vpn.d/"$TYPE"
+CONFIG="$DIR"/"$NAME".conf
+PID=/var/run/"$TYPE"-"$NAME".pid
+
+. /etc/init.d/functions
+
+if pidofproc "$PID" >/dev/null; then
+    gprintf "Connection is already started, please stop it first.\n"
+    exit 1
+fi
+
+case $TYPE in
+     pptp)
+        gprintf "No implementation for connection type $TYPE yet.\n";
+        exit 1
+     ;;
+     openvpn)
+        action "Starting VPN connection: " openvpn --user openvpn --group openvpn --daemon --writepid $PID --config $CONFIG --cd $DIR $*
+     ;;
+     vpnc)
+        action "Starting VPN connection: " /usr/sbin/vpnc $CONFIG --pid-file $PID $*
+     ;;
+     *)
+        gprintf "Connection type $TYPE is not supported.\n";
+        exit 1
+     ;;
+esac

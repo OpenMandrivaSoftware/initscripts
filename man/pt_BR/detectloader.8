@@ -1,0 +1,17 @@
+.TH DETECTAR CARREGADOR 8 "Abril de 2000" "initscripts" "MandrakeSoft"
+.SH NOME
+detectar carregador \- Detectar qual o tipo de carregador que você tem no seu disco.
+.SH DESCRIÇÃO
+.PP
+\fBdetectloader\fR detecta o tipo do carregador de inicialização que você tem no seu 
+\fBMBR\fR. Ele encontra o primeiro disco através do /proc/partitions e olha através do serial mágico que carregador de inicialização você tem instalado.
+.SH LIMITAÇÃO
+.PP
+Suporta somente grub, lilo, e yaboot (os carregadores que nós usamos para \fBLinux
+Mandrake\fR). São bem-vindos patches para outros carregadores de inicialização.
+.SH COPYRIGHT
+Copyright \(co 1999/2000 MandrakeSoft.
+.PP
+Este é um software livre; olhe o fonte para condições de cópia. Não há NENHUMA
+garantia; nem mesmo para CORMECIALIZAÇÃO ou APTIDÃO PARA UM PROPÓSITO
+PARTICULAR.

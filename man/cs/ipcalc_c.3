@@ -1,0 +1,197 @@
+.TH "ipcalc.c" 3 "30 Dub 2001" "initscripts" \" -*- nroff -*-
+.ad l
+.nh
+.SH NÁZEV
+ipcalc.c \- obsahuje užitečné funkce pro manipulaci s IP adresami. 
+.SH SYNAPSE
+.br
+.PP
+\fC#include <ctype.h>\fR
+.br
+\fC#include <popt.h>\fR
+.br
+\fC#include <stdio.h>\fR
+.br
+\fC#include <stdlib.h>\fR
+.br
+\fC#include <string.h>\fR
+.br
+\fC#include <sys/socket.h>\fR
+.br
+\fC#include <netinet/in.h>\fR
+.br
+\fC#include <arpa/inet.h>\fR
+.br
+\fC#include <netdb.h>\fR
+.br
+
+.SS Definice
+
+.in +1c
+.ti -1c
+.RI "#define \fBIPBITS\fR  (sizeof(unsigned long int) * 8)"
+.br
+.RI "\fIpočet bitů v IP adrese.\fR"
+.ti -1c
+.RI "#define \fBIPBYTES\fR  (sizeof(unsigned long int))"
+.br
+.RI "\fIpočet bajtů v IP adrese.\fR"
+.in -1c
+.SS Funkce
+
+.in +1c
+.ti -1c
+.RI "unsigned long int \fBprefix2mask\fR (int prefix)"
+.br
+.RI "\fIvytvoří síťovou masku ze zadaného počtu bitů.\fR"
+.ti -1c
+.RI "int \fBmask2prefix\fR (unsigned long int mask)"
+.br
+.RI "\fIvypočítá počet bitů zamaskovaných síťovou maskou.\fR"
+.ti -1c
+.RI "unsigned long int \fBdefault_netmask\fR (unsigned long int addr)"
+.br
+.RI "\fIvrací výchozí (kanonickou) síťovou masku asociovanou se zadanou IP adresou.\fR"
+.ti -1c
+.RI "unsigned long int \fBcalc_broadcast\fR (unsigned long int addr, int prefix)"
+.br
+.RI "\fIvypočítá adresu pro všesměrové vysílání ze zadané IP adresy a délky prefixu.\fR"
+.ti -1c
+.RI "unsigned long int \fBcalc_network\fR (unsigned long int addr, int prefix)"
+.br
+.RI "\fIvypočítá síťovou adresu pro zadanou adresu a předponu (prefix).\fR"
+.ti -1c
+.RI "const char* \fBget_hostname\fR (unsigned long int addr)"
+.br
+.RI "\fIvrací název počítače asociovaný se zadanou IP adresou.\fR"
+.ti -1c
+.RI "int \fBmain\fR (int argc, const char **argv)"
+.br
+.RI "\fIprogram pro zabalení (wrapper) funkcí ipcalc.\fR"
+.in -1c
+.SH PODROBNÝ POPIS
+.PP 
+obsahuje užitečné funkce pro manipulaci s IP adresami.
+.PP
+.PP
+Knihovna  ipcalc obsahuje užitečné funkce a rozhraní pro příkazovou řádku pro manipulaci s IP adresami, a počítání různých aspektů IP adresy/síťové masky/síťové adresy/prefixu/atd.
+.PP
+Funkcionalita je dosažitelná z rozhraní knihovny různými jazyky; rozhraní knihovny je zde zdokumentováno. Chcete-li použít funkce ipcalc ze shellu, přečtěte si manuálovou stránku ipcalc(1).
+.PP
+Při předávání parametrů různým funkcím si všimněte, zda-li vyžadují síťové pořadí bajtů nebo pořadí bajtů počítače. Většina funkcí vyžaduje pořadí bajtů podle počítače, a vrací pořadí bajtů podle počítače, jsou zde ale výjimky.
+.PP
+.SH DOKUMENTACE FUNKCÍ
+.PP 
+.SS unsigned long int calc_broadcast (unsigned long int addr, int prefix)
+.PP
+vypočítá adresu pro všesměrové vysílání ze zadané IP adresy a délky prefixu.
+.PP
+.PP
+ 
+.PP
+\fBParametry: \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+IP adresa v síťovém pořadí bajtů. 
+.TP
+\fB\fIprefix\fR\fR
+délka prefixu.
+.PP
+\fBVrací: \fR
+.in +1c
+vypočítaná adresa pro všesměrové vysílání pro síť, v síťovém pořadí bajtů. 
+.SS unsigned long int calc_network (unsigned long int addr, int prefix)
+.PP
+vypočítá adresu sítě ze zadané adresy a prefixu.
+.PP
+.PP
+ 
+.PP
+\fBParametry: \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+IP adresa, v síťovém pořadí bajtů 
+.TP
+\fB\fIprefix\fR\fR
+síťový prefix 
+.PP
+\fBVrací: \fR
+.in +1c
+základní adresa sítě, se kterou je asociovaná addr, v síťovém pořadí bajtů. 
+.SS unsigned long int default_netmask (unsigned long int addr)
+.PP
+vrací výchozí (kanonickou) síťovou masku asociovanou se zadanou IP adresou.
+.PP
+.PP
+Když byl Internet původně vytvořen, byly různé rozmezí IP adres odděleny do tří síťových tříd: A, B a C. Tato funkce vrátí síťovou masku, která je asociovaná se zadanou IP adresou, a která určuje, do které třídy adresa spadá.
+.PP
+\fBParametry: \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+IP adresa v síťovém pořadí bajtů. 
+.PP
+\fBVrací: \fR
+.in +1c
+síťovou masku v síťovém pořadí bajtů. 
+.SS const char * get_hostname (unsigned long int addr)
+.PP
+vrací název počítače asociovaný se zadanou IP adresou.
+.PP
+.PP
+ 
+.PP
+\fBParametry: \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+IP adresa, pro kterou se má nalézt název počítače, v síťovém pořadí bajtů
+.PP
+\fBVrací: \fR
+.in +1c
+název počítače nebo hodnota NULL, pokud nelze název určit. Název počítače je uložen ve statickém bufferu, který může být kdykoli zničen; volající by měl data zkopírovat, pokud potřebuje permanentní uložení. 
+.SS main (int argc, const char ** argv)
+.PP
+program pro zabalení (wrapper) funkcí ipcalc.
+.PP
+.PP
+Toto je program pro zabalení (wrapper) funkcí, které obsahuje knihovna ipcalc. Tuto knihovnu lze použít ze skriptů shellu nebo přímo z příkazové řádky.
+.PP
+Více informací lze nalézt v manuálových stránkách ipcalc(1). 
+.SS int mask2prefix (unsigned long int mask)
+.PP
+vypočítá počet bitů maskovaný síťovou maskou.
+.PP
+.PP
+Tato funkce vypočítá signifikantní bity v IP adrese se zadanou síťovou maskou. Viz také \fBprefix2mask\fR.
+.PP
+\fBParametry: \fR
+.in +1c
+.TP
+\fB\fImask\fR\fR
+síťová maska, zadaná jako unsigned long integer v síťovém pořadí bajtů. 
+.PP
+\fBVrací: \fR
+.in +1c
+počet signifikantních bitů. 
+.SS unsigned long int prefix2mask (int bits)
+.PP
+vytvoří síťovou masku ze zadaného počtu bitů.
+.PP
+.PP
+Tato funkce převede délku prefixu na síťovou masku. Poté, co začal být používán routing CIDR (Classless Internet Domain Routing), je stále více IP adres zadáváno ve formátu adresa/prefix (např. 192.168.2.3/24, s odpovídající síťovou maskou 255.255.255.0). Tuto funkci použijete, pokud potřebujete zjistit, jaká síťová maska odpovídá části s prefixem adresy. Viz také \fBmask2prefix\fR.
+.PP
+\fBParametry: \fR
+.in +1c
+.TP
+\fB\fIprefix\fR\fR
+počet bitů, pro které se má maska vytvořit. 
+.PP
+\fBVrací: \fR
+.in +1c
+síťovou masku, v síťovém pořadí bajtů. 
+.SH AUTOR
+.PP 
+Automaticky generováno programem Doxygen pro zaváděcí skripty ze zdrojového kódu.

@@ -1,0 +1,44 @@
+#!/bin/sh
+# (c) Mandriva, Chmouel Boudjnah <chmouel@mandriva.com>
+# $Id$
+# description: launch modules specified in /etc/modules inspired by a
+# Debian idea.
+
+MODULES=/etc/modprobe.preload
+MODULES_D=$MODULES.d
+
+# hardcoded from /etc/init.d/functions (to be faster and dash compliant)
+strstr() {
+  [ "${1#*$2*}" = "$1" ] && return 1
+  return 0
+}
+
+cmdline=$(cat /proc/cmdline)
+if strstr "$cmdline" modprobedebug; then
+    MODPROBE_OPTIONS="-v"
+    export MODPROBE_OPTIONS
+    gprintf "Pre-loading modules\n"
+fi
+
+echo_modules() {
+    # Loop over every line
+    while read module args
+    do
+	case "$module" in
+	    \#*|"") continue ;;
+	esac
+	echo $module
+    done
+}
+
+TOLOAD=""
+for f in $MODULES $MODULES_D/*; do
+    [ -f $f ] || continue
+    NEW=$( (cat $f; echo) | echo_modules )
+    [ -n "$NEW" ] && TOLOAD="$TOLOAD $NEW"
+done
+
+[ -z "$TOLOAD" ] && exit 0
+
+logger -t $0 "Loading modules:"$TOLOAD
+/sbin/modprobe -a $TOLOAD 2>/dev/null

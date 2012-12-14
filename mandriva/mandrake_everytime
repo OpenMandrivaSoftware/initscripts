@@ -1,0 +1,147 @@
+#!/bin/bash
+# Description: Launch diverses Mandriva Scripts on boot.
+# (c) Mandriva, Chmouel Boudjnah <chmouel@mandriva.com>
+# 	$Id$	
+
+. /etc/rc.d/init.d/functions
+
+[ -e /etc/sysconfig/system ] && . /etc/sysconfig/system
+
+#Clean up Tmp.
+if [ -n "$CLEAN_TMP" ] && [ "$CLEAN_TMP" -ge 1 ];then
+    ( 
+	TEXPR="! -ctime -$CLEAN_TMP"
+	echo -n "Clean-up /tmp directory: "
+	cd /tmp && \
+	    find . -xdev -depth \
+	    $TEXPR \
+	    ! -name . \
+	    ! \( -name lost+found -uid 0 \) \
+	    ! \( -name quota.user -uid 0 \) \
+	    ! \( -name quota.group -uid 0 \) \
+	    -print | while read i; do [ -d "$i" ] && rmdir "$i" 2>/dev/null ; rm -f "$i" 2>/dev/null; done
+       	if [ "$?" = "0" ];then echo_success;else echo_failure;fi
+	echo
+    )
+fi
+
+
+# Globetrotter support:
+#if [ -x /usr/share/harddrake/hwprofile ]; then
+#    action "Starting %s: " Globetrotter /usr/share/harddrake/hwprofile
+#else
+	# Call netprofile as it must be called before /etc/rc.d/rc to be able to change
+	# the active services.
+#	if [ -x /sbin/set-netprofile ]; then
+#	    INITLOG_ARGS="" action "Starting %s: " netprofile /sbin/set-netprofile
+#	fi
+#fi
+
+# check if /etc/resolv.conf exist - if not creates it
+#[ -f /etc/resolv.conf ] || {
+#               touch /etc/resolv.conf
+#}
+
+# start module build and hardware detection tools
+DKMS_TOOL=/usr/sbin/dkms_autoinstaller
+if [ "$DKMS_ONBOOT" != "no" ] && [ -x $DKMS_TOOL ]; then
+    $DKMS_TOOL start
+fi
+
+HARDDRAKE_TOOL=/usr/share/harddrake/service_harddrake
+if [ "$HARDDRAKE_ONBOOT" != "no" ] && [ -x $HARDDRAKE_TOOL ]; then
+    gprintf "Checking for new hardware"
+    SYSTEMCTL_NO_BLOCK=1 $HARDDRAKE_TOOL 2>/dev/null
+    RETVAL=$?
+    if [ "$RETVAL" -eq 0 ]; then
+        action "" /bin/true
+    else
+        action "" /bin/false
+    fi
+fi
+
+# /etc/issue and /etc/issue.net stuff
+
+[ -f /etc/sysconfig/system ] && source /etc/sysconfig/system
+[ -f /etc/sysconfig/msec ] && source /etc/sysconfig/msec
+[ -z "$SECURE_LEVEL" ] && SECURE_LEVEL=3
+[ -f /etc/sysconfig/init ] && source /etc/sysconfig/init
+if [ $SECURE_LEVEL -lt 4 ]; then
+    [ -z "$REWRITEISSUE" ] && REWRITEISSUE=rewrite
+    if [ $SECURE_LEVEL -lt 3 ]; then
+	[ -z "$REWRITEISSUENET" ] && REWRITEISSUENET=rewrite
+    fi
+fi
+
+SYSTEM=${SYSTEM="Mandriva"}
+R=$(cat /etc/release)
+
+if [ -r /etc/sysconfig/oem ]; then
+    . /etc/sysconfig/oem
+
+    if [ -n "$SYSTEM" -a -n "$PRODUCT" ]; then
+	R="$SYSTEM $PRODUCT for `uname -m`"
+    fi
+fi
+
+# Source functions
+. /etc/init.d/functions
+
+if [ "$REWRITEISSUE" = "rewrite" -a -f /etc/release ]; then
+
+    arch=$(uname -m)
+    a="a"
+    case "_$arch" in
+	    _a*) a="an";;
+	    _i*) a="an";;
+    esac
+    
+    NUMPROC=`egrep -c "^cpu[0-9]+" /proc/stat`
+    if [ "$NUMPROC" -gt "1" ]; then
+        SMP="$NUMPROC-processor "
+	[ "$NUMPROC" = "2" ] && \
+	SMP="Dual-processor "
+        if [ "$NUMPROC" = "8" -o "$NUMPROC" = "11" ]; then
+            a="an"
+	else
+	    a="a"
+        fi
+    fi
+
+    # This will overwrite /etc/issue at every boot.  So, make any changes you
+    # want to make to /etc/issue here or you will lose them when you reboot.
+
+    if [ -x /usr/bin/linux_logo ]; then
+	/usr/bin/linux_logo -n -f | sed -e 's|\\|\\\\|g' > /etc/issue
+	echo "" >> /etc/issue
+    else
+	> /etc/issue
+    fi
+    echo "$R" >> /etc/issue
+    echo "Kernel $(uname -r) on $a $SMP$(uname -m) / \l" >> /etc/issue
+    
+    if [ "$REWRITEISSUENET" = "rewrite" ]; then
+	echo "Welcome to ${HOST}" > /etc/issue.net
+	echo "$R" >> /etc/issue.net
+	echo "Kernel $(uname -r) on $a $SMP$(uname -m)" >> /etc/issue.net
+    else
+	NAME="$SYSTEM"
+	gprintf "Welcome to %s\n" "$NAME" > /etc/issue.net
+	echo "-------------------------" >> /etc/issue.net
+    fi
+else
+    if [ -f /etc/security/msec/issue.$SECURE_LEVEL ]; then
+	cat /etc/security/msec/issue.$SECURE_LEVEL > /etc/issue
+    elif [ -f /etc/security/msec/issue ]; then
+	cat /etc/security/msec/issue > /etc/issue
+    else
+	rm -f /etc/issue
+    fi
+    if [ -f /etc/security/msec/issue.net.$SECURE_LEVEL ]; then
+	cat /etc/security/msec/issue.net.$SECURE_LEVEL > /etc/issue.net
+    elif [ -f /etc/security/msec/issue.net ]; then
+	cat /etc/security/msec/issue.net > /etc/issue.net
+    else
+	rm -f /etc/issue.net
+    fi
+fi

@@ -1,0 +1,23 @@
+.TH NETREPORT 1 "Red Hat, Inc." "RH" \" -*- nroff -*-
+.SH NOM
+netreport \- requête d'information des changements d'interface réseau
+.SH SYNOPSIS
+.B netreport
+\fI[\fP-r\fI]\fP
+.SH DESCRIPTION
+.B netreport
+indique aux scripts de gestion du réseau d'envoyer un signal SIGIO
+au processus qui a appelé netreport quand le statut de toute interface
+réseau est modifié.
+.SH OPTIONS
+.TP
+.B -r
+Retire la requête courante (si elle existe) du processus appelant.
+.PP
+.SH NOTES
+Si un programme n'appelle pas netreport avec l'option
+.B -r
+avant de se terminer, et qu'un autre processus est créé avec le même
+PID avant qu'un changement ne se produise au niveau du statut de
+l'interface, il est possible que le nouveau processus reçoive un
+signal SIGIO non désiré.

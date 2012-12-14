@@ -1,0 +1,108 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: initscripts VERSION\n"
+"POT-Creation-Date: 2006-05-04 07:41+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. all the letters that are a "yes" reply to yes/no questions
+msgid "yY"
+msgstr ""
+
+#. all the letters that are a "no" reply to yes/no questions
+msgid "nN"
+msgstr ""
+
+#. all the letters that are a "continue" reply to yes/no/continue questions
+msgid "cC"
+msgstr ""
+
+#. The 3 strings "OK", "FAILED" and "PASSED" must be of the same width
+msgid "  OK  "
+msgstr ""
+
+#. The 3 strings "OK", "FAILED" and "PASSED" must be of the same width
+msgid "FAILED"
+msgstr ""
+
+#. The 3 strings "OK", "FAILED" and "PASSED" must be of the same width
+msgid "PASSED"
+msgstr ""
+
+msgid "Starting %s: "
+msgstr ""
+
+msgid "Shutting down %s: "
+msgstr ""
+
+msgid "Stopping %s: "
+msgstr ""
+
+msgid "Reloading %s: "
+msgstr ""
+
+msgid "Starting %s services: "
+msgstr ""
+
+msgid "Reloading %s services: "
+msgstr ""
+
+msgid "Shutting down %s services: "
+msgstr ""
+
+msgid "Starting %s daemon: "
+msgstr ""
+
+msgid "Shutting down %s daemon: "
+msgstr ""
+
+msgid "Starting %s monitoring: "
+msgstr ""
+
+msgid "Shutting down %s montoring: "
+msgstr ""
+
+msgid "Unmounting %s filesystems: "
+msgstr ""
+
+msgid "Unmounting %s filesystems (retry): "
+msgstr ""
+
+msgid "Mounting %s filesystems: "
+msgstr ""
+
+msgid "Configured %s mountpoints: \n"
+msgstr ""
+
+msgid "Active %s mountpoints: \n"
+msgstr ""
+
+msgid "%s is running.\n"
+msgstr ""
+
+msgid "%s is not running.\n"
+msgstr ""
+
+msgid "%s is *not* running...\n"
+msgstr ""
+
+msgid "%s is stopped\n"
+msgstr ""
+
+msgid "Booting the system... Press Esc for verbose mode."
+msgstr ""
+
+msgid "Shutting down the system... Press Esc for verbose mode."
+msgstr ""
+
+msgid "Restarting the system... Press Esc for verbose mode."
+msgstr ""

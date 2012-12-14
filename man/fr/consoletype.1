@@ -1,0 +1,28 @@
+.TH CONSOLETYPE 1 "Red Hat, Inc" "RH" \" -*- nroff -*-
+.SH NOM
+.B consoletype
+\- affiche le type de la console reliée à l'entrée standard
+.SH SYNOPSIS
+.B consoletype
+.SH DESCRIPTION
+.B consoletype
+affiche le type de la console reliée à l'entrée standard. Il affiche
+.I vt
+si la console est un terminal virtuel (périphérique /dev/tty* ou
+/dev/console si ce n'est pas une console série),
+.I serial
+si l'entrée standard est un terminal série (/dev/console ou /dev/ttyS*) et
+.I pty
+si l'entrée standard est un pseudo-terminal.
+.SH VALEUR DE RETOUR
+.B consoletype
+renvoie
+.TP
+.I 0
+si c'est un terminal virtuel
+.TP
+.I 1
+si c'est une console série
+.TP
+.I 2
+si c'est un pseudo terminal.

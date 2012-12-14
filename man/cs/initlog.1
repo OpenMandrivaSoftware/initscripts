@@ -1,0 +1,63 @@
+.TH initlog 8 "Ned Led 24 1999"
+.SH NÁZEV
+initlog \- zaznamenává zprávy a události do systémového záznamníku
+.SH SYNAPSE
+.B initlog
+[\-cefnpqrs] [\-\-cmd=ARG] [\-\-event=ARG] [\-\-facility=ARG]
+[\-\-name=ARG] [\-\-priority=ARG] [\-\-run=ARG] [\-\-string=ARG]
+.SH POPIS
+Program \fBinitlog\fR zaznamenává zprávy a události do systémového záznamníku. Je navržen zejména pro použití se startovacími skripty (initscripts). Standardně čte program initlog svá nastavení ze souboru s nastavením
+.I /etc/initlog.conf
+a každý řádek začínající na 
+.I #
+je považován za komentář. Dále jsou rozpoznávány následující direktivy pro nastavení:
+.TP
+.I facility <logging facility>
+Nastaví výchozí zařízení pro záznamy
+.TP
+.I priority <logging priority>
+Nastaví výchozí prioritu záznamu
+.TP
+.I ignore <regexp>
+Zprávy odpovídající regulárnímu výrazu nebudou zaznamenány.
+.TP
+Chování programu initlog lze také nastavit pomocí voleb z příkazového řádku.
+
+.SS VOLBY
+.TP
+.I "\-c, \-\-cmd=[program]"
+Spustí zadaný program a zaznamená cokoli z jeho standardního nebo chybového výstupu.
+.TP
+.I "\-e, \-\-event=[číslo]"
+Zaznamená, že se stala zadaná událost. Používá se spolu s volbou \fB\-\-name\fR. Zadaná událost může být:
+.nf
+ \fB1\fR  akce úspěšně skončila
+ \fB2\fR  akce selhala
+ \fB3\fR  akce byla zrušena požadavkem od uživatele
+ \fB4\fR  akce selhala díky selhání akce, na níž je závislá
+.TP
+.I "\-f, \-\-facility=[zařízení]"
+
+Zaznamená na zadané zařízení pro záznamy. Výchozí je hodnota \fBdaemon\fR (viz syslog(3)).
+.TP
+.I "\-n, \-\-name=[řetězec]"
+Zaznamená událost jako zadaným řetězcem, například "inetd".
+.TP
+.I "\-p, \-\-priority=[priorita]"
+Zaznamená záznam se zadanou prioritou. Výchozí priorita je \fBnotice\fR (viz syslog(3)).
+.TP
+.I "\-q"
+Nevypisovat výstup programu, vypsat pouze v případě, že program skončí s nenulovým návratovým kódem.
+.TP
+.I "\-r, \-\-run=[program]"
+Spustí zadaný program, s otevřeným popisovačem souboru, takže bude program moci předávat své příkazy zpět programu initlog.
+.TP
+.I "\-s, \-\-string=[řetězec]"
+Zapíše zadaný řetězec do záznamníku.
+.TP
+.I "\-\-conf=[soubor]"
+Určí alternativní soubor s nastavením.
+.SH SOUBORY
+.I /etc/initlog.conf
+.SH "VIZ TAKÉ"
+syslog(3), logger(1)

@@ -1,0 +1,203 @@
+.\" .ad l
+.\" .nh
+.TH "ipcalc.c" "3" "30. aprill 2001" "initscripts" "\""
+.SH "NIMI"
+ipcalc.c \- pakub utiliite IP aadressidega manipuleerimiseks.
+.SH "KOKKUVÕTE"
+.br 
+.PP 
+\fC#include <ctype.h>\fR
+.br 
+\fC#include <popt.h>\fR
+.br 
+\fC#include <stdio.h>\fR
+.br 
+\fC#include <stdlib.h>\fR
+.br 
+\fC#include <string.h>\fR
+.br 
+\fC#include <sys/socket.h>\fR
+.br 
+\fC#include <netinet/in.h>\fR
+.br 
+\fC#include <arpa/inet.h>\fR
+.br 
+\fC#include <netdb.h>\fR
+.br 
+
+.SS Määratlused
+
+.in +1c
+.ti \-1c
+.RI "#define \fBIPBITS\fR  (sizeof(unsigned long int) * 8)"
+.br 
+.RI "\fIbittide arv IP aadressis.\fR"
+.ti \-1c
+.RI "#define \fBIPBYTES\fR  (sizeof(unsigned long int))"
+.br 
+.RI "\fIbaitide arv IP aadressis.\fR"
+.in \-1c
+.SS Funktsioonid
+
+.in +1c
+.ti \-1c
+.RI "unsigned long int \fBprefix2mask\fR (int prefix)"
+.br 
+.RI "\fIloob määratud bittide arvuga võrgumaski.\fR"
+.ti \-1c
+.RI "int \fBmask2prefix\fR (unsigned long int mask)"
+.br 
+.RI "\fIarvutab võrgumaskiga varjatud bittide arvu.\fR"
+.ti \-1c
+.RI "unsigned long int \fBdefault_netmask\fR (unsigned long int addr)"
+.br 
+.RI "\fIhangib määratud IP aadressiga seotud vaike\-(kanoonilise) võrgumaski.\fR"
+.ti \-1c
+.RI "unsigned long int \fBcalc_broadcast\fR (unsigned long int addr, int prefix)"
+.br 
+.RI "\fIarvutab antud IP aadressi ja prefiksi pikkuse põhjal üldleviaadressi.\fR"
+.ti \-1c
+.RI "unsigned long int \fBcalc_network\fR (unsigned long int addr, int prefix)"
+.br 
+.RI "\fIarvutab määratud aadressi ja prefiksi põhjal võrguaadressi.\fR"
+.ti \-1c
+.RI "const char* \fBget_hostname\fR (unsigned long int addr)"
+.br 
+.RI "\fIhangib määratud IP aadressiga seonduva masinanime.\fR"
+.ti \-1c
+.RI "int \fBmain\fR (int argc, const char **argv)"
+.br 
+.RI "\fIwrapper program for ipcalc functions.\fR"
+.in \-1c
+.SH "ÜKSIKASJALIK KIRJELDUS"
+.PP 
+pakub utiliite IP aadressidega manipuleerimiseks.
+.PP 
+.PP 
+ ipcalc pakub utiliite ja käsurea\-kasutajaliidese IP aadressidega manipuleerimiseks ning ip aadressi/võrgumaski/võrguaadressi/prefiksi/jne mitmesuguste aspektide arvutamiseks.
+.PP 
+Functionality can be accessed from other languages from the library interface, documented here. To use ipcalc from the shell, read the ipcalc(1) manual page.
+.PP 
+Parameetrite lähetamisel erinevatele funktsioonidele pange tähele, kas nad kasutavad masina baidijärjekorda või võrgu baidijärjekorda. Enamik kasutab masina baidijärjekorda ja ka hangib sellesama, kuid on ka erandeid.
+.PP 
+.SH "FUNKTSIOONIDE DOKUMENTATSIOON"
+.PP 
+.SS unsigned long int calc_broadcast (unsigned long int addr, int prefix)
+.PP 
+arvutab antud IP aadressi ja prefiksi pikkuse puhul üldleviaadressi.
+.PP 
+.PP 
+ 
+.PP 
+\fBParameetrid: \fR
+.in +1c
+.TP 
+\fB\fIaddr\fR\fR
+IP aadress võrgu baidijärjekorras. 
+.TP 
+\fB\fIprefix\fR\fR
+prefiksi pikkus.
+.PP 
+\fBHangib: \fR
+.in +1c
+arvutatud üldleviaadressi võrgule võrgu baidijärjekorras. 
+.SS unsigned long int calc_network (unsigned long int addr, int prefix)
+.PP 
+arvutab määratud aadressi ja prefiksi puhul võrguaadressi.
+.PP 
+.PP 
+ 
+.PP 
+\fBParameetrid: \fR
+.in +1c
+.TP 
+\fB\fIaddr\fR\fR
+IP aadress võrgu baidijärjekorras 
+.TP 
+\fB\fIprefix\fR\fR
+võrguprefiks 
+.PP 
+\fBHangib: \fR
+.in +1c
+võrgu baasaadressi, millega addr on seotud, võrgu baidijärjekorras. 
+.SS unsigned long int default_netmask (unsigned long int addr)
+.PP 
+hangib määratud IP aadressiga seotud vaike\-(kanoonilise) võrgumaski.
+.PP 
+.PP 
+ Kui Internet algselt loodi, jagati erinevad IP aadressid kolme võrguklassi: A, B ja C. See funktsioon hangib võrgumaski, mis on seotud määratud IP aadressiga, defineerides, millisesse võrguklassi see langeb.
+.PP 
+\fBParameetrid: \fR
+.in +1c
+.TP 
+\fB\fIaddr\fR\fR
+IP aadress võrgu baidijärjekorras. 
+.PP 
+\fBHangib: \fR
+.in +1c
+võrgumaski võrgu baidijärjekorras. 
+.SS const char * get_hostname (unsigned long int addr)
+.PP 
+hangib määratud IP aadressiga seotud masinanime.
+.PP 
+.PP 
+ 
+.PP 
+\fBParameetrid: \fR
+.in +1c
+.TP 
+\fB\fIaddr\fR\fR
+IP aadress masinanime leidmiseks võrgu baidijärjekorras
+.PP 
+\fBHangib: \fR
+.in +1c
+masinanime või NULLi, kui seda ei saa määrata. Masinanimi on salvestatud staatilisse puhvrisse, mis võib suvalisel ajal haihtuda, väljakutsuja peab kopeerima andmed, kui ta vajab püsisalvestust. 
+.SS main (int argc, const char ** argv)
+.PP 
+ipcalc funktsioonide rakendus.
+.PP 
+.PP 
+ See on rakendus funktsioonidele, mida pakub ipcalc\-i teek. Seda võib kasutada shelliskriptidelt või otse käsurealt.
+.PP 
+Täpsemat infot vaadake palun manuaalileheküljelt ipcalc(1). 
+.SS int mask2prefix (unsigned long int mask)
+.PP 
+arvutab võrgumaskiga varjatud bittide arvu.
+.PP 
+.PP 
+ This function calculates the significant bits in an IP address as specified by a netmask. Vaata ka \fBprefix2mask\fR.
+.PP 
+\fBParameetrid: \fR
+.in +1c
+.TP 
+\fB\fImask\fR\fR
+on võrgumask, specified as an unsigned long integer in network byte order. 
+.PP 
+\fBHangib: \fR
+.in +1c
+the number of significant bits. 
+.SS unsigned long int prefix2mask (int bits)
+.PP 
+loob määratud bittide arvust võrgumaski.
+.PP 
+.PP 
+ This function converts a prefix length to a netmask. As CIDR (classless internet domain internet domain routing) has taken off, more an more IP addresses are being specified in the format address/prefix (i.e. 192.168.2.3/24, with a corresponding netmask 255.255.255.0). If you need to see what netmask corresponds to the prefix part of the address, this is the function. See also \fBmask2prefix\fR.
+.PP 
+\fBParameetrid: \fR
+.in +1c
+.TP 
+\fB\fIprefix\fR\fR
+on bittide arv, millest mask luua. 
+.PP 
+\fBHangib: \fR
+.in +1c
+võrgumaski võrgu baidijärjekorras. 
+.SH "AUTOR"
+.PP 
+Genereeritud automaatselt Doxygeni abil initscripts\-ile lähtekoodist.
+.br 
+
+.br 
+Tõlge eesti keelde: Marek Laane 2002
+.br 
+bald@online.ee

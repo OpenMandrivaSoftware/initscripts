@@ -1,0 +1,27 @@
+.TH TIPO DE CONSOLE 1 "Red Hat, Inc" "RH" \" -*- nroff -*-
+.SH NOME
+.B tipo de console
+\- tipo de impressão do console conectado a saída padrão
+.SH SINPOSIAS
+.B tipo de console
+.SH DESCRIÇÃO
+.B tipo de console
+imprime o tipo de console conectado a sáda padrão. Ele imprime
+.I vt
+se o console for um terminal virtual (/dev/tty* ou dispositivo /dev/console se não for um console serial),
+.I serial
+se a saída padrão for um console serial (/dev/console ou /dev/ttyS*) e
+.I pty
+se a saída padrão for um terminal pseudo.
+.SH VALOR DO RETORNO
+.B tipo de console
+retorna
+.TP
+.I 0
+se for terminal virtual
+.TP
+.I 1
+se for console serial
+.TP
+.I 2
+se for um terminal pseudo.

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ -r /etc/sysconfig/network-scripts/ifcfg-$1 ]; then
+    . /etc/sysconfig/network-scripts/ifcfg-$1
+    if [ -n "$VPN_TYPE" ] && [ -n "$VPN_NAME" ]; then
+        /usr/sbin/vpn-stop $VPN_TYPE $VPN_NAME
+    fi
+fi

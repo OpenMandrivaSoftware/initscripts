@@ -1,0 +1,12 @@
+.TH DOEXEC 1 "Red Hat Software" "RHS" \" -*- nroff -*-
+.SH NOM
+doexec \- lance un exécutable avec un argv[0] arbitraire
+.SH SYNOPSIS
+.B doexec
+\fI/chemin/vers/exécutable\fP \fIargv[0]\fP [\fIargv[1-n]\fP]
+.SH DESCRIPTION
+.B doexec
+lance simplement l'exécutable avec la liste d'arguments argv indiquée. Cela vous permet
+de spécifier un argv[0] différent du nom de l'exécutable.
+.SH OPTIONS
+Toutes les options sont passées dans la liste argv de l'exécutable choisi.

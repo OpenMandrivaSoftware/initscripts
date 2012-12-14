@@ -1,0 +1,18 @@
+.TH "NETREPORT" "1" "Red Hat, Inc." "RH" "\""
+.SH "NIMI"
+netreport \- nõuab märguannet võrguliidese muudatustest
+.SH "KOKKUVÕTE"
+.B netreport
+\fI[\fP\-r\fI]\fP
+.SH "KIRJELDUS"
+.B netreport
+käsib võrguhaldusskriptidel saata signaali SIGIO protsessile, mis kannab nime netreport, kui mõne võrguliidese staatus peaks muutuma.
+.SH "VÕTMED"
+.TP 
+.B \-r
+Eemaldab praeguse nõude (kui see on) protsessi väljakutsumiseks.
+.PP 
+.SH "MÄRKUSED"
+Kui rakendus ei kutsu netreporti välja võtmega
+.B \-r
+enne väljumist ning luuakse teine protsess sama PID\-iga enne seda, kui liidese staatuses mingi muutus toimub, on võimalik, et uus protsess saab üsna segase SIGIO.

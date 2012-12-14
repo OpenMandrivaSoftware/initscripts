@@ -19,12 +19,9 @@ source_config
 /etc/sysconfig/network-scripts/ifdown-routes ${REALDEVICE} ${DEVNAME}
 
 if [ "$PEERDNS" != "no" -o -n "$RESOLV_MODS" -a "$RESOLV_MODS" != "no" ]; then
-    if [ -f /etc/resolv.conf.save ]; then
-	change_resolv_conf /etc/resolv.conf.save
-	rm -f /etc/resolv.conf.save
-    fi
+    clear_resolv_conf
     if [ "${DEVICETYPE}" = "ppp" -o "${DEVICETYPE}" = "ippp" ]; then
-        if [ -f /etc/ppp/peers/$DEVICE ] ; then
+        if [ -f /etc/ppp/peers/$DEVICE -a "$TYPE" != "ADSL" ] ; then
 	    rm -f /etc/ppp/peers/$DEVICE
         fi
     fi
@@ -53,6 +50,12 @@ fi
 
 # Notify programs that have requested notification
 do_netreport
+
+mdv-network-event interface_down ${DEVICE}
+
+if [ -d /etc/sysconfig/network-scripts/ifdown.d -a -x /usr/bin/run-parts ]; then
+    /usr/bin/run-parts --arg ${DEVICE} /etc/sysconfig/network-scripts/ifdown.d
+fi
 
 if [ -x /sbin/ifdown-local ]; then
     /sbin/ifdown-local ${DEVICE}

@@ -3,7 +3,7 @@
 # anything else => new style bootup without ANSI colors or positioning
 BOOTUP=serial
 # column to start "[  OK  ]" label in 
-RES_COL=60
+RES_COL=65
 # terminal sequence to move to that column. You could change this
 # to something like "tput hpa ${RES_COL}" if your terminal supports it
 MOVE_TO_COL=

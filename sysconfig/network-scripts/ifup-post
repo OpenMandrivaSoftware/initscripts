@@ -3,7 +3,7 @@
 cd /etc/sysconfig/network-scripts
 . ./network-functions
 
-[ -f ../network ] && . ../network
+[ -f /etc/sysconfig/network ] && . /etc/sysconfig/network
 
 unset REALDEVICE
 if [ "$1" = --realdevice ] ; then
@@ -22,8 +22,12 @@ fi
 
 /etc/sysconfig/network-scripts/ifup-routes ${REALDEVICE} ${DEVNAME}
 
+# metric setting (skip for alias interfaces)
+if [ "${REALDEVICE}" = "${DEVICE}" ] && [ -n "$METRIC" ] && type -p ifmetric > /dev/null 2>&1; then
+    ifmetric ${DEVICE} $METRIC
+fi
 
-if [ "$PEERDNS" != "no" ] ||[ -n "$RESOLV_MODS" -a "$RESOLV_MODS" != "no" ]; then
+if [ "$PEERDNS" != "no" -a "$BOOTPROTO" != "dhcp" ] ||[ -n "$RESOLV_MODS" -a "$RESOLV_MODS" != "no" ]; then
   [ -n "$MS_DNS1" ] && DNS1=$MS_DNS1
   [ -n "$MS_DNS2" ] && DNS2=$MS_DNS2
   if [ -n "$DNS1" ] && ! grep -q "^nameserver $DNS1" /etc/resolv.conf &&
@@ -100,6 +104,12 @@ fi
 
 # Notify programs that have requested notification
 do_netreport
+
+mdv-network-event interface_up ${DEVICE}
+
+if [ -d /etc/sysconfig/network-scripts/ifup.d -a -x /usr/bin/run-parts ]; then
+    /usr/bin/run-parts --arg ${DEVICE} /etc/sysconfig/network-scripts/ifup.d
+fi
 
 if [ -x /sbin/ifup-local ]; then
     /sbin/ifup-local ${DEVICE}

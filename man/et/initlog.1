@@ -1,0 +1,72 @@
+.TH "initlog" "8" "Pühapäev, 24. jaanuar 1999" "" ""
+.SH "NIMI"
+initlog \- logib sõnumid ja sündmused süsteemilogijasse
+.SH "KOKKUVÕTE"
+.B initlog
+[\-cefnpqrs] [\-\-cmd=ARG] [\-\-event=ARG] [\-\-facility=ARG]
+[\-\-name=ARG] [\-\-priority=ARG] [\-\-run=ARG] [\-\-string=ARG]
+.SH "KIRJELDUS"
+\fBinitlog\fR logib sõnumid ja sündmused süsteemilogijasse.
+See on peamiselt mõeldud kasutamiseks initsialiseerimisskriptide puhul. initlog
+loeb vaikimisi oma sätete määramiseks seadetefaili
+.I /etc/initlog.conf.
+Iga rida, millele eelneb 
+.I #,
+on kommentaar ning tunnustatakse järgmisi korraldusi:
+.TP 
+.I facility <logimisseade>
+Määrab logimise vaikeseadme
+.TP 
+.I priority <logimisprioriteet>
+Määrab logimise vaikeprioriteedi
+.TP 
+.I ignore <regulaaravaldis>
+Regulaaravaldisele vastavaid sõnumeid ei logita.
+.TP 
+initlogi käitumist saab häälestada ka käsureavõtmetega.
+
+.SS VÕTMED
+.TP 
+.I "\-c, \-\-cmd=[program]"
+Käivitab määratud rakenduse, logides suvalise väljundi
+standardväljundisse või standardveateatesse.
+.TP 
+.I "\-e, \-\-event=[number]"
+Logib määratud sündmuse juhtumise. Kasutatakse koos võtmega
+\fB\-\-name\fR. Praegu on määratud sündmused:
+.nf 
+ \fB1\fR  tegevus teostati edukalt
+ \fB2\fR  tegevus ebaõnnestus
+ \fB3\fR  tegevus katkestati kasutaja nõudel
+ \fB4\fR  tegevus ebaõnnestus sõltuva tegevuse ebaõnnestumise tõttu
+.TP 
+.I "\-f, \-\-facility=[seade]"
+
+Logib määratud syslogi seadmesse. Vaikimisi
+on \fBdaemon\fR (see syslog(3)).
+.TP 
+.I "\-n, \-\-name=[string]"
+Logib sündmuse määratud stringi all, näiteks 
+"inetd".
+.TP 
+.I "\-p, \-\-priority=[priority]"
+Logib määratud syslogi prioriteedi. Vaikimis
+on \fBnotice\fR (see syslog(3)).
+.TP 
+.I "\-q"
+Ei näita rakenduse väljundit, kui see just ei välju
+non\-zero väljumiskoodiga.
+.TP 
+.I "\-r, \-\-run=[program]"
+Käivitab määratud rakenduse avatud failideskriptoriga,
+nii et rakenus saab käsud saata tagasi initlog\-ile.
+.TP 
+.I "\-s, \-\-string=[string]"
+Logib määratud stringi logijasse.
+.TP 
+.I "\-\-conf=[file]"
+Määrab alternatiivse seadetefaili.
+.SH "FAILID"
+.I /etc/initlog.conf
+.SH "VAATA KA"
+syslog(3), logger(1)

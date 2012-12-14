@@ -1,0 +1,57 @@
+#!/bin/bash
+
+. /etc/init.d/functions
+
+cd /etc/sysconfig/network-scripts
+. ./network-functions
+
+CONFIG=${1}
+
+source_config
+
+[ -z "$CELLULAR_CID" ] && CELLULAR_CID=1
+[ "${DEBUG}" = "yes" ] && CHATDBG="-v"
+
+CHATSCRIPT=`mktemp /tmp/chatXXXXXX`
+cat > $CHATSCRIPT <<EOF
+ABORT ERROR
+TIMEOUT 5
+"" ATZ
+OK "AT_OWANCALL=${CELLULAR_CID},0,0"
+OK ""
+EOF
+
+if ! /usr/sbin/chat ${CHATDBG} -s -f ${CHATSCRIPT} < $MODEMPORT > $MODEMPORT; then
+    echo $"Disconnect script failed (HSO)"
+fi
+
+# ask status (it also waits for device state to be cleaner)
+# do not fail if status querying fail
+cat > $CHATSCRIPT <<EOF
+ABORT ERROR
+TIMEOUT 2
+"" ATZ
+OK "AT_OWANDATA=${CELLULAR_CID}"
+EOF
+/usr/sbin/chat ${CHATDBG} -s -f ${CHATSCRIPT} < $MODEMPORT > $MODEMPORT
+
+rm -f $CHATSCRIPT
+
+ip addr flush dev ${DEVICE} 2>/dev/null
+ip link set dev ${DEVICE} down 2>/dev/null
+retcode=$?
+
+# wait up to 5 seconds for device to actually come down...
+waited=0
+while ! check_device_down ${DEVICE} && [ "$waited" -lt 50 ] ; do
+    usleep 10000
+    waited=$(($waited+1))
+done
+
+if [ "$retcode" = 0 ] ; then
+    /etc/sysconfig/network-scripts/ifdown-post $CONFIG
+    # do NOT use $? because ifdown should return whether or not
+    # the interface went down.
+fi
+
+exit $retcode

@@ -1,0 +1,22 @@
+.TH NETREPORT 1 "Red Hat, Inc." "RH" \" -*- nroff -*-
+.SH NÁZEV
+netreport \- vyžádání upozornění na změny v nastavení síťových rozhraní
+.SH SYNAPSE
+.B netreport
+\fI[\fP-r\fI]\fP
+.SH POPIS
+.B netreport
+požádá skripty pro správu sítě o zaslání signálu SIGIO procesu,
+který zavolal program netreport, jakmile se vyskytnou jakékoli změny
+ve stavu síťových rozhraní.
+.SH VOLBY
+.TP
+.B -r
+Odstraní aktuální žádost (pokud existuje) pro volající proces.
+.PP
+.SH POZNÁMKY
+Pokud program nevolá program netreport s volbou
+.B -r
+před tím, než se ukončí, a je vytvořen jiný proces se shodným číslem PID
+před výskytem změny v síťovém rozhraní, je možné, že tento nový proces
+nesprávně obdrží signál SIGIO.

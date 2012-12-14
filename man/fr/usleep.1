@@ -1,0 +1,25 @@
+.TH USLEEP 1 "Red Hat, Inc" \" -*- nroff -*-
+.SH NOM
+usleep \- dormir pendant un certain nombre de microsecondes
+.SH SYNOPSIS
+.B usleep
+[\fInombre\fP]
+.SH DESCRIPTION
+.B usleep
+dormir pendant un certain nombre de microsecondes.  La valeur par défaut est 1.
+.SH OPTIONS
+\fI--usage\fP
+Affiche un bref message sur le bon usage.
+.TP
+\fI--help, -?\fP
+Affiche l'aide.
+.TP
+\fI-v, --version\fP
+Affiche la version.
+.SH BOGUES
+Probablement peu précis sur de nombreuses machines à l'échelle de la microseconde.
+Ne compte qu'à une précision de -4 ou peut-être -5 (NdT : puissances de 10?).
+.SH AUTEUR
+Donald Barnes <djb@redhat.com>
+.br
+Erik Troan <ewt@redhat.com>

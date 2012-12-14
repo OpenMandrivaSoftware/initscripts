@@ -81,12 +81,17 @@ Generic options:
       
     SRM=true on alpha only indicates the SRM 1900 epoch is in
       effect; otherwise the normal Unix epoch is assumed.
-    
+
+/etc/sysconfig/desktop:
+
+  DESKTOP=GNOME|KDE
+     This determines the default desktop for new users.
+  DISPLAYMANAGER=GNOME|KDE|KDM|XDM
+     This determines display manager started by /etc/X11/prefdm,
+     independent of the desktop.
+   
 /etc/sysconfig/init:
 
-  ACTIVE_CONSOLES=<devices>
-     A list of devices to start gettys on on boot. This supports
-     shell-style globs.
   BOOTUP=<some bootup mode>
      BOOTUP=graphical means use X Windows graphical boot up
      BOOTUP=color means colorized text mode boot display. 
@@ -127,6 +132,17 @@ Generic options:
      Set to 'yes' to enable automatic swapon of all partitions with
      the proper swap magic. This allows setting up swap without editing
      /etc/fstab.
+  REWRITEISSUE=rewrite|remove
+  REWRITEISSUENET=rewrite|remove
+     Force /etc/issue or /etc/issue.net to be rewritten or removed
+     at boot. Default depends on security level. To leave it alone
+     specify 'remove' and create /etc/security/msec/issue and/or
+     /etc/security/msec/issue.net
+
+  Mandriva specific values:
+
+  BRLTTY=yes|no
+       Set to 'no' to disable automatic startup of brltty if it is present
 
   obsoleted values from earlier releases:
 
@@ -161,6 +177,18 @@ Generic options:
     on SPARC only, sun means a sun keyboard is attached on /dev/kbd,
     pc means a PS/2 keyboard is on ps/2 port.
   
+/etc/sysconfig/system:
+
+	CLEAN_TMP=[number]
+	   If you want to clean up your /tmp dir specify a number how long
+	   it will take.
+
+	SECURE_TMP=yes|no
+	   Set to 'yes' to have TMPDIR and TMP set to a secure temporary directory
+
+	LIBSAFE=yes|no
+	   Set to 'yes' to run servers under libsafe (broken?)
+
 /etc/sysconfig/mouse:
 
   MOUSETYPE=microsoft|mouseman|mousesystems|ps/2|msbm|logibm|atibm|
@@ -182,6 +210,7 @@ Generic options:
   IPXAUTOFRAME=on|off (again, not yes|no)
   IPXINTERNALNETNUM=<netnum>
   IPXINTERNALNODENUM=<nodenum>
+  IFPLUGD_ARGS="<args to pass to ifplugd>" default to "-w -b"
   NOZEROCONF=
     Set this to not set a route for dynamic link-local addresses.
 
@@ -190,8 +219,20 @@ Generic options:
   NETWORKDELAY=<delay in seconds>
     Delay in seconds after all network interfaces are initialized.  Useful if
     network has spanning tree running and must wait for STP convergence.
-    Default: 0 (no delay)
+    Default: 20
 
+  DEFAULT_LINK_DETECTION_DELAY=<time in seconds>
+    The default value used for link detection delay if the interface
+    configuration file does not specify it. After this time an interface with
+    missing link beat is considered to be unplugged.
+    Default: 2
+
+  MIN_LINK_DETECTION_DELAY=<delay in seconds>
+    Force minimum link detection delay on all interfaces.
+    Default: 0
+
+  CRDA_DOMAIN=<domain>
+    Default wireless regulatory domain (man 8 crda).
 
   IPV6FORWARDING=yes|no
     Enable or disable global forwarding of incoming IPv6 packets 
@@ -433,14 +474,14 @@ Generic options:
 
 /etc/vconsole.conf:
 
-  SYSFONT= Console font. Fonts are found in /lib/kbd/consolefonts.
+  SYSFONT= Console font. Fonts are found in /usr/lib/kbd/consolefonts.
 
   UNIMAP= Unicode font map. Most fonts have these built-in. Font maps
-  can be found in /lib/kbd/unimaps. These are applied via setfont's
+  can be found in /usr/lib/kbd/unimaps. These are applied via setfont's
   -u option.
  
   SYSFONTACM= Console map. These are applied via setfont's -m option,
-  and are found in /lib/kbd/consoletrans.
+  and are found in /usr/lib/kbd/consoletrans.
  
   The above are used to set up the keyboard at boot time. For more
   information, see vconsole.conf(5).
@@ -508,25 +549,16 @@ Files in /etc/sysconfig/network-scripts/
       Most important for PPP.  Only used in front ends.
     DEVICE=<name of physical device (except dynamically-allocated PPP
       devices where it is the "logical name")>
-    IPADDRn=
-    PREFIXn=
-      Network prefix.  It is used for all configurations except aliases
-      and ippp devices.  It takes precedence over NETMASK when both
-      PREFIX and NETMASK are set.
-    NETMASKn=
-      Subnet mask; just useful for aliases and ippp devices.  For all other
-      configurations, use PREFIX instead.
 
-    The "n" is expected to be consecutive positive integers starting from 0.
-    It can be omitted if there is only one address being configured.
-
+    IPADDR=
+    NETMASK=
     GATEWAY=
     METRIC=
       Metric for the default route using GATEWAY
     ONBOOT=yes|no (not valid for alias devices; use ONPARENT)
     HOTPLUG=yes|no
     USERCTL=yes|no
-    BOOTPROTO=none|bootp|dhcp
+    BOOTPROTO=none|bootp|dhcp|static
       'bootp' or 'dhcp' cause a DHCP client to run on the device. Any other
       value causes any static configuration in the file to be applied.
     VLAN=yes|no
@@ -545,6 +577,11 @@ Files in /etc/sysconfig/network-scripts/
       configured IP address.
     SRCADDR=
       use the specified source address for outgoing packets
+    MII_NOT_SUPPORTED=
+      if set don't try to use ifstatus to detect if the link is up.
+    METRIC=
+      if set, assign the route associated with this interface to this
+    metric using ifmetric.
     HWADDR=
       ethernet hardware address for this device
     MACADDR=
@@ -589,6 +626,50 @@ Files in /etc/sysconfig/network-scripts/
 
   For dynamic addressing (BOOTPROTO=dhcp) only DEVICE needs to
   be set; all the rest will be determined by the boot protocol.
+
+  You can specify which dhcp client to use with the DHCP_CLIENT, if
+  the DHCP_CLIENT is not specified we trying to launch in order :
+      /sbin/dhclient
+      /sbin/dhcpcd
+      /sbin/pump
+      /sbin/dhcpxd
+  if you have a preferred client define the DHCP_CLIENT variable. 
+  When you use dhclient (which it is the default on a Mandrake-Linux
+  system) you can specify a timeout of waiting the answer from server,
+  the option is called DHCP_TIMEOUT the default is 60 sec.
+
+  Mandriva specific items for DHCP clients:
+    DHCP_HOSTNAME=
+      This option specifies the hostname to request to the DHCP server.
+      The name  may  or  may not  be qualified with the local domain name.
+    NEEDHOSTNAME=yes|no
+      If set to 'yes', set hostname to the host-name option supplied
+      by the DHCP server.
+    PEERDNS=yes|no
+      If set to 'no', do not modify /etc/resolv.conf
+    PEERGATEWAY=yes|no
+      If set to 'no', do not add the gateway provided by DHCP server
+      in the routing table (does not work with dhcpxd).
+    PEERYP=yes|no
+      If set to 'yes', update /etc/yp.conf (specific to dhcpcd)
+    PEERNTPD=yes|no
+      If set to 'yes', update /etc/ntp.conf (specific to dhcpcd)
+    DOMAINNAME=
+      If specified and DHCP_HOSTNAME is not empty, strip DOMAINNAME
+      value in DHCP_HOSTNAME.
+      If empty and dhcpd is used, set the host domainname to the
+      domainname option supplied by DHCP server.
+    DHCP_TIMEOUT=
+      If not empty, this option specifies (in  seconds) for how long
+      the DHCP client will try to get an IP address after its initial request
+      (specific to dhclient and dhcpcd, default is 60 seconds)
+
+  Mandriva items:
+    LINK_DETECTION_DELAY=<time in seconds>
+      Delay after which a lack of link beat will be considered to
+      result from an unplugged interface, rather than just down
+    CRDA_DOMAIN=<domain>
+      Wireless regulatory domain for this connection (man 8 crda).
 
   Base items being deprecated:
     NETWORK=<will be calculated automatically with ipcalc>
@@ -687,11 +768,11 @@ Files in /etc/sysconfig/network-scripts/
 
    IPv6-only option to enable DHCPv6 client:
       DHCPV6C=yes|no
-      This will enable the DHCPv6 features of dhclient to be run for the interface.
-      See man dhclient(8) and dhclient.conf(5).
+      This will enable the DHCPv6 client, dhcp6c, to be run for the interface.
+      See man dhcp6c(8) and dhcp6c.conf(5).
       DHCPV6C_OPTIONS=...
       This will pass given arguments to the DHCPv6 client.  For example,
-      "-S" option will request network information (e.g., DNS addresses)
+      "-I" option will request network information (e.g., DNS addresses)
       only, not IPv6 addresses.
 
   Ethernet-only items:
@@ -730,7 +811,8 @@ Files in /etc/sysconfig/network-scripts/
 
   Ethernet 802.1q VLAN items:
      DEVICE=eth0.42
-       Initscripts use the device name for VLAN devices.
+       Initscripts use DEV_PLUS_VID_NO_PAD naming mode for VLAN
+       devices. 
                Example: eth0.42 for vlan 42 on device eth0.
        Valid VLAN ID range is 0-4095. Most ethernet switches reserve
        VLAN ID 1 to be used as management VLAN; starting from VLAN
@@ -997,6 +1079,12 @@ Files in /etc/sysconfig/network-scripts/
 
   Bring up aliases for a device.
 
+/etc/sysconfig/network-scripts/ifdhcpc-done
+
+  Called by dhcpcd once dhcp configuration is complete; sets
+  up /etc/resolv.conf from the version dhcpcd dropped in
+  /etc/dhcpc/resolv.conf
+
 /etc/sysconfig/network-scripts/route-<interface-name>
 
   Contains lines that specify additional routes that should be added when the
@@ -1022,8 +1110,8 @@ Files in /etc/sysconfig/network-scripts/
   gateway, there is no need to specify a device.
 
   Note: The ifup-routes script also supports an older syntax designed to be
-  used directly as an argument to "/sbin/ip route add".
-  If no "ADDRESSn" lines are found the following will still
+  used directly as an argument to "/sbin/ip route add". This syntax is
+  deprecated, but if no "ADDRESSn" lines are found the following will still
   work:
   
   192.168.2.0/24 dev ppp0

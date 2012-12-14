@@ -1,0 +1,10 @@
+[Unit]
+Description=Set default kernel console loglevel
+DefaultDependencies=no
+Conflicts=shutdown.target
+
+[Service]
+EnvironmentFile=/etc/sysconfig/init
+ExecStart=/bin/dmesg -n $LOGLEVEL
+Type=oneshot
+RemainAfterExit=yes

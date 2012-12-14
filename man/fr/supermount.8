@@ -1,0 +1,42 @@
+.TH SUPERMOUNT 8 "Dec 1999" "initscripts" "MandrakeSoft"
+.SH NOM
+supermount \- Active ou désactive la fonction supermount
+.SH SYNOPSIS
+.B supermount 
+[\fIOPTION\fR]... <\fIdisable | enable\fR>
+.SH DESCRIPTION
+.PP
+\fBsupermount\fR permet à l'administrateur système d'activer ou non la
+fonction \fBsupermount\fR des noyaux Mandrake récents.  Cette fonction
+monte et démonte automatiquement les médias amovibles quand nécessaire.
+Le script ajoute ou retire l'option \fBsupermount\fR des entrées du
+fichier \fI/etc/fstab\fR.  Sans l'option \fB\-i\fR le fichier modifié
+est affiché sur la sortie standard.
+.PP 
+\fBsupermount\fR doit être lancé avec l'un des arguments suivants :
+.TP
+\fBenable\fR pour activer la fonction \fBsupermount\fR sur les lecteurs qui
+l'autorisent (lecteurs de cédéroms et de disquettes),
+.TP
+\fBdisable\fR pour désactiver la fonction \fBsupermount\fR sur tous les
+lecteurs.
+.SH OPTIONS
+.TP
+\fB\-f=FICHIER\fR, \fB\-\-file=FICHIER\fR Indique le fichier où effectuer
+les modifications. Le fichier par défaut est \fI/etc/fstab\fR.
+.TP
+\fB\-i\fR, \fB\-\-infile\fR Les modifications sont effectuées directement
+dans \fI/etc/fstab\fR our le FICHIER spécifié par l'option \fB\-f\fR, au
+lieu d'être affichées vers la sortie standard.
+.TP
+\fB\-h\fR, \fB\-\-help\fR, \fB\-?\fR affiche un court message d'aide.
+.SH "VOIR AUSSI"
+\fIfstab\fR(5), \fImount\fR(8), \fIumount\fR(8),
+.SH AUTEUR
+Chmouel Boudjnah  - chmouel@mandrakesoft.com
+.SH COPYRIGHT
+Copyright \(co 1999/2000 MandrakeSoft.
+.br
+This is free software; see the source for copying conditions.  There
+is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.

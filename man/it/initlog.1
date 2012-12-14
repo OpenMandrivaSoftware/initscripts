@@ -1,0 +1,70 @@
+.TH initlog 8 "Sun Jan 24 1999"
+.SH NOME
+initlog \- registra ("logga") i messaggi e gli eventi sul logger di sistema
+.SH SINTASSI
+.B initlog
+[\-cefnpqrs] [\-\-cmd=ARG] [\-\-event=ARG] [\-\-facility=ARG]
+[\-\-name=ARG] [\-\-priority=ARG] [\-\-run=ARG] [\-\-string=ARG]
+.SH DESCRIZIONE
+\fBinitlog\fR registra i messaggi e gli eventi sul logger di sistema.
+É concepito principalmente per l'uso negli init scripts.
+initlog legge un file di configurazione
+.I /etc/initlog.conf
+di default, per determinare le sue impostazioni. Ogni linea 
+preceduta da un 
+.I #
+è un commento, e vengono riconosciute le seguenti direttive di configurazione:
+.TP
+.I facility <servizio di logging>
+Imposta il servizio di logging predefinito
+.TP
+.I priority <priorità di logging>
+Imposta la priorità di logging di predefinita
+.TP
+.I ignore <espressione regolare>
+I messaggi che coincidono con l'espressione regolare non saranno registrati.
+.TP
+Il comportamento di initlog può anche essere modificato con opzioni da riga di comando.
+
+.SS OPZIONI
+.TP
+.I "\-c, \-\-cmd=[programma]"
+Esegue il programma specificato, registrando qualsiasi dato in uscita verso lo stdout o lo stderr.
+.TP
+.I "\-e, \-\-event=[numero]"
+Registra il fatto che l'evento specificato è avvenuto. Usato insieme
+a \fB\-\-name\fR. Gli eventi correntemente specificati sono:
+.nf
+ \fB1\fR  l'azione è stata completata con successo
+ \fB2\fR  l'azione è fallita
+ \fB3\fR  l'azione è stata annullata a richiesta dell'utente
+ \fB4\fR  l'azione è fallita a causa del fallimento di un'azione dipendente
+.TP
+.I "\-f, \-\-facility=[servizio]"
+Registra tramite il servizio di syslog specificato. È preimpostato 
+come \fBdaemon\fR (vedi syslog(3)).
+.TP
+.I "\-n, \-\-name=[stringa]"
+Registra la stringa specificata sul logger.
+.TP
+.I "\-p, \-\-priority=[priorita']"
+Registra con la priorità di syslog specificata. È preimpostata come
+\fBnotice\fR (vedi syslog(3)).
+.TP
+.I "\-q"
+Non stampa l'output del programma, a meno che esso esca con un exit code 
+diverso da zero.
+.TP
+.I "\-r, \-\-run=[programma]"
+Esegue il programma, con un descrittore dei file aperti 
+così che il programma possa ripassare i comandi a initlog.
+.TP
+.I "\-s, \-\-string=[stringa]"
+Notifica al logger la stringa specificata.
+.TP
+.I "\-\-conf=[file]"
+Specifica un file di configurazione alternativo.
+.SH FILES
+.I /etc/initlog.conf
+.SH "VEDI ANCHE"
+syslog(3), logger(1)

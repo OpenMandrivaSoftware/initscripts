@@ -1,0 +1,74 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva
+# Module          : initscripts
+# File            : dm
+# Version         : $Id$
+# Author          : Frederic Lepied
+# Created On      : Wed May 29 22:10:40 2002
+#---------------------------------------------------------------
+# chkconfig: 57 30 09
+# description: This startup script launches the graphical display manager.
+#---------------------------------------------------------------
+#
+### BEGIN INIT INFO
+# Provides: dm
+# Should-Start: network-auth acpid lircmd xfs haldaemon
+# Default-Start: 5 7
+# Short-Description: Launches the graphical display manager
+# Description: This startup script launches the graphical display manager.
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+ret=0
+
+case $1 in 
+    start)
+	gprintf "Starting display manager: "
+	/etc/X11/prefdm -nodaemon &
+	success "Display manager startup"
+	ret=$?
+	echo
+	if [ $ret = 0 ]; then
+	    touch /var/lock/subsys/dm
+	fi
+	;;
+
+    stop)
+	gprintf "Stopping display manager: "
+	killproc dm
+	ret=$?
+	if [ $ret = 0 ]; then
+	    success "Display manager shutdown"
+	    rm -f /var/lock/subsys/dm
+	else
+	    failure "Display manager shutdown"
+	fi
+	echo
+	;;
+
+    status)
+	status dm
+	;;
+
+    reload)
+	;;
+
+    restart)
+	$0 stop
+	# give a chance to the X server to stop gracefully
+	sleep 5
+	$0 start
+	ret=$?
+	;;
+    *)
+	gprintf "Usage: %s\n" "$(basename $0) {start|stop|restart|status}"
+	exit 0
+	;;
+esac
+
+exit $ret
+
+# dm ends here

@@ -1,0 +1,56 @@
+.TH "IPCALC" "1" "30. aprill 2001" "Red Hat, Inc." "RH"
+.SH "NIMI"
+ipcalc \- sooritab IP aadresside lihtsa arvutuse
+.SH "KOKKUVÕTE"
+.B ipcalc
+[\fIVÕTI\fR]... <\fBIP aadress\fR>[\fI/prefix\fR] [\fIvõrgumask\fR]
+
+.SH "KIRJELDUS"
+\fBipcalc\fR võimaldab hõlpsasti arvutada masina IP\-info. Mitmed võtmed määravad, millist infot \fBipcalc\fR standardväljundis näitab. Valida võib mitu võtit. Alati peab olema määratud IP aadress, millega opereerida. Enamik operatsioone nõuab ka võrgumaski või CIDR prefiksi määramist.
+.SH "VÕTMED"
+.TP 
+.TP 
+\fB\-b\fR, \fB\-\-broadcast\fR 
+Näitab antud IP aadressi ja võrgumaski üldleviaadressi.
+
+.TP 
+\fB\-h\fR, \fB\-\-hostname\fR 
+Näitab antud IP aadressi masinanime.
+
+.TP 
+\fB\-m\fR, \fB\-\-netmask\fR
+Arvutab antud IP aadressi võrgumaski. Eelduseks on, et IP aadress on täielik A\-, B\- või C\-klassi võrk. Paljud võrgud ei kasutada vaikimisi võrgumaski, mispuhul teada antakse sobimatu väärtus.
+
+.TP 
+\fB\-p\fR, \fB\-\-prefix\fR
+Näitab antud maski/IP aadressi prefiksit.
+
+.TP 
+\fB\-n\fR, \fB\-\-network\fR 
+Näitab antud IP aadressi ja võrgumaski võrguaadressi.
+
+.TP 
+\fB\-s\fR, \fB\-\-silent\fR 
+Veateateid ei näidata.
+
+.SH "AUTORID"
+.nf 
+Erik Troan <ewt@redhat.com>
+.nf 
+Preston Brown <pbrown@redhat.com>
+.fi 
+.br 
+
+.br 
+Tõlge eesti keelde 2002: Marek Laane
+.br 
+bald@online.ee
+.SH "VEATEATED"
+Andke vigadest teada meie veatuvastussüsteemi kaudu:
+http://bugzilla.redhat.com/bugzilla.
+.SH "AUTORIÕIGUS"
+Copyright \(co 1997\-2001 Red Hat, Inc.
+.br 
+See on vaba tarkvara; kopeerimistingimusi vaadake lähtetekstist. Sellega ei kaasne MINGIT garantiid, isegi mitte KESKMISE/TAVALISE KVALITEEDI või TEATUD OTSTARBEKS SOBIVUSE garantiid.
+.SH "VAATA KA"
+ipcalc(3)

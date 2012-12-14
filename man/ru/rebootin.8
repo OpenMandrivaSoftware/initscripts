@@ -1,0 +1,39 @@
+.TH rebootin 8 "3 марта 2001" "Mandrakesoft" "Linux-Mandrake"
+.IX rebootin
+.SH НАЗВАНИЕ
+rebootin \- перезагружает машину, используя заданные пункты начального загрузчика
+.SH СИНТАКСИС
+.B rebootin [\fIОПЦИИ\fR] <\fIметка\fP>
+.SH ОПИСАНИЕ
+\fBrebootin\fP перезагружает машину it is launched on. В то время как в простом \fBreboot\fP вам необходимо вручную выбирать пункт загрузки, используемый при запуске ОС, \fBrebootin\fP позволяет указывать пункт загрузки в командной строке.
+.PP
+<\fIМетка\fP> является названием пункта, записанного в конфигурационном файле начального загрузчика.
+.PP
+На данный момент \fBrebootin\fP работает с \fBLILO\fP и \fBGrub\fP.
+.PP
+Запуск \fBrebootin\fP безо всяких аргументов выведет список доступных загрузочных пунктов, поддерживаемых текущим начальным загрузчиком.
+.SH ОПЦИИ
+.TP
+.I -f
+Создает файл /fastboot для перезагрузки в режиме fastboot (например: no \fBfsck(8)\fP).
+.SH ФАЙЛЫ
+/etc/lilo.conf
+/boot/grub/menu.lst
+.br
+Исполняемый файл \fBrebootin\fP (скрипт perl)
+.PP
+.SH "СМ. ТАКЖЕ"
+grub(8),
+lilo(8),
+fsck(8)
+.SH АВТОРЫ
+Pascal Rigaux, Mandrakesoft
+.br
+pixel@mandrakesoft.com
+.PP
+Chmouel Boudjnah, Mandrakesoft
+.br
+chmouel@mandrakesoft.com
+.SH ПЕРЕВОД
+Павел Марьянов <acid_jack@ukr.net>
+

@@ -1,0 +1,15 @@
+#!/bin/sh
+# usage "mdv-network-event <event> <interface>
+
+EVENT=$1
+INTERFACE=$2
+if [ -z "$EVENT" ] || [ -z "$INTERFACE" ] || [ ! -x /usr/bin/dbus-send ]; then
+  exit
+fi
+
+/usr/bin/dbus-send --system --type=signal \
+ /com/mandriva/network/status \
+ com.mandriva.network.status \
+ string:$EVENT \
+ string:$INTERFACE \
+ 2>/dev/null

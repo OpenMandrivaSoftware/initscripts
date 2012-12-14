@@ -1,0 +1,190 @@
+#! /bin/bash
+#
+### BEGIN INIT INFO
+# Provides: $network $named
+# Should-Start: portreserve NetworkManager
+# Required-Start: network
+# Required-Stop: network
+# Default-Start: 2 3 4 5
+# Short-Description: Wait for the hotplugged network to be up
+# Description: Wait for all network interfaces started asynchronously
+#              at boot time.
+### END INIT INFO
+
+# Source function library.
+. /etc/init.d/functions
+
+NETWORKDELAY=20
+DEFAULT_LINK_DETECTION_DELAY=2
+MIN_LINK_DETECTION_DELAY=0
+MAX_LINK_DETECTION_DELAY=$MIN_LINK_DETECTION_DELAY
+ELAPSED_TIME=0
+RESOLVCONF_FLAGFILE=/var/run/resolvconf/enable-updates
+RESOLVCONF_DIR=/var/run/resolvconf/interface
+
+# source network configuration
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ "${NETWORKING}" = "no" ] && exit 0
+cd /etc/sysconfig/network-scripts
+
+. network-functions
+
+# find all the interfaces besides loopback.
+# ignore aliases, alternative configurations, and editor backup files
+interfaces=$(/bin/ls ifcfg* | \
+	    LC_ALL=C sed -e "$__sed_discard_ignored_files" \
+		       -e '/\(ifcfg-lo$\|:\|ifcfg-.*-range\)/d' \
+		       -e '/ifcfg-[ A-Za-z0-9#\._-]\+$/ { s/^ifcfg-//g;s/[0-9]/ &/}' | \
+	    LC_ALL=C grep -v '^ifcfg-' | \
+	    LC_ALL=C sort -k 1,1 -k 2n | \
+	    LC_ALL=C sed -e 's/ \([0-9]\)/\1/')
+
+may_have_link() {
+    local DEVICE=$1
+    local LINKDELAY=0
+    ! check_link_down ${DEVICE} || is_associating ${DEVICE}
+}
+
+is_associating() {
+    local DEVICE=$1
+    is_wireless_device ${DEVICE} || return 1
+    local AP=`iwgetid -a -r ${DEVICE} 2>/dev/null`
+    [ -n "$AP" ] && [ "$AP" != "00:00:00:00:00:00" ] && [ "$AP" != "44:44:44:44:44:44" ] && [ "$AP" != "FF:FF:FF:FF:FF:FF" ]
+}
+
+should_wait_network() {
+    for i in $interfaces; do
+        unset DEVICE TYPE BOOTPROTO MII_NOT_SUPPORTED PEERDNS DNS1 DNS2
+	unset REALDEVICE PARENTDEVICE NM_CONTROLLED
+        LINK_DETECTION_DELAY=$DEFAULT_LINK_DETECTION_DELAY
+        eval $(LANG=C grep -F "DEVICE=" "ifcfg-$i")
+        eval $(LANG=C grep -F "REALDEVICE=" "ifcfg-$i")
+        eval $(LANG=C grep -F "PARENTDEVICE=" "ifcfg-$i")
+        eval $(LANG=C grep -F "TYPE=" "ifcfg-$i")
+        eval $(LANG=C grep -F "BOOTPROTO=" "ifcfg-$i")
+        eval $(LANG=C grep -F "MII_NOT_SUPPORTED=" "ifcfg-$i")
+        eval $(LANG=C grep -F "LINK_DETECTION_DELAY=" "ifcfg-$i")
+        eval $(LANG=C grep -F "PEERDNS=" "ifcfg-$i")
+        eval $(LANG=C grep -F "DNS1=" "ifcfg-$i")
+        eval $(LANG=C grep -F "DNS2=" "ifcfg-$i")
+        eval $(LANG=C grep -F "NM_CONTROLLED=" "ifcfg-$i")
+	[ -z "$REALDEVICE" -a -n "$PARENTDEVICE" ] && REALDEVICE=$PARENTDEVICE
+	[ -z "$REALDEVICE" ] && REALDEVICE=${DEVICE%%:*}
+        if [ $LINK_DETECTION_DELAY -lt $MIN_LINK_DETECTION_DELAY ]; then
+            LINK_DETECTION_DELAY=$MIN_LINK_DETECTION_DELAY
+        fi
+
+        if [ -z "$DEVICE" ] ; then DEVICE="$i"; fi
+        if [ "$BOOTPROTO" != "static" ] \
+            && [ "$BOOTPROTO" != "dhcp" ] \
+            && [ "$BOOTPROTO" != "bootp" ]; then
+            continue
+        fi
+
+        # Ignore Wifi network files created by NetworkManager
+        if [ "$TYPE" = "Wireless" ]; then
+          continue
+        fi
+
+        # only check interfaces using ifplug, other interfaces are
+        # started synchronously from the network service
+        if [ "$MII_NOT_SUPPORTED" = "yes" ]; then
+            continue
+        fi
+
+        # only check interfaces automatically launched
+        if LANG=C grep -q -E "^ONBOOT=['\"]?[Nn][Oo]['\"]?" "ifcfg-$i"; then
+            continue
+        fi
+
+        # ignore devices that are not present
+        ip -o link show ${DEVICE} &>/dev/null || continue
+
+        ! is_false $NM_CONTROLLED && is_nm_running && _use_nm=true
+        # for NM controlled just ask NetworkManager
+        if [ "$_use_nm" = "true" ]; then
+            # Ignore disabled wifi h/w
+            if is_nm_device_unavailable ${DEVICE}; then
+                # Question: Is NM cleverer than us here? Does it do this delay
+                # internally and mark it as disconnected until it knows better?
+
+                # before configured delay, consider a lack of link beat
+                # as not ready, and unplugged thereafter
+                if [ $ELAPSED_TIME -lt $LINK_DETECTION_DELAY ]; then
+                    return 0
+                fi
+                # no need to wait for unplugged devices to come up
+                continue
+            fi
+
+            is_nm_active ${DEVICE} || return 0
+
+            # The resolvconf check below uses a single generic "NetworkManager"
+            # DNS file, rather than device specific ones, so fudge the device.
+            DEVICE=NetworkManager
+        else
+            # check link beat
+            if ! may_have_link ${DEVICE}; then
+                # before configured delay, consider a lack of link beat
+                # as not ready, and unplugged thereafter
+                if [ $ELAPSED_TIME -lt $LINK_DETECTION_DELAY ]; then
+                    return 0
+                fi
+                # no need to wait for unplugged devices to come up
+                continue
+            fi
+
+            # check address is set
+            ADDR=`ip addr show scope global ${DEVICE} | awk '/inet/ {print $2;}'`
+            if [ -z "$ADDR" ]; then
+                return 0
+            fi
+        fi
+
+        # wait for changes to be propagated by resolvconf if needed
+        if [ -e $RESOLVCONF_FLAGFILE ]; then
+            if [ "$BOOTPROTO" = "dhcp" -a "$PEERDNS" != "no" ] \
+                || [ -n "$DNS1" -o -n "$DNS2" ]; then
+                if [ ! -e $RESOLVCONF_DIR/$DEVICE ]; then
+                    return 0
+                fi
+                if [ $RESOLVCONF_DIR/$DEVICE -nt /etc/resolv.conf ]; then
+                    return 0
+                fi
+            fi
+        fi
+    done
+    # all interfaces are ready
+    return 1
+}
+
+case "$1" in
+  start)
+    gprintf "Waiting for network to be up"
+
+    for i in $interfaces; do
+        LINK_DETECTION_DELAY=$DEFAULT_LINK_DETECTION_DELAY
+        eval $(LANG=C grep -F "LINK_DETECTION_DELAY=" "ifcfg-$i")
+        if [ "$LINK_DETECTION_DELAY" -gt $MAX_LINK_DETECTION_DELAY ]; then
+            MAX_LINK_DETECTION_DELAY=$LINK_DETECTION_DELAY
+        fi
+    done
+    NETWORKDELAY=$(( NETWORKDELAY + MAX_LINK_DETECTION_DELAY ))
+
+    while should_wait_network && [ $ELAPSED_TIME -lt $NETWORKDELAY ]; do
+        sleep 1
+        let ELAPSED_TIME=$ELAPSED_TIME+1
+    done
+    [ $ELAPSED_TIME -ge $NETWORKDELAY ] && failure || success
+    echo
+    ;;
+  stop)
+      ;;
+  *)
+        gprintf "Usage: %s\n" "$(basename $0) {start|stop}"
+        exit 1
+esac
+
+exit 0

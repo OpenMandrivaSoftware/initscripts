@@ -1,0 +1,47 @@
+.TH rebootin 8 "03 Mar 2001" "Mandrakesoft" "Linux-Mandrake"
+.IX rebootin
+.SH НАЗВА
+rebootin \- Перевантажує машину в конкретно вказаний режим завантаження
+.SH ВИКОРИСТАННЯ
+.B rebootin [\fIПАРАМЕТРИ\fR] <\fIБИРКА\fP>
+.SH ОПИС
+\fBrebootin\fP перевантажує ту машину, на якій виконується команда. На
+відміну від звичайної команди  \fBreboot\fP, де Вам необхідно вказати
+вручну режим завантаження при старті системи, \fBrebootin\fP дозволяє
+вказати режим для завантаження з командного рядка.
+.PP
+<\fIБИРКА\fP> назва пункту вказаного в конфіґураційному файлі
+менеджера завантаження. 
+.PP
+\fBrebootin\fP на даний момент працює з \fBLILO\fP та \fBGrub\fP.
+.PP
+Якщо виконати  \fBrebootin\fP без жодних аргументів, програма виводить
+на екран список зконфіґурованих на даний момент режимів завантаження в
+активному на даний момент менеджері.
+.SH ПАРАМЕТРИ
+.TP
+.I -f
+Створює файл /fastboot для швидкого завантаження  (тобто без \fBfsck(8)\fP).
+.SH ФАЙЛИ
+/etc/lilo.conf
+/boot/grub/menu.lst
+.br
+\fBrebootin\fP (скрипт на мові perl)
+.PP
+.SH "ДИВ. ТАКОЖ"
+grub(8),
+lilo(8),
+fsck(8)
+.SH АВТОРИ
+Pascal Rigaux, Mandrakesoft
+.br
+pixel@mandrakesoft.com
+.PP
+Chmouel Boudjnah, Mandrakesoft
+.br
+chmouel@mandrakesoft.com
+.SH ПЕРЕКЛАД
+.br
+Дмитро Ковальов
+.br
+kov@tokyo.emai.ne.jp

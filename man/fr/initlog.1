@@ -1,0 +1,74 @@
+.TH initlog 8 "Sun Jan 24 1999"
+.SH NOM
+initlog \- écrit les messages et les événements dans le journal système
+.SH SYNOPSIS
+.B initlog
+[\-cefnpqrs] [\-\-cmd=ARG] [\-\-event=ARG] [\-\-facility=ARG]
+[\-\-name=ARG] [\-\-priority=ARG] [\-\-run=ARG] [\-\-string=ARG]
+.SH DESCRIPTION
+\fBinitlog\fR écrit les messages et les événements dans le journal système.
+Il sert surtout dans les scripts d'initialisation. initlog lit un fichier
+de configuration
+.I /etc/initlog.conf
+par défaut, pour connaître ses paramètres. Toute ligne précédée d'un 
+.I #
+est un commentaire, et les directives de configuration suivantes sont
+reconnues :
+.TP
+.I facility <logging facility>
+Indique le journal par défaut
+.TP
+.I priority <logging priority>
+Indique la priorité par défaut de l'écriture
+.TP
+.I ignore <regexp>
+Les messages identifiés par l'expression régulière ne seront pas écrits.
+.TP
+Le comportement de initlog peut aussi être configuré par des options en
+ligne de commande.
+
+.SS OPTIONS
+.TP
+.I "\-c, \-\-cmd=[programme]"
+Exécute le programme spécifié, en écrivant toute sortie vers stdout ou stderr.
+.TP
+.I "\-e, \-\-event=[nombre]"
+Écrit que l'événement spécifié s'est produit. Utilisé en conjonction avec
+\fB\-\-name\fR. Actuellement les événements spécifiés sont :
+.nf
+ \fB1\fR  l'action s'est terminée avec succès
+ \fB2\fR  l'action a échoué
+ \fB3\fR  l'action a été annulée par l'utilisateur
+ \fB4\fR  l'action a échoué à cause de l'échec d'une action dépendante
+.TP
+.I "\-f, \-\-facility=[facility]"
+
+Écrit dans le journal spécifié par syslog. La valeur par défaut
+est \fBdaemon\fR (voir syslog(3)).
+.TP
+.I "\-n, \-\-name=[chaîne]"
+Écrit l'événement selon la chaîne spécifiée, comme par exemple
+"inetd".
+.TP
+.I "\-p, \-\-priority=[priorité]"
+Écrit à la priorité syslog indiquée. La valeur par défaut
+est \fBnotice\fR (voir syslog(3)).
+.TP
+.I "\-q"
+N'affiche pas la sortie du programme, à moins qu'il ne s'arrête
+avec une valeur de retour différente de zéro.
+.TP
+.I "\-r, \-\-run=[programme]"
+Exécute le programme spécifié, avec un descripteur de fichier
+ouvert, pour que le programme puisse renvoyer des commandes vers
+initlog.
+.TP
+.I "\-s, \-\-string=[chaîne]"
+Écrit la chaîne spécifiée dans le journal.
+.TP
+.I "\-\-conf=[fichier]"
+Spécifie un fichier de configuration différent.
+.SH FICHIERS
+.I /etc/initlog.conf
+.SH "VOIR AUSSI"
+syslog(3), logger(1)

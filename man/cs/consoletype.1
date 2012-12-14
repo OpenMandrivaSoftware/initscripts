@@ -1,0 +1,28 @@
+.TH CONSOLETYPE 1 "Red Hat, Inc" "RH" \" -*- nroff -*-
+.SH NÁZEV
+.B consoletype
+\- vypíše typ konzole, která je připojená ke standardnímu vstupu
+.SH SYNAPSE
+.B consoletype
+.SH POPIS
+.B consoletype
+vypíše typ konzole, která je připojená ke standardnímu vstupu. Vypíše
+.I vt
+pokud je konzole virtuální terminál (zařízení /dev/tty* nebo /dev/console pokud to není
+na sériové konzoli),
+.I serial
+pokud je standardní vstup na sériové konzoli (zařízení /dev/console nebo /dev/ttyS*) a
+.I pty
+pokud je standardní vstup na pseudo terminálu.
+.SH NÁVRATOVÁ HODNOTA
+.B consoletype
+vrací
+.TP
+.I 0
+pro virtuální terminály
+.TP
+.I 1
+pro sériové konzole
+.TP
+.I 2
+pro pseudo terminály.

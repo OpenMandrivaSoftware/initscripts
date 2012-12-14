@@ -7,7 +7,7 @@ unset WINDOW # defined by screen, conflicts with our usage
 cd /etc/sysconfig/network-scripts
 . ./network-functions
 
-[ -f ../network ] && . ../network
+[ -f /etc/sysconfig/network ] && . /etc/sysconfig/network
 
 CONFIG=$1
 

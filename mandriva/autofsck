@@ -1,0 +1,11 @@
+# -*- Mode: sh -*-
+# $Id$
+
+# Specify here how many seconds we wait for timeout
+AUTOFSCK_TIMEOUT=5
+
+# Specify if we do automatic fsck.
+AUTOFSCK_DEF_CHECK=no
+
+# Specify how many seconds we wait for mounting crypto.
+AUTOFSCK_CRYPTO_TIMEOUT=5

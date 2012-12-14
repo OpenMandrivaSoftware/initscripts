@@ -1,0 +1,4 @@
+#!/bin/sh
+
+[ -f /var/log/dmesg ] && mv -f /var/log/dmesg /var/log/dmesg.old
+dmesg -s 131072 > /var/log/dmesg

@@ -1,0 +1,72 @@
+.TH initlog 8 "Dom 24 de jan de 1999"
+.SH NOME
+initlog \- mensagens de registro e eventos para o agente de registro
+.SH SINOPSIAS
+.B initlog
+[\-cefnpqrs] [\-\-cmd=ARG] [\-\-event=ARG] [\-\-facility=ARG]
+[\-\-name=ARG] [\-\-priority=ARG] [\-\-run=ARG] [\-\-string=ARG]
+.SH DESCRIÇÃO
+\fBinitlog\fR mensagens de registros e eventos para o agente de registro.
+Ele é principalmente designado para uso nos scripts de inicialização. initlog
+lê um arquivo de configuração
+.I /etc/initlog.conf
+por padrão, determinar suas definições. Qualquer linha precedida com um 
+.I #
+é um comentário, e as seguintes diretivas de configuração são reconhecidas:
+.TP
+.I facilidade <registrar facilidade>
+Define o registrar facilidade padrão
+.TP
+.I prioridade <registrar prioridade>
+Define o registrar prioridade padrão
+.TP
+.I ignorar <regexp>
+Mensagens que correspondam a expressão regular não serão registradas.
+.TP
+comportamento do initlog pode também ser configurado pelas opções da linha de comando.
+
+.SS OPÇÕES
+.TP
+.I "\-c, \-\-cmd=[program]"
+Executar o programa específico, registrando qualquer saída para stdout ou stderr.
+.TP
+.I "\-e, \-\-event=[number]"
+Registros que o evento especificado aconteceu. Usados em conjunção
+com \fB\-\-name\fR. Eventos especificados atualmente são:
+.nf
+ \fB1\fR  a ação completada com sucesso
+ \fB2\fR  a ação falhou
+ \fB3\fR  a ação foi cancelada a pedido do usuário
+ \fB4\fR  a ação falhou devido à falha de uma ação dependente
+.TP
+.I "\-f, \-\-facility=[facility]"
+
+Registrar no syslog especificado a facilidade. O padrão
+é \fBdaemon\fR (olhe syslog(3)).
+.TP
+.I "\-n, \-\-name=[string]"
+Registrar o evento na string especificada, tal como
+"inetd".
+.TP
+.I "\-p, \-\-priority=[priority]"
+Registrar no syslog especificado a prioridade. O padrão
+é \fBnotice\fR (olhe syslog(3)).
+.TP
+.I "\-q"
+Não é para imprimir a saída do programa, a não ser que ele saia
+com um código de sair diferente de zero.
+.TP
+.I "\-r, \-\-run=[program]"
+Executa o programa especificado, com um descritor
+do arquivo aberto deste modo o programa pode passa comandos
+anteriores ao initlog.
+.TP
+.I "\-s, \-\-string=[string]"
+Registrar a string especificada ao verificador de registros.
+.TP
+.I "\-\-conf=[file]"
+Específica um arquivo de configuração alternativo.
+.SH ARQUIVOS
+.I /etc/initlog.conf
+.SH "OLHE TAMBÉM"
+syslog(3), logger(1)

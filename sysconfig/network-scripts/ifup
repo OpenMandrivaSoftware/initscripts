@@ -15,6 +15,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+TEXTDOMAIN=initscripts
+
 unset WINDOW # defined by screen, conflicts with our usage
 
 . /etc/init.d/functions
@@ -22,7 +25,7 @@ unset WINDOW # defined by screen, conflicts with our usage
 cd /etc/sysconfig/network-scripts
 . ./network-functions
 
-[ -f ../network ] && . ../network
+[ -f /etc/sysconfig/network ] && . /etc/sysconfig/network
 
 CONFIG=${1}
 
@@ -128,9 +131,8 @@ if [ "${VLAN}" = "yes" ] && [ "$ISALIAS" = "no" ]; then
     fi
 fi
 
-if [ "${BOOTPROTO}" = "bootp" -o "${BOOTPROTO}" = "dhcp" ]; then
-    DYNCONFIG=true
-fi
+# signalling the start of connection
+mdv-network-event connection_start ${DEVICE}
 
 if [ -x /sbin/ifup-pre-local ]; then
     /sbin/ifup-pre-local ${CONFIG} $2

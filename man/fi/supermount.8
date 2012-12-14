@@ -1,0 +1,36 @@
+.TH SUPERMOUNT 8 "Dec 1999" "initscripts" "MandrakeSoft"
+.SH NIMI
+supermount \-  Ota käyttöön/poista käytöstä supermount ominaisuus
+.SH YLEISKATSAUS
+.B supermount 
+[\fIOPTIO\fR]... <\fIdisable | enable\fR>
+.SH KUVAUS
+.PP
+\fBsupermount\fR sallii järjestelmän ylläpitäjää ottaa käyttöön/poistaa
+käytöstä \fBsupermount\fR ominaisuutta joka löytyy uudemmissa mandrake
+ytimissä. Tämä ominaisuus hallitsee automaattisesti siirrettävien medioiden
+littäminen ja irottaminen tarvittaessa. Tämä skripti yksinkertaisesti
+lisää tai poistaa \fBsupermount\fR optiota tietueista \fI/etc/fstab\fR 
+tiedostossa. Ilman \fB\-i\fR optiota muokattu tiedosto tulostetaan
+näytölle.
+.PP 
+\fBsupermount\fR pitää suorittaa yksi seuravien argumenttien kanssa:
+.TP
+\fBenable\fR ottaaksesi \fBsupermount\fR ominaisuutta käyttöön siirrettävissä
+medioissa (cd/dvd asemat ja levykeasemat),
+.TP
+\fBdisable\fR poistaaksesi \fBsupermount\fR ominaisuutta kaikissa asemissa.
+.SH OPTIOT
+.TP
+\fB\-f=tiedosto\fR, \fB\-\-file=tiedosto\fR Määrittää vaihtoehtoista tiedostoa
+johon tehdään muutoksia. Oletus on \fI/etc/fstab\fR.
+.TP
+\fB\-i\fR, \fB\-\-infile\fR Muutokset tehdään suoraan \fI/etc/fstab\fR 
+tiedostoon tai \fB\-f\fR optiolla määritettyyn tiedostoon, näytölle 
+tulostamiseen sijasta.
+.TP
+\fB\-h\fR, \fB\-\-help\fR, \fB\-?\fR tulostaa lyhyen apuviestin.
+.SH "KATSO MYÖS"
+\fIfstab\fR(5), \fImount\fR(8), \fIumount\fR(8),
+.SH TEKIJÄ
+Chmouel Boudjnah  - chmouel@mandrakesoft.com

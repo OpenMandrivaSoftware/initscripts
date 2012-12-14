@@ -1,0 +1,44 @@
+.TH rebootin 8 "03 Mar 2001" "Mandrakesoft" "Linux-Mandrake"
+.IX rebootin
+.SH NOME
+rebootin \- Riavvia la macchina usando una particolare voce del Boot Loader
+.SH SINTASSI
+.B rebootin [\fIOPZIONI\fR] <\fIlabel\fP>
+.SH DESCRIZIONE
+\fBrebootin\fP riavvia la macchina sulla quale è lanciato. Mentre con un
+semplice \fBreboot\fP devi selezionare manualmente la voce di boot da usare 
+all' avvio, \fBrebootin\fP permette di specificare la voce di boot nella
+linea di comando.
+.PP
+<\fIlabel\fP> è il nome della voce così come è chiamata nel file di
+configurazione del boot loader.
+.PP
+\fBrebootin\fP attualmente funziona con \fBLILO\fP e \fBGrub\fP.
+.PP
+Eseguire \fBrebootin\fP senza nessun argomento fa apparire l'elenco delle
+voci di boot disponibili supportate dal boot loader installato.
+.SH OPZIONI
+.TP
+.I -f
+Crea un file /fastboot per fare il reboot in modalità fastboot (per es: senza \fBfsck(8)\fP).
+.SH FILES
+/etc/lilo.conf
+/boot/grub/menu.lst
+.br
+L'eseguibile \fBrebootin\fP (script perl)
+.PP
+.SH "VEDI ANCHE"
+grub(8),
+lilo(8),
+fsck(8)
+.SH AUTORI
+Pascal Rigaux, Mandrakesoft
+.br
+pixel@mandrakesoft.com
+.PP
+Chmouel Boudjnah, Mandrakesoft
+.br
+chmouel@mandrakesoft.com
+
+.SH TRADUTTORE
+Salvatore Di Pietro (salvuz78@virgilio.it)

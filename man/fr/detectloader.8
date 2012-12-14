@@ -1,0 +1,21 @@
+.TH DETECTLOADER 8 "Apr 2000" "initscripts" "MandrakeSoft"
+.SH NOM
+detectloader \- Détection du type du chargeur de démarrage.
+.SH DESCRIPTION
+.PP
+\fBdetectloader\fR détecte le type du chargeur de démarrage que vous
+avez sur votre \fBMBR\fR (NdT : premier secteur du disque dur). Il trouve
+le premier disque grâce à /proc/partitions et regarde via le numéro
+de série magique (magic serial) le type de chargeur de démarrage qui y
+est installé.
+.SH LIMITATION
+.PP
+Ne fonctionne qu'avec GRUB, lilo, et yaboot (les chargeurs que nous
+utilisons pour \fBLinux-Mandrake\fR). Les patches sont les bienvenus
+pour d'autres chargeurs.
+.SH COPYRIGHT
+Copyright \(co 1999/2000 MandrakeSoft.
+.PP
+This is free software; see the source for copying conditions.  There
+is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.

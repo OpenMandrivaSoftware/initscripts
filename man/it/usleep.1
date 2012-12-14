@@ -1,0 +1,27 @@
+.TH USLEEP 1 "Red Hat, Inc" \" -*- nroff -*-
+.SH NOME
+usleep \- va in pausa per un certo numero di microsecondi
+.SH SINTASSI
+.B usleep
+[\fInumero\fP]
+.SH DESCRIZIONE
+.B usleep
+va in pausa per un certo numero di microsecondi. Il default è 1.
+.SH OPZIONI
+\fI--usage\fP
+Mostra un breve messaggio sull'uso.
+.TP
+\fI--help, -?\fP
+Mostra informazioni d'aiuto.
+.TP
+\fI-v, --version\fP
+Mostra informazioni sulla versione.
+.SH BUG
+Probabilmente non accurato al microsecondo su molte macchine. 
+Fai affidamento solo su una precisione a -4 o forse a -5.
+.SH AUTORE
+Donald Barnes <djb@redhat.com>
+.br
+Erik Troan <ewt@redhat.com>
+.SH TRADUTTORE
+Salvatore Di Pietro <salvuz78@virgilio.it>

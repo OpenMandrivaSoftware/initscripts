@@ -1,0 +1,33 @@
+.TH  SYS-UNCONFIG 8 "Wed Jul 28 1999"
+.SH NOME
+sys-unconfig \- script shell per riconfigurare il sistema al prossimo boot
+.SH SINTASSI
+\fBsys-unconfig\fR
+.SH DESCRIZIONE
+\fBsys-unconfig\fR fornisce un metodo semplice per riconfigurare un sistema
+in un nuovo ambiente. Quando eseguito, sys-unconfig arresterà il sistema,
+ed eseguirà i seguenti programmi di configurazione al boot:
+passwd (per cambiare la password di root), netconfig, timeconfig,    authconfig, e ntsysv.
+
+.SH FILE
+.PD 0
+.TP 20
+\fI/.unconfigured\fR
+La presenza di questo file farà in modo che /etc/rc.d/rc.sysinit esegua
+i programmi menzionati sopra.
+
+.PD
+.SH "VEDI ANCHE"
+.BR passwd (1),
+.BR netconfig (8),
+.BR timeconfig (8),
+.BR authconfig (8),
+.BR ntsysv(8)
+
+.SH AUTORI
+.nf
+H.J. Lu <hjl@valinux.com>
+.fi
+
+.SH TRADUTTORE
+Salvatore Di Pietro (salvuz78@virgilio.it)

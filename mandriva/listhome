@@ -1,0 +1,7 @@
+#!/bin/sh
+# Chmouel Boudjnah <chmouel@mandriva.com>
+# Description: List the home greather than 501 should be unusefull now, but
+# here for backward compatibilities
+
+LC_ALL=C LANG=C LANGUAGE=C \
+perl -n -e 'while(my @list=getpwent){print $list[-2], "\n" unless $list[2] <= 500}' < /etc/passwd

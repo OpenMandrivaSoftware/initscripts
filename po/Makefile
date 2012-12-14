@@ -19,13 +19,13 @@ all: $(NLSPACKAGE).pot $(FMTCATALOGS)
 $(NLSPACKAGE).pot:
 	@echo "Please don't run 'make initscripts.pot unless you have a *FULL*, current install."
 
-new-pot-file-i-really-mean-it: $(POTFILES)
-	./xgettext_sh.py $(POTFILES) > $(NLSPACKAGE).po
-	if cmp -s $(NLSPACKAGE).po $(NLSPACKAGE).pot; then \
-	    rm -f $(NLSPACKAGE).po; \
-	else \
-	    mv $(NLSPACKAGE).po $(NLSPACKAGE).pot; \
-	fi
+#new-pot-file-i-really-mean-it: $(POTFILES)
+#	./xgettext_sh.py $(POTFILES) > $(NLSPACKAGE).po
+#	if cmp -s $(NLSPACKAGE).po $(NLSPACKAGE).pot; then \
+#	    rm -f $(NLSPACKAGE).po; \
+#	else \
+#	    mv $(NLSPACKAGE).po $(NLSPACKAGE).pot; \
+#	fi
 
 refresh-po: Makefile
 	catalogs='$(CATALOGS)'; \

@@ -1,0 +1,40 @@
+.TH SUPERMOUNT 8 "Pro 1999" "initscripts" "MandrakeSoft"
+.SH NÁZEV
+supermount \- Vypne nebo zapne vlastnost supermount
+.SH SYNAPSE
+.B supermount 
+[\fIVOLBY\fR]... <\fIdisable | enable\fR>
+.SH POPIS
+.PP
+Program \fBsupermount\fR umožní správci systému zapnout nebo vypnout vlastnost
+\fBsupermount\fR, která je k dispozici v novějších jádrech distribucí Mandrake Linux.
+Tato vlastnost automaticky spravuje připojení a odpojení vyměnitelných médií
+podle potřeby. Tento skript zjednodušuje přidání nebo odebrání volby \fBsupermount\fR
+z položek v souboru \fI/etc/fstab\fR. Bez volby \fB\-i\fR je upravený soubor
+pouze vypsán na standardní výstup.
+.PP 
+Program \fBsupermount\fR musí být spuštěn s jedním z následujících parametrů:
+.TP
+\fBenable\fR pokud chcete povolit vlastnost supermount na odpovídajících zařízeních
+(CDROM a pružné disky),
+.TP
+\fBdisable\fR pokud chcete vypnout vlastnost \fBsupermount\fR na všech zařízeních.
+.SH VOLBY
+.TP
+\fB\-f=SOUBOR\fR, \fB\-\-file=SOUBOR\fR Určí alternativní soubor, na kterém mají být provedeny
+úpravy. Výchozí je soubor \fI/etc/fstab\fR.
+.TP
+\fB\-i\fR, \fB\-\-infile\fR Úpravy jsou provedeny přímo na souboru \fI/etc/fstab\fR nebo
+ SOUBORU zadaném pomocí volby \fB\-f\fR, a ne pouze vypsány na standardní výstup.
+.TP
+\fB\-h\fR, \fB\-\-help\fR, \fB\-?\fR zobrazí krátkou zprávu s nápovědou.
+.SH "VIZ TAKÉ"
+\fIfstab\fR(5), \fImount\fR(8), \fIumount\fR(8),
+.SH AUTOR
+Chmouel Boudjnah  - chmouel@mandrakesoft.com
+.SH COPYRIGHT
+Copyright \(co 1999/2000 MandrakeSoft.
+.br
+Toto je volně šiřitelný software; viz zdrojový kód s podmínkami kopírování.
+Je dodáván BEZ záruk; není zaručena ani OBCHODOVATELNOST, ani VHODNOST PRO
+POUŽITÍ za nějakým účelem.

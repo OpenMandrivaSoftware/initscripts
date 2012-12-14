@@ -1,0 +1,60 @@
+.TH IPCALC 1 "30 de abril de 2001" "Red Hat, Inc." RH \" -*- nroff -*-
+.SH NOME
+ipcalc \- executar manipulação simples de endereços IP
+.SH SINOPSIAS
+.B ipcalc
+[\fIOPTION\fR]... <\fBIP address\fR>[\fI/prefix\fR] [\fInetmask\fR]
+
+.SH DESCRIÇÃO
+\fBipcalc\fR fornece um caminho simples para calcular informação do IP para um host.
+As várias opções específica que informação \fBipcalc\fR deveria ser exibida
+na saída padrão. Múltiplas opções podem ser especificadas.  Um endereço de IP para
+operar deve ser sempre especificado.  Muitas operações também requerem uma
+máscara de rede ou um prefixo CIDR também.
+
+.SH OPÇÕES
+.TP
+.TP
+\fB\-b\fR, \fB\-\-broadcast\fR 
+Exibir o endereço de difusão para o endereço de IP e para a máscara de rede dados.
+
+.TP
+\fB\-h\fR, \fB\-\-hostname\fR 
+Exibir o nome do host para o endereço de IP dado.
+
+.TP
+\fB\-m\fR, \fB\-\-netmask\fR
+Calcular a máscara de rede para o endereço de IP dado. Ele assume que o
+endereço de IP está em uma rede de classe A, B ou C completa. Várias redes
+não usam as máscaras de rede padrão, no caso um valor inapropriado
+será retornado.
+
+.TP
+\fB\-p\fR, \fB\-\-prefix\fR
+Mostrar o prefixo para o endereço de IP/máscara dado.
+
+.TP
+\fB\-n\fR, \fB\-\-network\fR 
+Exibe o endereço de rede para o endereço de IP e a rede dados.
+
+.TP
+\fB\-s\fR, \fB\-\-silent\fR 
+Nunca exibir mensagens de erros.
+
+.SH AUTORES
+.nf
+Erik Troan <ewt@redhat.com>
+.nf
+Preston Brown <pbrown@redhat.com>
+.fi
+.SH "RELATAR ERROS"
+Relatar erros para nosso sistema de controle de erro:
+http://bugzilla.redhat.com/bugzilla.
+.SH COPYRIGHT
+Copyright \(co 1997-2001 Red Hat, Inc.
+.br
+Este é um software livre; olhe o fonte para condições de cópia. Não há NENHUMA
+garantia; nem mesmo para CORMECIALIZAÇÃO ou APTIDÃO PARA UM PROPÓSITO
+PARTICULAR.
+.SH "OLHAR TAMBÉM"
+ipcalc(3)

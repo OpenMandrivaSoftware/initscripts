@@ -1,0 +1,197 @@
+.TH "ipcalc.c" 3 "30 Apr 2001" "initscripts" \" -*- nroff -*-
+.ad l
+.nh
+.SH NOME
+ipcalc.c \- Fornisce utilità per manipolare indirizzi IP.
+.SH SINTASSI
+.br
+.PP
+\fC#include <ctype.h>\fR
+.br
+\fC#include <popt.h>\fR
+.br
+\fC#include <stdio.h>\fR
+.br
+\fC#include <stdlib.h>\fR
+.br
+\fC#include <string.h>\fR
+.br
+\fC#include <sys/socket.h>\fR
+.br
+\fC#include <netinet/in.h>\fR
+.br
+\fC#include <arpa/inet.h>\fR
+.br
+\fC#include <netdb.h>\fR
+.br
+
+.SS Define
+
+.in +1c
+.ti -1c
+.RI "#define \fBIPBITS\fR  (sizeof(unsigned long int) * 8)"
+.br
+.RI "\fIil numero di bits in un indirizzo IP.\fR"
+.ti -1c
+.RI "#define \fBIPBYTES\fR  (sizeof(unsigned long int))"
+.br
+.RI "\fIil numero di bytes in un indirizzo IP.\fR"
+.in -1c
+.SS Funzioni
+
+.in +1c
+.ti -1c
+.RI "unsigned long int \fBprefix2mask\fR (int prefix)"
+.br
+.RI "\fIcrea una netmask da uno specificato numero di bits.\fR"
+.ti -1c
+.RI "int \fBmask2prefix\fR (unsigned long int mask)"
+.br
+.RI "\fIcalcola il numeo di bits mascherati da una netmask.\fR"
+.ti -1c
+.RI "unsigned long int \fBdefault_netmask\fR (unsigned long int addr)"
+.br
+.RI "\fIritorna la netmask di default (canonica) associata con l'indirizzo IP specificato.\fR"
+.ti -1c
+.RI "unsigned long int \fBcalc_broadcast\fR (unsigned long int addr, int prefix)"
+.br
+.RI "\fIcalcola l'indirizzo di broadcast dato un indirizzo IP e e una lunghezza del prefix.\fR"
+.ti -1c
+.RI "unsigned long int \fBcalc_network\fR (unsigned long int addr, int prefix)"
+.br
+.RI "\fIcalcola l'indirizzo di rete per uno specificato indirizzo e prefix.\fR"
+.ti -1c
+.RI "const char* \fBget_hostname\fR (unsigned long int addr)"
+.br
+.RI "\fIritorna l'hostname associato all'indirizzo IP specificato.\fR"
+.ti -1c
+.RI "int \fBmain\fR (int argc, const char **argv)"
+.br
+.RI "\fIprogramma wrapper per le funzioni di ipcalc.\fR"
+.in -1c
+.SH DESCRIZIONE DETTAGLIATA
+.PP
+fornisce utilità per manipolare indirizzi IP.
+.PP
+.PP
+ ipcalc fornisce utilità e una interfaccia a riga di comando per manipolare indirizzi IP e calcolare vari aspetti di un indirizzo ip/netmask/indirizzo di rete/prefix/etc.
+.PP
+Si può accedere alle funzionalità da alri linguaggi tramite l'interfaccia della libreria, documentata qui. Per usare ipcalc dalla shell, leggere la pagina man di ipcalc(1).
+.PP
+Nel passare parametri alle varie funzioni, tener presente se accettano un host byte order o network byte order. La maggior parte accetta un host byte order, e ritorna un host byte order, ma ci sono alcune eccezioni.
+.PP
+.SH DOCUMENTAZIONE FUNZIONI
+.PP
+.SS unsigned long int calc_broadcast (unsigned long int addr, int prefix)
+.PP
+calcola l'indirizzo di broadcast dati un indirizzo IP e una lunghezza del prefix.
+.PP
+.PP
+
+.PP
+\fBParametri: \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+un indirizzo IP in network byte order.
+.TP
+\fB\fIprefix\fR\fR
+la lunghezza di un prefix.
+.PP
+\fBRitorna: \fR
+.in +1c
+l'indirizzo di broadcast calcolato per la rete, in network byte order.
+.SS unsigned long int calc_network (unsigned long int addr, int prefix)
+.PP
+calcola l'indirizzo di rete per uno specificato indirizzo e prefix.
+.PP
+.PP
+
+.PP
+\fBParametri: \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+un indirizzo IP, in network byte order.
+.TP
+\fB\fIprefix\fR\fR
+il prefix di rete
+.PP
+\fBRitorna: \fR
+.in +1c
+l'indirizzo di base della rete cui è associato l'indirizzo, in network byte order.
+.SS unsigned long int default_netmask (unsigned long int addr)
+.PP
+ritorna la netmask di default (canonica) associata all'indirizzo IP specificato.
+.PP
+.PP
+ Quando Internet fu originariamente concepita, vari intervalli di indirizzi IP furono segmentati in in tre classi di rete: A, B e C. Questa funzione ritornerà una netmask che è associata all'indirizzo IP specificato definendo in quale delle classi predefinite cada.
+.PP
+\fBParametri: \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+un indirizzo IP in network byte order.
+.PP
+\fBRitorna: \fR
+.in +1c
+una netmask in network byte order.
+.SS const char * get_hostname (unsigned long int addr)
+.PP
+ritorna l'hostname associato all'indirizzo IP specificato.
+.PP
+.PP
+
+.PP
+\fBParametri: \fR
+.in +1c
+.TP
+\fB\fIaddr\fR\fR
+un indirizzo IP per il quale trovare l'hostname, in network byte order
+.PP
+\fBRitorna: \fR
+.in +1c
+un hostname, o NULL se non può essere determinato. L'hostname è memorizzato in un buffer statico che può scomparire in ogni momento, il chiamante dovrebbe copiare i dati se ha bisogno di memorizzazione permanente.
+.SS main (int argc, const char ** argv)
+.PP
+programma wrapper per le funzioni di ipcalc.
+.PP
+.PP
+ Questo è un programma wrapper per le funzioni che la libreria ipcalc fornisce. Può essere usato da script di shell o direttamente dalla linea di comando.
+.PP
+Per ulteriori informazioni, leggere la pagina di man di ipcalc(1).
+.SS int mask2prefix (unsigned long int mask)
+.PP
+calcola il numero di bits mascherati da una netmask.
+.PP
+.PP
+ Questa funzione calcola i bit significativi in un indirizzo IP come specificato da una netmask. Vedere anche \fBprefix2mask\fR.
+.PP
+\fBParametri: \fR
+.in +1c
+.TP
+\fB\fImask\fR\fR
+è la netmask, specifiata come unsigned long integer in network byte order.
+.PP
+\fBRitorna: \fR
+.in +1c
+il numero di bit significativi.
+.SS unsigned long int prefix2mask (int bits)
+.PP
+crea una netmask da uno specificato numero di bits.
+.PP
+.PP
+ Questa funzione converte una lunghezza del prefix in una netmask. Come ha mostrato il CIDR (classless internet domain routing), sempre più indirizzi IP stanno essendo specificati in formato indirizzo/prefix (per es. 192.168.2.3/24, con una netmask corrispondente 255.255.255.0). Se occorre conoscere quale netmask corrisponde alla parte prefix dell' indirizzo, questa è la funzione da utilizzare. Vedere anche \fBmask2prefix\fR.
+.PP
+\fBParametri: \fR
+.in +1c
+.TP
+\fB\fIprefix\fR\fR
+è il numero di bit per cui creare una maschera.
+.PP
+\fBRitorna: \fR
+.in +1c
+una network mask, in network byte order.
+.SH AUTORE
+.PP
+Generato automaticamente da Doxygen per initscripts dal codice sorgente.

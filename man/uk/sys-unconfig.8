@@ -1,0 +1,35 @@
+.TH  SYS-UNCONFIG 8 "Wed Jul 28 1999"
+.SH НАЗВА
+sys-unconfig \- скрипт для реконфіґурації системи при перезавантаженні
+.SH ВИКОРИСТАННЯ
+\fBsys-unconfig\fR
+.SH ОПИС
+\fBsys-unconfig\fR забезпечує простий метод настроювання системи для
+роботи в новому середовищі. Після запуску sys-unconfig перевантажить
+Ваш комп'ютер і виконає під час завантаження такі програми:
+passwd (для установки пароля користувача  root), netconfig, timeconfig,
+authconfig, і ntsysv.
+
+.SH ФАЙЛИ
+.PD 0
+.TP 20
+\fI/.unconfigured\fR
+Присутність цього файла примусить /etc/rc.d/rc.sysinit виконувати
+конфіґураційну послідовність описану вище.
+
+.PD
+.SH "ДИВ. ТАКОЖ"
+.BR passwd (1),
+.BR netconfig (8),
+.BR timeconfig (8),
+.BR authconfig (8),
+.BR ntsysv(8)
+
+.SH АВТОРИ
+.nf
+H.J. Lu <hjl@valinux.com>
+.fi
+.SH
+ПЕРЕКЛАД
+.br
+Дмитро Ковальов, <kov@tokyo.emai.ne.jp>

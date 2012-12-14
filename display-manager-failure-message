@@ -1,0 +1,26 @@
+#!/bin/bash
+
+echo >&2
+echo "Sorry, but there has been a problem starting your graphical display." >&2
+echo >&2
+echo "In order to debug your problem we will automatically switch to a text-based" >&2
+echo "login screen from where you can login as the root user and run the 'drakx11'" >&2
+echo "utility to configure your graphical display." >&2
+echo >&2
+echo "After configuration, you can restart your graphical environment via the command:" >&2
+echo "  systemctl default" >&2
+echo "at which point you will be automatically logged out while the graphical system" >&2
+echo "starts." >&2
+echo >&2
+echo "If you would prefer to avoid this message and go straight to a text-based login" >&2
+echo "system at boot, simply change the symlink /etc/systemd/system/default.target to" >&2
+echo "point instead to /lib/systemd/system/multi-user.target" >&2
+echo >&2
+echo "Good luck :)" >&2
+echo >&2
+echo "Press any key." >&2
+read -n 1
+
+echo >&2
+echo "Switching to multi-user.target..." >&2
+systemctl isolate multi-user.target

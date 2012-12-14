@@ -1,0 +1,31 @@
+.TH "SYS-UNCONFIG" "8" "Kolmapäev, 28. juuli 1999" "" ""
+.SH "NIMI"
+sys\-unconfig \- shelliskript süsteemi ümberseadistamiseks järgmisel algkäivitusel
+.SH "KOKKUVÕTE"
+\fBsys\-unconfig\fR
+.SH "KIRJELDUS"
+\fBsys\-unconfig\fR pakub lihtsa võimaluse süsteem ümber seadistada uue keskkonna vajadustele. Käivitamisel peatab sys\-unconfig Teie süsteemi ning paneb algkäivituse ajal tööle järgmised seadistusterakendused: passwd (administraatori parooli muutmine), netconfig, timeconfig, authconfig ja ntsysv.
+.SH "FAILID"
+.PD 0
+.TP 20
+\fI/.unconfigured\fR
+Selle faili olemasolu sunnib /etc/rc.d/rc.sysinit käivitama ülalmainitud rakendusi.
+
+.PD
+.SH "VAATA KA"
+.BR passwd (1),
+.BR netconfig (8),
+.BR timeconfig (8),
+.BR authconfig (8),
+.BR ntsysv(8)
+
+.SH "AUTORID"
+.nf 
+H.J. Lu <hjl@valinux.com>
+.fi 
+.br 
+
+.br 
+Tõlge eesti keelde 2002: Marek Laane
+.br 
+bald@online.ee

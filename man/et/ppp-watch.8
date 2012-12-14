@@ -1,0 +1,19 @@
+.TH "PPP-WATCH" "8" "Red Hat, Inc." "RHS" "\""
+.SH "NIMI"
+ppp\-watch \- deemon, mis paneb PPP\-liidesed käituma rohkem teiste liideste moodi
+.SH "KOKKUVÕTE"
+.B ppp\-watch
+\fIliidese\-nimi\fP \fIliidese\-nimi\fP [boot]
+.SH "KIRJELDUS"
+.B ppp\-watch
+haldab PPP\-ühendust, sealhulgas selle käivitamist, peatamist ja taasvalimist. See muudab ühenduse käivitamise ja peatamise sünkroonseks tegevuseks.
+
+.B ppp\-watch
+ei ole tegelikult mõeldud kasutamiseks omaette, seda tuleks kasutada ainult skripti ifup\-ppp osana.
+.SH "VÕTMED"
+.TP 
+.I liidese\-nimi
+Käimapandava PPP\-liidese nimi.
+.TP 
+boot
+ppp\-watch kutsutakse välja alglaadimise ajal ning peaks aeguma mõne aja pärast, kui PPP õhendus käima ei lähe, et mitte panna hanguma alglaadimist tervikuna.

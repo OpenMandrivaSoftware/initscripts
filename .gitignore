@@ -2,3 +2,5 @@
 ChangeLog
 *bz2
 *.mo
+.*.swp
+.o

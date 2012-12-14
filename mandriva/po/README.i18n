@@ -1,0 +1,23 @@
+Some tips about the translations:
+
+* the three messages "  OK  ", "PASSED", "FAILED" are displayed in colour
+  (red, yellow and green resectively) and in a column at the right of
+  the screen; they are to tell  that everything went as it should (ok),
+  that it don't went as it should, but that it went on anyway (passed; used
+  for example after a forced chkfs), or that it failed.
+  the three messages must have the same width, so add as many spaces to the
+  smaller strings so that they all are the same; look at "OK" in english
+  for example.
+  If your script distinguish between upper and lowercase; use uppercase
+  for those three messages
+
+* don't translate service names, for exemple in a message like
+  "Starting xfs: " you must not translate "xfs", which is a program name.
+
+* don't translate options. for example in a message like:
+  "Usage: aaa {bbb|cccc|ddd|eeee}\n" only "Usage" has to be translated;
+  the rest remains as is.
+
+Don't hesitate to ask Thierry Vignaud <tvignaud@mandriva.com> if you
+have any question
+

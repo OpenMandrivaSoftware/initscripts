@@ -1,0 +1,61 @@
+.TH IPCALC 1 "April 30 2001" "Red Hat, Inc." RH \" -*- nroff -*-
+.SH NOM
+ipcalc \- effectue une simple manipulation des adresses IP
+.SH SYNOPSIS
+.B ipcalc
+[\fIOPTION\fR]... <\fBadresse IP\fR>[\fI/prefix\fR] [\fImasque réseau\fR]
+
+.SH DESCRIPTION
+\fBipcalc\fR permet de trouver simplement les informations IP d'un hôte.
+Les diverses options indiquent quelles informations \fBipcalc\fR doit
+afficher sur la sortie standard. Des options multiples peuvent être
+indiquées.  Une adresse IP sur laquelle opérer doit être spécifiée.
+La plupart des opérations nécessite aussi un masque réseau ou un préfixe
+CIDR.
+
+.SH OPTIONS
+.TP
+.TP
+\fB\-b\fR, \fB\-\-broadcast\fR 
+Affiche l'adresse de diffusion de l'adresse IP donnée et son masque réseau.
+
+.TP
+\fB\-h\fR, \fB\-\-hostname\fR 
+Affiche le nom d'hôte de l'adresse IP donnée.
+
+.TP
+\fB\-m\fR, \fB\-\-netmask\fR
+Calcule le masque réseau de l'adresse IP donnée. Suppose que l'adresse IP
+fait partie d'un réseau de classe A, B, ou C complet. De nombreux réseaux
+n'utilisent pas les masques réseau par défaut, dans ce cas une valeur
+incorrecte sera retournée.
+
+.TP
+\fB\-p\fR, \fB\-\-prefix\fR
+Indique le préfixe de l'adresse masque/IP.
+
+.TP
+\fB\-n\fR, \fB\-\-network\fR 
+Indique l'adresse réseau de l'adresse IP et du masque donnés.
+
+.TP
+\fB\-s\fR, \fB\-\-silent\fR 
+N'affiche jamais aucun message d'erreur.
+
+.SH AUTEURS
+.nf
+Erik Troan <ewt@redhat.com>
+.nf
+Preston Brown <pbrown@redhat.com>
+.fi
+.SH "RAPPORT DE BOGUES"
+Signaler les bogues dans notre système :
+http://bugzilla.redhat.com/bugzilla.
+.SH COPYRIGHT
+Copyright \(co 1997-2001 Red Hat, Inc.
+.br
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
+.SH "VOIR AUSSI"
+ipcalc(3)

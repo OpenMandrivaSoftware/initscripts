@@ -1,0 +1,22 @@
+.TH PPP-WATCH 8 "Red Hat, Inc." "RHS" \" -*- nroff -*-
+.SH NÁZEV
+ppp-watch \- démon umožňující chování rozhraní PPP podobnější ostatním rozhraním
+.SH SYNAPSE
+.B ppp-watch
+\fIinterface-name\fP [boot]
+.SH POPIS
+.B ppp-watch
+spravuje jedno připojení typu PPP, včetně spuštění, zastavení, a opakovaného vytočení.
+Ze spuštění a zastavení spojení vytváří synchronní aktivity.
+
+.B ppp-watch
+není ve skutečnosti myšlen pro přímé volání. Měl by být pouze použit ze skriptu 
+ifup-ppp.
+.SH VOLBY
+.TP
+.I interface-name
+Název rozhraní PPP, které má být spuštěno.
+.TP
+boot
+Skript ppp-watch je volán při startu počítače a měl by po chvíli pokračovat, pokud se
+nepodaří spojení PPP spustit, aby nezablokoval spouštěcí sekvenci.

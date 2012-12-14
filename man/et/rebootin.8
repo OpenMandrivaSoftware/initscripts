@@ -1,0 +1,42 @@
+.\" .IX rebootin
+.TH "rebootin" "8" "03. märts 2001" "Mandrakesoft" "Linux-Mandrake"
+.SH "NIMI"
+rebootin \- Teeb masinale uue alglaadimise konkreetset alglaaduri kirjet kasutades
+.SH "KOKKUVÕTE"
+.B rebootin [\fIVÕTMED\fR] <\fIkirje_nimi\fP>
+.SH "KIRJELDUS"
+\fBrebootin\fP teeb uue alglaadimise masinale, millel ta käivitati. Kui tavaline \fBreboot\fP nõuab Teilt käsitsi käivitamisel kasutatava kirje valimist, siis \fBrebootin\fP võimaldab määrata kirje käsureal.
+.PP 
+<\fIkirje_nimi\fP> on alglaadimiskirje nimi, nagu see esineb alglaaduri seadetefailis.
+.PP 
+\fBrebootin\fP toimib praegu \fBLILO\fP and \fBGrub\fP\-i puhul.
+.PP 
+Kui käivitada \fBrebootin\fP ilma argumendita, näidatakse saadaolevate kirjete loendit, mida praegune alglaadur toetab.
+.SH "VÕTMED"
+.TP 
+.I \-f
+Loob faili /fastboot taaskäivituseks kiiralglaadimise resiimis (nt ilma \fBfsck(8)\fP\-ta).
+.SH "FAILID"
+/etc/lilo.conf
+/boot/grub/menu.lst
+.br 
+\fBrebootin\fP käivitusfail (perli skript)
+.PP 
+.SH "VAATA KA"
+grub(8),
+lilo(8),
+fsck(8)
+.SH "AUTORID"
+Pascal Rigaux, Mandrakesoft
+.br 
+pixel@mandrakesoft.com
+.PP 
+Chmouel Boudjnah, Mandrakesoft
+.br 
+chmouel@mandrakesoft.com
+.br 
+
+.br 
+Tõlge eesti keelde 2002: Marek Laane
+.br 
+bald@online.ee

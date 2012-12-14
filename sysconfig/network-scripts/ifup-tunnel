@@ -54,6 +54,7 @@ esac
 # Generic tunnel devices are not supported here
 if [ "$DEVICE" = gre0 -o "$DEVICE" = tunl0 ]; then
     net_log $"Device '$DEVICE' isn't supported as a valid GRE device name."
+    mdv-network-event connection_failure ${DEVICE}
     exit 1
 fi
 

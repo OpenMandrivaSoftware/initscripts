@@ -1,25 +1,22 @@
 # /etc/profile.d/lang.csh - set i18n stuff
 
-set sourced=0
+if (! $?LC_SOURCED) then
+    set LC_SOURCED=0
+endif
 
-if ($?LANG) then
-    set saved_lang=$LANG
-    if ( -f "$HOME/.i18n" ) then
-	eval `sed -ne 's|^[[:blank:]]*\([^#=]\{1,\}\)=\([^=]*\)|setenv \1 \2;|p' "$HOME/.i18n"`
-	set sourced=1
-    endif
-    setenv LANG $saved_lang
-    unset saved_lang
+if ($?GDM_LANG) then
+    set LC_SOURCED=1
+    setenv LANG $GDM_LANG
 else
-    foreach file (/etc/locale.conf "$HOME/.i18n")
-        if ( -f $file ) then
-	    eval `sed -ne 's|^[[:blank:]]*\([^#=]\{1,\}\)=\([^=]*\)|setenv \1 \2;|p' $file`
-	    set sourced=1
-        endif
+    foreach file ("$HOME/.i18n" /etc/locale.conf )
+	if ($LC_SOURCED != 1 && -f $file ) then
+	    eval `sed 's|=C$|=en_US|g' $file | sed 's|^#.*||' | sed 's|\([^=]*\)=\([^=]*\)|setenv \1 \2|g' | sed 's|$|;|' `
+	    setenv LC_SOURCED 1
+	endif
     end
 endif
 
-if ($sourced == 1) then
+if ($LC_SOURCED == 1) then
     if ($?LC_ALL && $?LANG) then
         if ($LC_ALL == $LANG) then
             unsetenv LC_ALL
@@ -28,6 +25,44 @@ if ($sourced == 1) then
     
     set consoletype=`/sbin/consoletype stdout`
 
+    if ($?CHARSET) then
+        switch ($CHARSET)
+            case 8859-1:
+            case 8859-2:
+            case 8859-5:
+	    case 8859-8:
+            case 8859-15:
+            case KOI*:
+            case LATIN2*:
+                if ( $?TERM ) then
+                    if ( "$TERM" == "linux" ) then
+                        if ( "$consoletype" == "vt" ) then
+                            /bin/echo -n -e '\033(K' >/dev/tty
+                        endif
+                    endif
+                endif
+                breaksw
+	endsw
+    endif
+    if ($?SYSFONTACM) then
+        switch ($SYSFONTACM)
+	    case iso01*:
+	    case iso02*:
+	    case iso05*:
+	    case iso08*:
+	    case iso15*:
+	    case koi*:
+	    case latin2-ucw*:
+	        if ( $?TERM ) then
+		    if ( "$TERM" == "linux" ) then
+		        if ( "$consoletype" == "vt" ) then
+			    /bin/echo -n -e '\033(K' > /dev/tty
+		        endif
+		    endif
+		endif
+		breaksw
+	endsw
+    endif
     if ($?LANG) then
         switch ($LANG)
 	    case *.utf8*:
@@ -49,6 +84,17 @@ if ($sourced == 1) then
 			    		setenv LANG en_US.UTF-8
 			    		breaksw
 			    endsw
+			    if ( -x /bin/unicode_start ) then
+			      if { /sbin/consoletype fg } then
+			        if ( $?SYSFONT ) then
+			          if ( $?SYSFONTACM ) then
+			            unicode_start $SYSFONT $SYSFONTACM
+			          else
+			            unicode_start $SYSFONT
+			          endif
+			        endif
+			      endif
+			    endif
 			endif
 		    endif
 		endif
@@ -71,6 +117,11 @@ if ($sourced == 1) then
 			    		setenv LANG en_US
 			    		breaksw
 			    endsw
+			    if ( -x /bin/unicode_stop ) then
+                              if { /sbin/consoletype fg } then
+                                /bin/unicode_stop
+                              endif
+                            endif
 			endif
 		    endif
 		endif
@@ -79,5 +130,5 @@ if ($sourced == 1) then
     endif    
     unsetenv SYSFONTACM
     unsetenv SYSFONT
-    unsetenv consoletype
+    unset consoletype
 endif

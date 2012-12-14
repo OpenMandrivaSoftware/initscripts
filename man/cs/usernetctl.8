@@ -1,0 +1,41 @@
+.TH USERNETCTL 8 "Red Hat, Inc." "RHS" \" -*- nroff -*-
+.SH NÁZEV
+usernetctl \- umožňuje uživateli, pokud má příslušná práva, manipulovat se síťovým rozhraním
+.SH SYNAPSE
+.B usernetctl
+\fInázev-rozhraní\fP up\fI|\fPdown\fI|\fPreport
+.SH POPIS
+.B usernetctl
+kontroluje, zda má uživatel oprávnění manipulovat se síťovým rozhraním
+zadaným pomocí parametru \fInázev-rozhraní\fP, a poté se pokusí síťové rozhraní
+spustit nebo zastavit, podle příkazu z příkazové řádky (up nebo down), nebo vrací
+stav true nebo false (jeden z nich), pokud byla zadána volba report.
+
+.B usernetctl
+není určen pro přímé volání uživateli, i když je to v tuto chvíli možné.
+Používá se jako zabalení (wrapper) skripty ifup a ifdown, takže běžní uživatelé
+mohou provádět přesně totéž co uživatel root:
+.nf
+ifup \fInázev-rozhraní\fP
+ifdown \fInázev-rozhraní\fP
+.fi
+a skripty \fBifup\fP a \fBifdown\fP budou volat automaticky program usernetctl,
+aby bylo možné změnit stav síťového rozhraní.
+.SH VOLBY
+.TP
+.I "\fInázev-rozhraní"
+Název síťového rozhraní, které má skript zkontrolovat; například "ppp0".  Pro
+zpětnou kompatibilitu jsou rovněž podporovány názvy "ifcfg-ppp0" a
+"/etc/sysconfig/network-scripts/ifcfg-ppp0".
+.TP
+up\fI|\fPdown
+Pokusí se rozhraní spustit (up) nebo zastavit (down).
+.TP
+report
+Hlásí, zda-li má uživatel oprávnění spustit nebo zastavit síťové rozhraní.
+
+.SH SOUBORY
+.IR /etc/sysconfig/network-scripts/ifcfg-*
+
+.SH POZNÁMKY
+Alternativní nastavení zařízení mohou zdědit oprávnění z výchozího nastavení.

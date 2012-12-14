@@ -1,0 +1,27 @@
+.TH "CONSOLETYPE" "1" "Red Hat, Inc" "RH" "\""
+.SH "NIMI"
+.B consoletype
+\- näitab standardsisendiga seotud konsooli tüüpi
+.SH "KOKKUVÕTE"
+.B consoletype
+.SH "KIRJELDUS"
+.B consoletype
+näitab konsoolitüüpi, mis on seotud standardsisendiga. Näidatavaks on 
+.I vt,
+kui konsool on virtuaalne terminal (/dev/tty* või /dev/console seade, kui ei asu jadakonsoolil),
+.I serial,
+kui standardsisend on jadakonsool (/dev/console or /dev/ttyS*) ja
+.I pty,
+kui standardsisend on pseudoterminal.
+.SH "VÄÄRTUSVÄLJUNDID"
+.B consoletype
+annab tulemuseks
+.TP 
+.I 0,
+kui tegu on virtuaalse terminaliga,
+.TP 
+.I 1,
+kui tegu on jadakonsooliga,
+.TP 
+.I 2,
+kui tegu on pseudoterminaliga.

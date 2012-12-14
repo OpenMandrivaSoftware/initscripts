@@ -1,0 +1,17 @@
+.TH DETECTLOADER 8 "Apr 2000" "initscripts" "MandrakeSoft"
+.SH NOME
+detectloader \- Rileva quale tipo di loader hai sul disco.
+.SH DESCRIZIONE
+.PP
+\fBdetectloader\fR rileva che tipo di boot loader hai sull'
+\fBMBR\fR. Esso individua il primo disco tramite /proc/partitions 
+e tramite il magic serial determina il tipo di boot loader installato.
+.SH LIMITAZIONE
+.PP
+Supporta soltanto grub, lilo, e yaboot (i boot loaders che usiamo per \fBLinux
+Mandrake\fR). Patch per altri boot loaders sono bene accette.
+.SH COPYRIGHT
+Copyright \(co 1999/2000 MandrakeSoft.
+.PP
+Questo è software libero; vedi le condizioni di distribuzione allegate al sorgente.
+Non viene data alcuna garanzia, neppure quella implicita di NEGOZIABILITÀ o di APPLICABILITÀ PER UN PARTICOLARE SCOPO.

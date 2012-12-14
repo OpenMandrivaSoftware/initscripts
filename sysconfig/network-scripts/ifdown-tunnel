@@ -25,7 +25,7 @@
 cd /etc/sysconfig/network-scripts
 . ./network-functions
 
-[ -f ../network ] && . ../network
+[ -f /etc/sysconfig/network ] && . /etc/sysconfig/network
 
 CONFIG=$1
 need_config "$CONFIG"

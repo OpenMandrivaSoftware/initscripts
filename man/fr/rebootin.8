@@ -1,0 +1,41 @@
+.TH rebootin 8 "03 Mar 2001" "Mandrakesoft" "Linux-Mandrake"
+.IX rebootin
+.SH NOM
+rebootin \- Redémarrage avec une entrée donnée du chargeur de démarrage
+.SH SYNOPSIS
+.B rebootin [\fIOPTIONS\fR] <\fIlabel\fP>
+.SH DESCRIPTION
+\fBrebootin\fP redémarre la machine qui l'exécute. Alors qu'un simple
+\fBreboot\fP vous devez sélectionner manuellement l'entrée du chargeur
+de démarrage, \fBrebootin\fP vous permet de spécifier l'entrée de 
+démarrage directement sur la ligne de commande.
+.PP
+<\fIlabel\fP> est le nom de l'entrée comme indiquée dans le fichier de
+configuration du chargeur de démarrage.
+.PP
+\fBrebootin\fP fonctionne avec \fBLILO\fP et \fBGRUB\fP.
+.PP
+Lancer \fBrebootin\fP sans argument affiche la liste des entrées connues
+par le chargeur de démarrage en cours.
+.SH OPTIONS
+.TP
+.I -f
+Crée un fichier /fastboot pour redémarrer rapidement (ex : pas de \fBfsck(8)\fP).
+.SH FICHIERS
+/etc/lilo.conf
+/boot/grub/menu.lst
+.br
+L'exécutable \fBrebootin\fP (script perl)
+.PP
+.SH "VOIR AUSSI"
+grub(8),
+lilo(8),
+fsck(8)
+.SH AUTEURS
+Pascal Rigaux, Mandrakesoft
+.br
+pixel@mandrakesoft.com
+.PP
+Chmouel Boudjnah, Mandrakesoft
+.br
+chmouel@mandrakesoft.com

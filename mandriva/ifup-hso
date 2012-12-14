@@ -1,0 +1,78 @@
+#! /bin/bash
+
+. /etc/init.d/functions
+
+cd /etc/sysconfig/network-scripts
+. ./network-functions
+
+CONFIG=$1
+[ -f "${CONFIG}" ] || CONFIG=ifcfg-${1}
+source_config
+
+if [ "${2}" = "boot" -a "${ONBOOT}" = "no" ]; then
+  exit
+fi
+
+[ -z "$CELLULAR_CID" ] && CELLULAR_CID=1
+[ "${DEBUG}" = "yes" ] && CHATDBG="-v"
+
+CHATSCRIPT=/etc/sysconfig/network-scripts/chat-${DEVNAME}
+[ -f ${CHATSCRIPT} ] || {
+  CHATSCRIPT=/etc/sysconfig/network-scripts/chat-${PARENTDEVNAME}
+}
+[ -f ${CHATSCRIPT} ] || {
+ echo $"/etc/sysconfig/network-scripts/chat-${DEVNAME} does not exist"
+ echo $"ifup-hso for ${DEVNAME} exiting"
+ logger -p daemon.info -t ifup-hso \
+   $"/etc/sysconfig/network-scripts/chat-${DEVNAME} does not exist for ${DEVICE}"
+ exit 1
+}
+
+CELLULAR_PIN=$(cat pin-${DEVICE} 2>/dev/null)
+if [ -n "$CELLULAR_PIN" -a -x /usr/sbin/comgt ]; then
+    COMGTPIN=$CELLULAR_PIN comgt PIN -d $MODEMPORT
+fi
+
+if ! /usr/sbin/chat ${CHATDBG} -s -f ${CHATSCRIPT} < $MODEMPORT > $MODEMPORT; then
+    echo $"Connect script failed"
+    exit 1
+fi
+
+CHATSCRIPT=`mktemp /tmp/chatXXXXXX`
+CHATRESULT=`mktemp /tmp/chatXXXXXX`
+cat > $CHATSCRIPT <<EOF
+ABORT ERROR
+TIMEOUT 10
+"" ATZ
+OK "AT_OWANCALL=${CELLULAR_CID},1,0"
+OK "AT_OWANDATA=${CELLULAR_CID}"
+OK ""
+EOF
+TRIES=10
+BOOTARG=$2
+
+while [ "$TRIES" -gt 0 ]; do
+    if /usr/sbin/chat ${CHATDBG} -s -V -f ${CHATSCRIPT} < $MODEMPORT > $MODEMPORT 2> ${CHATRESULT}; then
+	DATA=$(grep ^_OWANDATA $CHATRESULT)
+	if [ -n "$DATA" ]; then
+	    set $(echo $DATA | cut -d ',' -f 2,4,5 --output-delimiter ' ')
+	    IPADDR=$1
+	    DNS1=$2
+	    DNS2=$3
+	    break
+	fi
+    fi
+    sleep 2
+    let TRIES=$TRIES-1
+done
+rm -f $CHATSCRIPT $CHATRESULT
+
+if [ "$TRIES" = 0 ]; then
+    echo $"Connect script failed (HSO)"
+    exit 1
+fi
+
+ifconfig $DEVICE $IPADDR up
+route add default dev $DEVICE ${METRIC:+metric $METRIC}
+export DNS1 DNS2
+exec /etc/sysconfig/network-scripts/ifup-post ${CONFIG} $BOOTARG

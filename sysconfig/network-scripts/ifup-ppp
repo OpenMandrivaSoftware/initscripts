@@ -9,16 +9,20 @@ cd /etc/sysconfig/network-scripts
 if [ "${1}" = daemon ] ; then
   # we've been called from ppp-watch, so don't invoke it for persistence
   shift
+  # do not detach connection so that ppp-watch can monitor it
+  DETACH=nodetach
 else
   # just in case a full path to the configuration file is passed in
   CONFIG=${1##*/} # CONFIG=$(basename $1)
   [ -f "${CONFIG}" ] || CONFIG=ifcfg-${1}
   source_config
-  # don't start ppp-watch by xDSL
-  if [ "${DEMAND}" != yes -a "$TYPE" != "xDSL" ] ; then
+  # don't start ppp-watch by xDSL and ADSL
+  if [ "${DEMAND}" != yes -a "$TYPE" != "xDSL" -a "$TYPE" != "ADSL" ] ; then
     # let ppp-watch do the right thing
     exec /sbin/ppp-watch "${CONFIG##ifcfg-}" "$2"
   fi
+  # detach connection not to hang boot
+  DETACH=updetach
 fi
 
 CONFIG=$1
@@ -46,17 +50,19 @@ fi
   echo $"ifup-ppp for ${DEVICE} exiting"
   /usr/bin/logger -p daemon.info -t ifup-ppp \
     $"pppd does not exist or is not executable for ${DEVICE}"
+  mdv-network-event connection_failure ${DEVICE}
   exit 1
 }
 
 # check that xDSL connection
 if [ "$TYPE" = "xDSL" ] ; then
     if [ -x /usr/sbin/adsl-start ] ; then
-        adsl-start /etc/sysconfig/network-scripts/$CONFIG
+        adsl-start
         exit $?
     else
         /usr/bin/logger -p daemon.info -t ifup-ppp \
             $"adsl-start does not exist or is not executable for ${DEVICE}"
+        mdv-network-event connection_failure ${DEVICE}
         exit 1
     fi
 fi
@@ -75,6 +81,7 @@ if [ ! -f ${PEERCONF} ]; then
      echo $"ifup-ppp for ${DEVNAME} exiting"
      /usr/bin/logger -p daemon.info -t ifup-ppp \
        $"/etc/sysconfig/network-scripts/chat-${DEVNAME} does not exist for ${DEVICE}"
+     mdv-network-event connection_failure ${DEVICE}
      exit 1
     }
   fi
@@ -102,12 +109,12 @@ fi
 if [ "${DEFROUTE}" != no ] ; then
   # pppd will no longer delete an existing default route
   # so we have to help it out a little here.
-  DEFRT=$(ip route list match 0.0.0.0/0)
+  DEFRT=$(ip route list match 0.0.0.0/0 dev ${DEVICE})
   [ -n "${DEFRT}" ] && echo "$DEFRT" > /etc/default-routes
-  echo "$DEFRT" | while read spec; do
+  [ -n "${DEFRT}" ] && echo "$DEFRT" | while read spec; do
       ip route del $spec;
   done
-  opts="$opts defaultroute"
+  opts="$opts defaultroute multipledefaultroutes"
 fi
 if [ "${PEERDNS}" != no ] ; then
   cp -f /etc/resolv.conf /etc/resolv.conf.save
@@ -130,16 +137,30 @@ if [ "${DEBUG}" = yes ] ; then
   opts="$opts debug"
 fi
 
-if [ ${DEMAND} = yes ] ; then
+if [ "${DEMAND}" = yes ] ; then
   opts="$opts demand ktune idle ${IDLETIMEOUT} holdoff ${RETRYTIMEOUT}"
   exec=
 else
-  opts="$opts nodetach"
+  opts="$opts $DETACH"
   exec=exec
 fi
 
-/usr/bin/logger -p daemon.info -t ifup-ppp \
-  $"pppd started for ${DEVNAME} on ${MODEMPORT} at ${LINESPEED}"
+if [ "$TYPE" != "xDSL" -a "$TYPE" != "ADSL" ] ; then
+    CELLULAR_PIN=$(cat pin-${DEVICE} 2>/dev/null)
+    if [ -n "$CELLULAR_PIN" -a -x /usr/sbin/comgt ]; then
+	COMGTPIN=$CELLULAR_PIN comgt PIN -d $MODEMPORT
+    fi
+fi
+
+# ATM bridging support, enabled if ATM_ADDR is defined (VCI.VPI)
+# useful for pppoe over USB modems 
+if [ -n "${ATM_ADDR}" -a -n "${ATM_DEVICE}" -a -x /usr/sbin/br2684ctl ]; then
+    br2684ctl -b -c 0 -a ${ATM_ADDR}
+    ifconfig ${ATM_DEVICE} up
+fi 
+
+(logger -p daemon.info -t ifup-ppp \
+  $"pppd started for ${DEVNAME} on ${MODEMPORT} at ${LINESPEED}" &)&
 
 $exec pppd $opts ${MODEMPORT} ${LINESPEED} \
     ipparam ${DEVNAME} linkname ${DEVNAME} call ${DEVNAME}\

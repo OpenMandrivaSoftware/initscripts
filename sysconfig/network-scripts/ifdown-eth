@@ -20,9 +20,12 @@
 cd /etc/sysconfig/network-scripts
 . ./network-functions
 
-[ -f ../network ] && . ../network
+[ -f /etc/sysconfig/network ] && . /etc/sysconfig/network
 
 CONFIG=${1}
+boot=$2
+daemon=
+[ "foo${boot}" = "fooboot" -o "foo${boot}" = "foodaemon" ] && daemon=1
 
 source_config
 
@@ -80,28 +83,51 @@ if is_bonding_device ${DEVICE} ; then
 fi
 
 /etc/sysconfig/network-scripts/ifdown-ipv6 ${CONFIG}
+if [[ "${DHCPV6C}" = [Yy1]* ]] && [ -f /var/run/dhcp6c_${DEVICE}.pid ]; then
+	kill $(cat /var/run/dhcp6c_${DEVICE}.pid);
+	rm -f /var/run/dhcp6c_${DEVICE}.pid;
+fi
+
+# Kill running dhcp client if present
+dhcp_client_pids() {
+    CLIENTS='dhcpcd|pump|dhcpxd|dhclient|zcip'
+    [ -n "${daemon}" -o "$MII_NOT_SUPPORTED" = "yes" ] && CLIENTS="${CLIENTS}|wpa_supplicant"
+    ps xw | egrep "${CLIENTS}" | grep ${DEVICE} | awk '{print $1;}'
+}
+
+if [ -n "${daemon}" -a "$MII_NOT_SUPPORTED" != "yes" ]; then
+    # use ifplugd -k -W to wait for it to be killed
+    /sbin/ifplugd -k -W -i ${DEVICE}
+fi
+if [[ "${DHCPV6C}" = [Yy1]* ]] && [ -f /var/run/dhcp6c_${DEVICE}.pid ]; then
+	kill $(cat /var/run/dhcp6c_${DEVICE}.pid);
+	rm -f /var/run/dhcp6c_${DEVICE}.pid;
+fi
+
+# Kill running dhcp client if present
+dhcp_client_pids() {
+    CLIENTS='dhcpcd|pump|dhcpxd|dhclient|zcip'
+    [ -n "${daemon}" -o "$MII_NOT_SUPPORTED" = "yes" ] && CLIENTS="${CLIENTS}|wpa_supplicant"
+    ps xw | egrep "${CLIENTS}" | grep ${DEVICE} | awk '{print $1;}'
+}
+
+if [ -n "${daemon}" -a "$MII_NOT_SUPPORTED" != "yes" ]; then
+    # use ifplugd -k -W to wait for it to be killed
+    /sbin/ifplugd -k -W -i ${DEVICE}
+fi
 
 retcode=0
-[ -n "$(pidof -x dhclient)" ] && {
-   for VER in "" 6 ; do
-	if [ -f "/var/run/dhclient$VER-${DEVICE}.pid" ]; then
-		dhcpid=$(cat /var/run/dhclient$VER-${DEVICE}.pid)
-		generate_lease_file_name $VER
-		if [[ "$DHCPRELEASE" = [yY1]* ]];  then
-			/sbin/dhclient -r -lf ${LEASEFILE} -pf /var/run/dhclient$VER-${DEVICE}.pid ${DEVICE} >/dev/null 2>&1
-			retcode=$?
-		else
-			kill $dhcpid >/dev/null 2>&1
-			retcode=$?
-			reason=STOP$VER interface=${DEVICE} /sbin/dhclient-script
-		fi
-		if [ -f "/var/run/dhclient$VER-${DEVICE}.pid" ]; then
-			rm -f /var/run/dhclient$VER-${DEVICE}.pid
-			kill $dhcpid >/dev/null 2>&1
-		fi	
-	fi
+pids=`dhcp_client_pids`
+if [ -n "$pids" ]; then
+    kill $pids
+    retcode=$?
+    waited=0
+    while ! dhcp_client_pids > /dev/null && [ "$waited" -lt 50 ] ; do
+	usleep 10000
+	waited=$(($waited+1))
     done
-}	
+fi
+
 # we can't just delete the configured address because that address
 # may have been changed in the config file since the device was
 # brought up.  Flush all addresses associated with this
@@ -116,6 +142,11 @@ if [ -d "/sys/class/net/${REALDEVICE}" ]; then
 	if [ "${SLAVE}" = "yes" -a -n "${MASTER}" ]; then
 		echo "-${DEVICE}" > /sys/class/net/${MASTER}/bonding/slaves 2>/dev/null
 	fi
+
+	# Remove ip addresses from kernel
+	for ip in `ip addr show | egrep ${DEVICE}\$ | grep inet | awk '{print $2;}'`; do
+		ip addr del $ip dev ${DEVICE}
+	done
 
 	if [ "${REALDEVICE}" = "${DEVICE}" ]; then
   		ip link set dev ${DEVICE} down 2>/dev/null
@@ -146,7 +177,7 @@ while ! check_device_down ${DEVICE} && [ "$waited" -lt 50 ] ; do
 done
 
 # don't leave an outdated key sitting around
-if [ -n "${WIRELESS_ENC_KEY}" ] && [ -x /sbin/iwconfig ]; then
+if [ -z "$IN_HOTPLUG" -a -n "${WIRELESS_ENC_KEY}" -a -x /sbin/iwconfig ]; then
     /sbin/iwconfig ${DEVICE} enc 0 >/dev/null 2>&1
 fi
 

@@ -1,0 +1,32 @@
+.TH "USERNETCTL" "8" "Red Hat, Inc." "RHS" "\""
+.SH "NIMI"
+usernetctl \- võimaldab kasutajal vajaliku loa olemasolul manipuleerida võrguliidesega
+.SH "KOKKUVÕTE"
+.B usernetctl
+\fIliidese\-nimi\fP up\fI|\fPdown\fI|\fPreport
+.SH "KIRJELDUS"
+.B usernetctl
+kontrollib, kas kasutajatel on lubatud manipuleerida võrguliidesega, mis on määratud võtmega \fIliidese\-nimi\fP, ning püüab võrguliidest käima panna või seisata, kui vastavad võtmed (up või down) on käsureal antud, või teatada vastavalt tõesest või valest staatusest, kui nõutud on raport.
+
+.B usernetctl
+ei ole tegelikult mõeldud otsekasutamiseks, kuigi praegu on see väga ilusasti võimalik. Algse idee kohaselt pidanuks see pigem olema osa skriptidest ifup ja ifdown, et võimaldada kasutajatel talitada täpselt nagu administraator:
+.nf 
+ifup \fIliidese\-nimi\fP
+ifdown \fIliidese\-nimi\fP
+.fi 
+ja \fBifup\fP ning \fBifdown\fP kutsuvad välja usernetctl\-i, lubamaks automaatselt muuta liidese olekut.
+.SH "VÕTMED"
+.TP 
+.I "\fIliidese\-nimi"
+Kontrollitava võrguliidese nimi, nt "ppp0".  Tagasiühilduvuse huvides on toetatud ka "ifcfg\-ppp0" ja "/etc/sysconfig/network\-scripts/ifcfg\-ppp0".
+.TP 
+up\fI|\fPdown
+Püüab liidese vastavalt käima panna või seisata.
+.TP 
+report
+Raport, kas kasutajad saavad liidest käima panna või seisata.
+.SH "FAILID"
+.I R /etc/sysconfig/network\-scripts/ifcfg\-*
+
+.SH "MÄRKUSED"
+Alternatiivsed seadmete sätted võivad saada päranduseks vaikesätete loabitid.
