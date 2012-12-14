@@ -60,5 +60,5 @@ ppp-watch.o: ppp-watch.c
 	$(CC) $(CFLAGS) `pkg-config glib-2.0 --cflags` -c ppp-watch.c -o ppp-watch.o
 
 rename_device: rename_device.c
-	$(CC) $(CFLAGS) `pkg-config glib-2.0 --cflags` -o $@ $< `pkg-config glib-2.0 --libs`
+	$(CC) $(CFLAGS) $(LDFLAGS) `pkg-config glib-2.0 --cflags` -o $@ $< `pkg-config glib-2.0 --libs`
 
