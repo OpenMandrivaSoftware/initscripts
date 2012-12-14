@@ -9,5 +9,5 @@ After=local-fs.target
 ExecStart=-/etc/init.d/mandrake_everytime
 Type=oneshot
 TimeoutSec=0
-StandardInput=tty
+StandardInput=null
 RemainAfterExit=yes
