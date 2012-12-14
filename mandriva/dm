@@ -13,7 +13,8 @@
 #
 ### BEGIN INIT INFO
 # Provides: dm
-# Should-Start: network-auth acpid lircmd xfs haldaemon
+# Required-Start: messagebus
+# Should-Start: network-auth acpid lircmd xfs
 # Default-Start: 5 7
 # Short-Description: Launches the graphical display manager
 # Description: This startup script launches the graphical display manager.
