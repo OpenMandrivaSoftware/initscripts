@@ -42,13 +42,10 @@ install: all check
 	mkdir -p $(ROOT)/etc/sysconfig/network-scripts/hostname.d
 	mkdir -p $(ROOT)/etc/sysconfig/network-scripts/wireless.d
 	mkdir -p $(ROOT)/etc/X11/xsetup.d
-	mkdir -p $(ROOT)/var/lib/speedboot
 	install -m755 if{up,down}-hso $(ROOT)/etc/sysconfig/network-scripts/
 	install -m755 rc.modules $(ROOT)/etc/
 	install -m644 modules $(ROOT)/etc/
 	install -m755 lookupdm $(ROOT)/etc/X11/
-	install -m755 90speedboot.xsetup $(ROOT)/etc/X11/xsetup.d/
-	install -m644 speedboot $(ROOT)/etc/sysconfig/speedboot
 	for profile in {inputrc,tmpdir}.{c,}sh; do \
 	  install -m644 $$profile $(ROOT)/etc/profile.d/$(PROFILE_LEVEL)$$profile; \
 	done
