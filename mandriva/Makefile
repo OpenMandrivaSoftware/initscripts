@@ -58,10 +58,6 @@ install: all check
 	install -m755 hibernate-cleanup.sh $(ROOT)/sbin/
 	install -m755 lsb-init-functions $(ROOT)/lib/lsb/init-functions
 	install -m755 mdv-network-event $(ROOT)/usr/sbin/
-ifneq ($(shell if echo $(ARCH)|grep -q 'sparc';then echo sparc;fi),sparc)
-	install -m755 supermount $(ROOT)/usr/sbin/
-	install -m644 supermount.8 $(ROOT)$(mandir)/man8/
-endif
 # For Netscrape
 ifeq ($(ARCH), alpha)
 	@echo -e '\nbinfmt_aout' >> $(ROOT)/etc/modules
