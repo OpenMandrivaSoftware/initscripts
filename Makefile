@@ -121,12 +121,6 @@ install:
 	install -m 644 initscripts.tmpfiles.d $(ROOT)/lib/tmpfiles.d/initscripts.conf
 	install -m 644 mandriva.tmpfiles.d $(ROOT)/lib/tmpfiles.d/mandriva.conf
 
-# These are LSB compatibility symlinks.  At some point in the future
-# the actual files will be here instead of symlinks
-	for i in 0 1 2 3 4 5 6 S; do \
-		ln -s rc.d/rc$$i.d $(ROOT)/etc/rc$$i.d; \
-	done
-
 	mkdir -p -m 755 $(ROOT)/usr/libexec/initscripts/legacy-actions
 
 
