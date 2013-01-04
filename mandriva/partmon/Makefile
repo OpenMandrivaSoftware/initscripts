@@ -1,5 +1,4 @@
-SH=partmon
-PL=partmon.pl
+SH=partmon partmon.sh
 
 all: check
 
@@ -8,7 +7,6 @@ check:
 	@for i in $(PL);do perl -wc $$i || exit 1;done
 
 install:
-	mkdir -p $(ROOT)/usr/bin $(ROOT)/etc/rc.d/init.d
-	install -D -m755 partmon $(ROOT)/etc/rc.d/init.d/partmon
-	install -D -m755 partmon.pl $(ROOT)/usr/bin/partmon
-	install -D -m644 partmon.sysconfig $(ROOT)/etc/sysconfig/partmon
+	install -m755 partmon -D $(ROOT)/etc/rc.d/init.d/partmon
+	install -m755 partmon.sh -D $(ROOT)/usr/bin/partmon
+	install -m644 partmon.sysconfig -D $(ROOT)/etc/sysconfig/partmon
