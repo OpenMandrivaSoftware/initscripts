@@ -1,4 +1,3 @@
-#!/bin/sh
 # $Id$
 # Set TMPDIR to ~/tmp and create it if directory not exist.
 
