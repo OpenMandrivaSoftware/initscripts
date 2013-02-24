@@ -1,6 +1,6 @@
 Summary: The inittab file and the /etc/init.d scripts
 Name: initscripts
-Version: 9.43
+Version: 9.44
 # ppp-watch is GPLv2+, everything else is GPLv2
 License: GPLv2 and GPLv2+
 Group: System Environment/Base
@@ -105,7 +105,7 @@ exit 0
 
 %postun
 if [ $1 -ge 1 ]; then
-	/bin/systemctl daemon-reload > /dev/null 2>&1 || :
+  /bin/systemctl daemon-reload > /dev/null 2>&1 || :
 fi
 
 %clean
@@ -207,6 +207,7 @@ rm -rf $RPM_BUILD_ROOT
 %ghost %verify(not md5 size mtime) %config(noreplace,missingok) /etc/crypttab
 %dir /lib/tmpfiles.d
 /lib/tmpfiles.d/initscripts.conf
+%dir /usr/libexec/initscripts
 %dir /usr/libexec/initscripts/legacy-actions
 
 %files -n debugmode
@@ -215,6 +216,30 @@ rm -rf $RPM_BUILD_ROOT
 /etc/profile.d/debug*
 
 %changelog
+* Wed Feb 20 2013 Lukáš Nykrýn <lnykryn@redhat.com> - 9.44-1
+- limit udev rule for network renaming (#907365, mschmidt@redhat.com)
+- fix path for arpwatch, seems to be in /var/lib on Fedora 18
+- fix the path for lvm cache, there is no file /etc/lvm/.cache ( but there is one /etc/lvm/cache )
+- fix path for dhcpd, is /var/lib/dhcpd since 2005 ( see 31cdb58df77 on the dhcp package git )
+- fix the patch for apache modules in rwtab, that are now in /var/cache/httpd
+- remove no longer used directory ( at least in Fedora ), hald is deprecated,
+  /var/tux cannot be found and xend seems to use a subdirectory of /var/lib/xen
+- correct the path for puppet directory in /etc/rwtab, now use /var/lib/puppet by default
+- allow passing -F from /.autorelabel to fixfiles when relabeling system (#904279)
+- correctly detect Open vSwitch device types
+- clear DEVICE and TYPE variables before every iteration (#902463)
+- sets BONDING_OPTS before interface is brougth up
+- check an IP address for existence in ifup-alias (#852005)
+- sync FSF address with GPL 2 text.
+- fix rpmlint's spaces vs tabs warning.
+- fix bogus %changelog dates.
+- build with $RPM_LD_FLAGS.
+- use -sf, not -s. (#901827)
+- add /usr/libexec/initscripts to file list (#894475)
+- rename term256 to 256term (glob sort) (#849429)
+- readd missing shebang. (#885821)
+- migrate even further away from /etc/sysconfig/network for hostname, and /etc/sysconfig/i18n.
+
 * Fri Dec  7 2012 Bill Nottingham <notting@redhat.com> - 9.43-1
 - 60-net.rules: explicitly set the interface name (#870859)
 - ifup-eth: set firewall zone before ifup-ipv6 for DHCPv6 (#802415)
@@ -1443,7 +1468,7 @@ rm -rf $RPM_BUILD_ROOT
 * Thu Oct 07 2004 Florian La Roche <Florian.LaRoche@redhat.de>
 - change /etc/sysctl.conf to not allow source routed packets per default
 
-* Fri Oct  6 2004 Bill Nottingham <notting@redhat.com> - 7.88-1
+* Wed Oct  6 2004 Bill Nottingham <notting@redhat.com> - 7.88-1
 - fix requires
 
 * Tue Oct  5 2004 Dan Walsh <dwalsh@redhat.com> - 7.87-1
@@ -1541,7 +1566,7 @@ rm -rf $RPM_BUILD_ROOT
 * Tue Aug 24 2004 Karsten Hopp <karsten@redhat.de> 7.68-1
 - execute zfcfconf.sh if available (mainframe)
 
-* Mon Aug 20 2004 Jason Vas Dias <jvdias@redhat.com> 7.67-1
+* Mon Aug 23 2004 Jason Vas Dias <jvdias@redhat.com> 7.67-1
 - fix change_resolv_conf: if pre-existing /etc/resolv.conf
 - non-existent or empty, replace with new file contents.
 
@@ -1574,7 +1599,7 @@ rm -rf $RPM_BUILD_ROOT
 - fix nfs unmounting (#129765)
 - fix URL (#129433)
 
-* Tue Aug 11 2004 Jason Vas Dias <jvdias@redhat.com> 7.61-1
+* Wed Aug 11 2004 Jason Vas Dias <jvdias@redhat.com> 7.61-1
 - fix for bug 120093: add PERSISTENT_DHCLIENT option to ifcfg files
 
 * Tue Aug  3 2004 Karsten Hopp <karsten@redhat.de> 7.60-1
@@ -1918,7 +1943,7 @@ rm -rf $RPM_BUILD_ROOT
 - loop checking for network link state, don't unilterally wait five
   seconds
 
-* Fri Dec 14 2002 Karsten Hopp <karsten@redhat.de> 6.99-1
+* Sat Dec 14 2002 Karsten Hopp <karsten@redhat.de> 6.99-1
 - remove call to /sbin/update for S/390, too
 
 * Wed Dec 11 2002 Bill Nottingham <notting@redhat.com> 6.98-1
@@ -2271,7 +2296,7 @@ rm -rf $RPM_BUILD_ROOT
 * Mon Jul 16 2001 Than Ngo <than@redhat.com>
 - fix country_code for ISDN
 
-* Tue Jul  9 2001 Bill Nottingham <notting@redhat.com>
+* Mon Jul  9 2001 Bill Nottingham <notting@redhat.com>
 - fix '--check'
 - prereq sh-utils (#43065)
 - fix some invocations of reboot/halt (#45966)
@@ -2287,7 +2312,7 @@ rm -rf $RPM_BUILD_ROOT
 - Fix up kernel versioning on binary-only modules (S390)
 - don't use newt scripts on S390 console
 
-* Sat Jul 01 2001 Trond Eivind Glomsrød <teg@redhat.com>
+* Sun Jul 01 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - reenable pump, but make sure dhcpcd is the default. This
   way, upgrades of systems without dhcpcd has a better chance at
   working.
@@ -2525,7 +2550,7 @@ rm -rf $RPM_BUILD_ROOT
 * Tue Aug 15 2000 Nalin Dahyabhai <nalin@redhat.com>
 - be more careful about creating files in netreport (#16164)
 
-* Sat Aug 11 2000 Nalin Dahyabhai <nalin@redhat.com>
+* Fri Aug 11 2000 Nalin Dahyabhai <nalin@redhat.com>
 - move documentation for the DEMAND and IDLETIMEOUT values to the right
   section of sysconfig.txt
 
@@ -2594,7 +2619,7 @@ rm -rf $RPM_BUILD_ROOT
 * Sun Jul 02 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - don't use tail
 
-* Thu Jun 28 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Wed Jun 28 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - add support for USB controllers and HID devices
   (mice, keyboards)
 
@@ -2636,7 +2661,7 @@ rm -rf $RPM_BUILD_ROOT
 - fix lang.csh, again (oops)
 - use /poweroff, /halt to determine whether to poweroff
 
-* Thu Apr 14 2000 Bill Nottingham <notting@redhat.com>
+* Fri Apr 14 2000 Bill Nottingham <notting@redhat.com>
 - fix testing of RESOLV_MODS (which shouldn't be used anyways)
 
 * Tue Apr 04 2000 Ngo Than <than@redhat.de>
@@ -2740,7 +2765,7 @@ rm -rf $RPM_BUILD_ROOT
 - better signal handling in ppp-watch
 - yet another attempt to fix those rare PAP/CHAP problems
 
-* Sat Nov 28 1999 Bill Nottingham <notting@redhat.com>
+* Sun Nov 28 1999 Bill Nottingham <notting@redhat.com>
 - impressive. Three new features, three new bugs.
 
 * Mon Nov 22 1999 Michael K. Johnson <johnsonm@redhat.com>
@@ -3013,7 +3038,7 @@ rm -rf $RPM_BUILD_ROOT
 * Tue Nov 10 1998 Michael K. Johnson <johnsonm@redhat.com>
 - handle new linuxconf output for ipaliases
 
-* Mon Oct 15 1998 Erik Troan <ewt@redhat.com>
+* Thu Oct 15 1998 Erik Troan <ewt@redhat.com>
 - fixed raid start stuff
 - added raidstop to halt
 
