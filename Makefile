@@ -25,8 +25,8 @@ install:
 	install -m755  service $(ROOT)/sbin
 	install -m644  lang.csh $(ROOT)/etc/profile.d/10lang.csh
 	install -m644  lang.sh $(ROOT)/etc/profile.d/10lang.sh
-	install -m644  term256.csh $(ROOT)/etc/profile.d/10term256.csh
-	install -m644  term256.sh $(ROOT)/etc/profile.d/10term256.sh
+	install -m644  256term.csh $(ROOT)/etc/profile.d/10term256.csh
+	install -m644  256term.sh $(ROOT)/etc/profile.d/10term256.sh
 	install -m644  debug.csh debug.sh $(ROOT)/etc/profile.d
 	install -m755  sys-unconfig $(ROOT)/usr/sbin
 	install -m644  service.8 sys-unconfig.8 $(ROOT)$(mandir)/man8
