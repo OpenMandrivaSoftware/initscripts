@@ -112,13 +112,11 @@ if [ "$REWRITEISSUE" = "rewrite" -a -f /etc/release ]; then
     # want to make to /etc/issue here or you will lose them when you reboot.
 
     if [ -x /usr/bin/linux_logo ]; then
-	/usr/bin/linux_logo -n -f | sed -e 's|\\|\\\\|g' > /etc/issue
-	echo "" >> /etc/issue
+	/usr/bin/linux_logo -t "$R" -f | sed -e 's|\\|\\\\|g' > /etc/issue
     else
-	> /etc/issue
+	echo "$R" > /etc/issue
+	echo "Kernel $(uname -r) on $a $SMP$(uname -m) / \l" >> /etc/issue
     fi
-    echo "$R" >> /etc/issue
-    echo "Kernel $(uname -r) on $a $SMP$(uname -m) / \l" >> /etc/issue
     
     if [ "$REWRITEISSUENET" = "rewrite" ]; then
 	echo "Welcome to ${HOST}" > /etc/issue.net
