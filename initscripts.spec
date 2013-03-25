@@ -162,8 +162,8 @@ rm -rf $RPM_BUILD_ROOT
 %dir /etc/rwtab.d
 /etc/statetab
 %dir /etc/statetab.d
-/usr/lib/systemd/fedora-*
-/usr/lib/systemd/system/*
+/lib/systemd/fedora-*
+/lib/systemd/system/*
 /etc/inittab
 %dir /etc/rc.d
 %dir /etc/rc.d/rc[0-9].d
