@@ -13,6 +13,7 @@ all:
 	make -C po
 
 install:
+	mkdir -p $(ROOT)/etc/profile.d $(ROOT)/sbin $(ROOT)/usr/sbin
 	mkdir -p $(ROOT)/etc/profile.d $(ROOT)/usr/sbin
 	mkdir -p $(ROOT)$(mandir)/man{5,8}
 	mkdir -p $(ROOT)/etc/rwtab.d $(ROOT)/etc/statetab.d
@@ -72,13 +73,13 @@ install:
 	  install -m644 sysconfig/init.s390 $(ROOT)/etc/sysconfig/init ; \
 	fi
 
-	mv $(ROOT)/etc/sysconfig/network-scripts/ifup $(ROOT)/usr/sbin
-	mv $(ROOT)/etc/sysconfig/network-scripts/ifdown $(ROOT)/usr/sbin
+	mv $(ROOT)/etc/sysconfig/network-scripts/ifup $(ROOT)/sbin
+	mv $(ROOT)/etc/sysconfig/network-scripts/ifdown $(ROOT)/sbin
 	(cd $(ROOT)/etc/sysconfig/network-scripts; \
 	  ln -sf ifup-ippp ifup-isdn ; \
 	  ln -sf ifdown-ippp ifdown-isdn ; \
-	  ln -sf ../../../usr/sbin/ifup . ; \
-	  ln -sf ../../../usr/sbin/ifdown . )
+	  ln -sf ../../../sbin/ifup . ; \
+	  ln -sf ../../../sbin/ifdown . )
 	make install ROOT=$(ROOT) mandir=$(mandir) -C src
 	make install PREFIX=$(ROOT) -C po
 

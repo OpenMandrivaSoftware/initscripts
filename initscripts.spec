@@ -87,26 +87,26 @@ chown root:utmp /var/log/wtmp /var/run/utmp /var/log/btmp
 chmod 664 /var/log/wtmp /var/run/utmp
 chmod 600 /var/log/btmp
 
-/usr/sbin/chkconfig --add network
-/usr/sbin/chkconfig --add netconsole
+/sbin/chkconfig --add network
+/sbin/chkconfig --add netconsole
 if [ $1 -eq 1 ]; then
-        /usr/bin/systemctl daemon-reload > /dev/null 2>&1 || :
+        /bin/systemctl daemon-reload > /dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 = 0 ]; then
-  /usr/sbin/chkconfig --del network
-  /usr/sbin/chkconfig --del netconsole
+  /sbin/chkconfig --del network
+  /sbin/chkconfig --del netconsole
 fi
 
 %triggerun -- initscripts < 7.62
-/usr/sbin/chkconfig --del random
-/usr/sbin/chkconfig --del rawdevices
+/sbin/chkconfig --del random
+/sbin/chkconfig --del rawdevices
 exit 0
 
 %postun
 if [ $1 -ge 1 ]; then
-  /usr/bin/systemctl daemon-reload > /dev/null 2>&1 || :
+  /bin/systemctl daemon-reload > /dev/null 2>&1 || :
 fi
 
 %clean
@@ -120,10 +120,10 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) /etc/sysconfig/netconsole
 %config(noreplace) /etc/sysconfig/readonly-root
 /etc/sysconfig/network-scripts/ifdown
-/usr/sbin/ifdown
+/sbin/ifdown
 /etc/sysconfig/network-scripts/ifdown-post
 /etc/sysconfig/network-scripts/ifup
-/usr/sbin/ifup
+/sbin/ifup
 %dir /etc/sysconfig/console
 %dir /etc/sysconfig/modules
 /etc/sysconfig/network-scripts/network-functions
@@ -176,17 +176,17 @@ rm -rf $RPM_BUILD_ROOT
 %exclude /etc/profile.d/debug*
 /etc/profile.d/*
 /usr/sbin/sys-unconfig
-/usr/bin/ipcalc
-/usr/bin/usleep
+/bin/ipcalc
+/bin/usleep
 %attr(4755,root,root) /usr/sbin/usernetctl
-/usr/sbin/consoletype
-/usr/sbin/genhostid
-/usr/sbin/sushell
-%attr(2755,root,root) /usr/sbin/netreport
-/usr/lib/udev/rules.d/*
-/usr/lib/udev/rename_device
-/usr/sbin/service
-/usr/sbin/ppp-watch
+/sbin/consoletype
+/sbin/genhostid
+/sbin/sushell
+%attr(2755,root,root) /sbin/netreport
+/lib/udev/rules.d/*
+/lib/udev/rename_device
+/sbin/service
+/sbin/ppp-watch
 %{_mandir}/man*/*
 %dir %attr(775,root,root) /var/run/netreport
 %dir /etc/ppp
@@ -206,8 +206,8 @@ rm -rf $RPM_BUILD_ROOT
 %ghost %attr(0664,root,utmp) /var/log/wtmp
 %ghost %attr(0664,root,utmp) /var/run/utmp
 %ghost %verify(not md5 size mtime) %config(noreplace,missingok) /etc/crypttab
-%dir /usr/lib/tmpfiles.d
-/usr/lib/tmpfiles.d/initscripts.conf
+%dir /lib/tmpfiles.d
+/lib/tmpfiles.d/initscripts.conf
 %dir /usr/libexec/initscripts
 %dir /usr/libexec/initscripts/legacy-actions
 
