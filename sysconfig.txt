@@ -307,10 +307,6 @@ Generic options:
     NETWORKWAIT=yes|no
       This is not used with the move to systemd.
 
-    NETWORKING_IPV6=yes|no
-      To do this properly, disable IPv6 in the module itself.
-      This can be done by booting the kernel with "ipv6.disable_ipv6=1".
-
     HOSTNAME=<fqdn by default, but whatever hostname you want>
       This is now configured in /etc/hostname.
 
@@ -1145,9 +1141,11 @@ Files in /etc/sysconfig/network-scripts/
   automatically added if explicit 'via' wasn't specified.
 
 /etc/sysconfig/network-scripts/rule-<interface-name>
+/etc/sysconfig/network-scripts/rule6-<interface-name>
 
   Contains lines that specify additional routing rules that should be added
   when the associated interface is brought up.
 
-  Each non-comment line is used directly as an argument to "/sbin/ip rule add".
+  Each non-comment line is used directly as an argument to "/sbin/ip rule add"
+  or "/sbin/ip -6 rule add" for rule6 files.
 

@@ -1,10 +1,10 @@
 Summary: The inittab file and the /etc/init.d scripts
 Name: initscripts
-Version: 9.44
+Version: 9.45
 # ppp-watch is GPLv2+, everything else is GPLv2
 License: GPLv2 and GPLv2+
 Group: System Environment/Base
-Release: 1%{?dist}
+Release: 2%{?dist}
 URL: http://fedorahosted.org/releases/i/n/initscripts/
 Source: http://fedorahosted.org/releases/i/n/initscripts/initscripts-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -32,6 +32,7 @@ Requires(pre): /usr/sbin/groupadd
 Requires(post): /sbin/chkconfig, coreutils
 Requires(preun): /sbin/chkconfig
 BuildRequires: glib2-devel popt-devel gettext pkgconfig
+Provides: /sbin/service
 
 %description
 The initscripts package contains the basic system scripts used to boot
@@ -86,26 +87,26 @@ chown root:utmp /var/log/wtmp /var/run/utmp /var/log/btmp
 chmod 664 /var/log/wtmp /var/run/utmp
 chmod 600 /var/log/btmp
 
-/sbin/chkconfig --add network
-/sbin/chkconfig --add netconsole
+/usr/sbin/chkconfig --add network
+/usr/sbin/chkconfig --add netconsole
 if [ $1 -eq 1 ]; then
-        /bin/systemctl daemon-reload > /dev/null 2>&1 || :
+        /usr/bin/systemctl daemon-reload > /dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 = 0 ]; then
-  /sbin/chkconfig --del network
-  /sbin/chkconfig --del netconsole
+  /usr/sbin/chkconfig --del network
+  /usr/sbin/chkconfig --del netconsole
 fi
 
 %triggerun -- initscripts < 7.62
-/sbin/chkconfig --del random
-/sbin/chkconfig --del rawdevices
+/usr/sbin/chkconfig --del random
+/usr/sbin/chkconfig --del rawdevices
 exit 0
 
 %postun
 if [ $1 -ge 1 ]; then
-  /bin/systemctl daemon-reload > /dev/null 2>&1 || :
+  /usr/bin/systemctl daemon-reload > /dev/null 2>&1 || :
 fi
 
 %clean
@@ -119,10 +120,10 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) /etc/sysconfig/netconsole
 %config(noreplace) /etc/sysconfig/readonly-root
 /etc/sysconfig/network-scripts/ifdown
-/sbin/ifdown
+/usr/sbin/ifdown
 /etc/sysconfig/network-scripts/ifdown-post
 /etc/sysconfig/network-scripts/ifup
-/sbin/ifup
+/usr/sbin/ifup
 %dir /etc/sysconfig/console
 %dir /etc/sysconfig/modules
 /etc/sysconfig/network-scripts/network-functions
@@ -161,9 +162,9 @@ rm -rf $RPM_BUILD_ROOT
 %dir /etc/rwtab.d
 /etc/statetab
 %dir /etc/statetab.d
-/lib/systemd/fedora-*
-/lib/systemd/system/*
-%config(noreplace) /etc/inittab
+/usr/lib/systemd/fedora-*
+/usr/lib/systemd/system/*
+/etc/inittab
 %dir /etc/rc.d
 %dir /etc/rc.d/rc[0-9].d
 /etc/rc[0-9].d
@@ -175,17 +176,17 @@ rm -rf $RPM_BUILD_ROOT
 %exclude /etc/profile.d/debug*
 /etc/profile.d/*
 /usr/sbin/sys-unconfig
-/bin/ipcalc
-/bin/usleep
+/usr/bin/ipcalc
+/usr/bin/usleep
 %attr(4755,root,root) /usr/sbin/usernetctl
-/sbin/consoletype
-/sbin/genhostid
-/sbin/sushell
-%attr(2755,root,root) /sbin/netreport
-/lib/udev/rules.d/*
-/lib/udev/rename_device
-/sbin/service
-/sbin/ppp-watch
+/usr/sbin/consoletype
+/usr/sbin/genhostid
+/usr/sbin/sushell
+%attr(2755,root,root) /usr/sbin/netreport
+/usr/lib/udev/rules.d/*
+/usr/lib/udev/rename_device
+/usr/sbin/service
+/usr/sbin/ppp-watch
 %{_mandir}/man*/*
 %dir %attr(775,root,root) /var/run/netreport
 %dir /etc/ppp
@@ -205,8 +206,8 @@ rm -rf $RPM_BUILD_ROOT
 %ghost %attr(0664,root,utmp) /var/log/wtmp
 %ghost %attr(0664,root,utmp) /var/run/utmp
 %ghost %verify(not md5 size mtime) %config(noreplace,missingok) /etc/crypttab
-%dir /lib/tmpfiles.d
-/lib/tmpfiles.d/initscripts.conf
+%dir /usr/lib/tmpfiles.d
+/usr/lib/tmpfiles.d/initscripts.conf
 %dir /usr/libexec/initscripts
 %dir /usr/libexec/initscripts/legacy-actions
 
@@ -216,6 +217,21 @@ rm -rf $RPM_BUILD_ROOT
 /etc/profile.d/debug*
 
 %changelog
+* Fri Mar 15 2013 Lukáš Nykrýn <lnykryn@redhat.com> - 9.45-2
+- provides /sbin/service
+
+* Fri Mar 15 2013 Lukáš Nykrýn <lnykryn@redhat.com> - 9.45-1
+- turn on symlink protections in sysctl (#922030)
+- add systemd-random-seed.service to  Before= in fedora-readonly.service (#888615)
+- mention rule6 files in sysconfig.txt
+- skip nmcli for wireless device (#863707)
+- remove config-noreplace from /etc/inittab (#627474)
+- remount-rootfs.service got renamed to systemd-remount-fs.service
+- compile netreport and usernetctl with full RELRO and PIE (#853178)
+- move stuff directly to /usr (#905492)
+- Remove NETWORKING_IPV6 from sysconfig.txt (#918622)
+- fix greps to correctly handle comments and quotation
+
 * Wed Feb 20 2013 Lukáš Nykrýn <lnykryn@redhat.com> - 9.44-1
 - limit udev rule for network renaming (#907365, mschmidt@redhat.com)
 - fix path for arpwatch, seems to be in /var/lib on Fedora 18
