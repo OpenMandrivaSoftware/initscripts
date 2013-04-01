@@ -57,8 +57,7 @@ install:
 	chmod 755 $(ROOT)/lib/systemd/mandriva-*
 	chmod 755 $(ROOT)/lib/systemd/mandriva-*
 	mkdir -p $(ROOT)/etc/ppp/peers
-	mkdir -p $(ROOT)/usr/lib
-	cp -af udev $(ROOT)/usr/lib
+	cp -af udev $(ROOT)/lib
 	chmod 755 $(ROOT)/etc/rc.d/* $(ROOT)/etc/rc.d/init.d/*
 	chmod 644 $(ROOT)/etc/rc.d/init.d/functions
 	chmod 755 $(ROOT)/etc/ppp/peers
