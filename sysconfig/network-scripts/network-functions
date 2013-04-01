@@ -143,10 +143,7 @@ source_config ()
 	CTC)
 		DEVICETYPE="ctc"
 		;;
-	IUCV)
-		DEVICETYPE="iucv"
-		;;
-	GRE | IPIP)
+	GRE | IPIP | IPIP6)
 		DEVICETYPE="tunnel"
 		;;
 	SIT | sit)
