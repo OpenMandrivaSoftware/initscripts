@@ -40,5 +40,5 @@ done
 
 [ -z "$TOLOAD" ] && exit 0
 
-logger -t $0 "Loading modules:"$TOLOAD
-/sbin/modprobe -a $TOLOAD 2>/dev/null
+echo "Loading modules:"$TOLOAD >&2
+/sbin/modprobe -a $TOLOAD
