@@ -3,8 +3,6 @@
 ### BEGIN INIT INFO
 # Provides: $network $named
 # Should-Start: portreserve NetworkManager
-# Required-Start: network
-# Required-Stop: network
 # Default-Start: 2 3 4 5
 # Short-Description: Wait for the hotplugged network to be up
 # Description: Wait for all network interfaces started asynchronously
