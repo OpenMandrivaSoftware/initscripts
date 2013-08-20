@@ -423,7 +423,7 @@ else
 
         if ! LC_ALL=C ip addr ls ${REALDEVICE} | LC_ALL=C grep -q "${ipaddr[$idx]}/${prefix[$idx]}" ; then
             [ "${REALDEVICE}" != "lo" ] && [ "${arpcheck[$idx]}" != "no" ] && \
-            if ! /sbin/arping -q -c 2 -w 3 -D -I ${REALDEVICE} ${ipaddr[$idx]} ; then
+            if ! /usr/sbin/arping -q -c 2 -w 3 -D -I ${REALDEVICE} ${ipaddr[$idx]} ; then
                 net_log $"Error, some other host already uses address ${ipaddr[$idx]}."
                 mdv-network-event connection_failure ${DEVICE}
                 exit 1
@@ -441,9 +441,9 @@ else
 
         # update ARP cache of neighboring computers
         if [ "${REALDEVICE}" != "lo" ]; then
-          /sbin/arping -q -A -c 1 -I ${REALDEVICE} ${ipaddr[$idx]}
+          /usr/sbin/arping -q -A -c 1 -I ${REALDEVICE} ${ipaddr[$idx]}
           ( sleep 2;
-            /sbin/arping -q -U -c 1 -I ${REALDEVICE} ${ipaddr[$idx]} ) > /dev/null 2>&1 < /dev/null &
+            /usr/sbin/arping -q -U -c 1 -I ${REALDEVICE} ${ipaddr[$idx]} ) > /dev/null 2>&1 < /dev/null &
         fi
     done
     fi
