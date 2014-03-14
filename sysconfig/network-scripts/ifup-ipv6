@@ -65,8 +65,8 @@ source_config
 REALDEVICE=${DEVICE%%:*}
 DEVICE=$REALDEVICE
 
-# Test whether IPv6 configuration is enabled for this interface, else stop
-[ "$IPV6INIT" = "yes" ] || exit 0
+# Test whether IPv6 configuration is disabled for this interface
+[[ "$IPV6INIT" = [nN0]* ]] && exit 0
 
 [ -f /etc/sysconfig/network-scripts/network-functions-ipv6 ] || exit 1
 . /etc/sysconfig/network-scripts/network-functions-ipv6
@@ -127,6 +127,7 @@ fi
 /sbin/sysctl -e -w net.ipv6.conf.$SYSCTLDEVICE.forwarding=$ipv6_local_forwarding >/dev/null 2>&1
 /sbin/sysctl -e -w net.ipv6.conf.$SYSCTLDEVICE.accept_ra=$ipv6_local_auto >/dev/null 2>&1
 /sbin/sysctl -e -w net.ipv6.conf.$SYSCTLDEVICE.accept_redirects=$ipv6_local_auto >/dev/null 2>&1
+/sbin/sysctl -e -w net.ipv6.conf.$SYSCTLDEVICE.autoconf=$ipv6_local_auto >/dev/null 2>&1
 
 # Set IPv6 MTU, if given
 if [ -n "$IPV6_MTU" ]; then

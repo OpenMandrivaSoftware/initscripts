@@ -30,7 +30,7 @@ cd /etc/sysconfig/network-scripts
 CONFIG=${1}
 
 [ -z "${CONFIG}" ] && {
-    echo $"Usage: ifup <device name>" >&2
+    echo $"Usage: ifup <configuration>" >&2
     exit 1
 }
 
@@ -38,7 +38,7 @@ need_config "${CONFIG}"
 
 [ -f "${CONFIG}" ] || {
     echo $"$0: configuration for ${1} not found." >&2
-    echo $"Usage: ifup <device name>" >&2
+    echo $"Usage: ifup <configuration>" >&2
     exit 1
 }
 
@@ -72,6 +72,7 @@ if [ "$_use_nm" = "true" -a -n "$UUID" ]; then
     if [ "foo$2" = "fooboot" ] && [ "${TYPE}" = "Wireless" ]; then
         exit 0
     fi
+    is_nm_handling ${DEVICE} && exit 0
     nmcli con up uuid "$UUID"
     exit $?
 fi
@@ -132,6 +133,8 @@ if [ "${VLAN}" = "yes" ] && [ "$ISALIAS" = "no" ]; then
 	    }
 	fi
     fi
+
+    /usr/lib/systemd/systemd-sysctl --prefix "/proc/sys/net/ipv4/conf/${DEVICE}" --prefix "/proc/sys/net/ipv6/conf/${DEVICE}"
 fi
 
 # signalling the start of connection

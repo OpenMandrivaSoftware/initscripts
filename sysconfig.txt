@@ -128,21 +128,6 @@ Generic options:
      the kernel command line option "forcefsck" can be used to check the
      filesystems and "confirm" can be used to enable interactive startup
      questions.
-  AUTOSWAP=yes|no
-     Set to 'yes' to enable automatic swapon of all partitions with
-     the proper swap magic. This allows setting up swap without editing
-     /etc/fstab.
-  REWRITEISSUE=rewrite|remove
-  REWRITEISSUENET=rewrite|remove
-     Force /etc/issue or /etc/issue.net to be rewritten or removed
-     at boot. Default depends on security level. To leave it alone
-     specify 'remove' and create /etc/security/msec/issue and/or
-     /etc/security/msec/issue.net
-
-  Mandriva specific values:
-
-  BRLTTY=yes|no
-       Set to 'no' to disable automatic startup of brltty if it is present
 
   obsoleted values from earlier releases:
 
@@ -205,16 +190,8 @@ Generic options:
   GATEWAY=<gateway IP>
   GATEWAYDEV=<gateway device to use, when multiple devices have GATEWAY=> (e.g. eth0)
   NISDOMAIN=<nis domain name>
-  IPX=yes|no
-  IPXAUTOPRIMARY=on|off (note, that MUST be on|off, not yes|no)
-  IPXAUTOFRAME=on|off (again, not yes|no)
-  IPXINTERNALNETNUM=<netnum>
-  IPXINTERNALNODENUM=<nodenum>
-  IFPLUGD_ARGS="<args to pass to ifplugd>" default to "-w -b"
   NOZEROCONF=
     Set this to not set a route for dynamic link-local addresses.
-
-  All the IPX stuff is optional, and should default to off.
 
   NETWORKDELAY=<delay in seconds>
     Delay in seconds after all network interfaces are initialized.  Useful if
@@ -429,7 +406,7 @@ Generic options:
 
   MECH=shadow
     controls which data source saslauthd will consult when checking user
-    passwords; run 'saslauthd -a' to get a full list of available
+    passwords; run 'saslauthd -v' to get a full list of available
     authentication mechanisms
   SOCKETDIR=/var/run/saslauthd
     controls in which directory saslauthd will be directed to create its
@@ -623,6 +600,9 @@ Files in /etc/sysconfig/network-scripts/
       If set to 'no', ifup will not try to determine, if requested ip address
       is used by other machine in network.
       Defaults to 'yes'.
+    IPV4_FAILURE_FATAL=yes|no
+      If set to yes, ifup-eth will end immediately after ipv4 dhclient fails.
+      Defaults to 'no'.
 
   For dynamic addressing (BOOTPROTO=dhcp) only DEVICE needs to
   be set; all the rest will be determined by the boot protocol.
@@ -684,7 +664,7 @@ Files in /etc/sysconfig/network-scripts/
   IPv6-only items for real interfaces:
     IPV6INIT=yes|no
       Enable or disable IPv6 static, DHCP, or autoconf configuration for this interface
-      Default: no
+      Default: yes
     IPV6FORWARDING=yes|no
       Enable or disable global forwarding of incoming IPv6 packets
       Note: Obsolete in interface specification!
@@ -776,9 +756,6 @@ Files in /etc/sysconfig/network-scripts/
       only, not IPv6 addresses.
 
   Ethernet-only items:
-    {IPXNETNUM,IPXPRIMARY,IPXACTIVE}_{802_2,802_3,ETHERII,SNAP}
-    configuration matrix for IPX.  Only used if IPX is active.
-    Managed from /etc/sysconfig/network-scripts/ifup-ipx
     ARP=yes|no (adds 'arp' flag to ip, for use with the
       ethertap device)
     LINKDELAY=<time in seconds>
@@ -931,26 +908,13 @@ Files in /etc/sysconfig/network-scripts/
     REMOTE_IP=    will be converted to GATEWAY by netconf
 
   Wireless-specific items:
-    See iwconfig(8) for additional information.
-    MODE=[Ad-Hoc|Managed|Master|Repeater|Secondary|Monitor|Auto]
+    See iw(8) for additional information.
+    MODE=[Managed|Ad-Hoc|Monitor]
     ESSID=
-      Defaults to "any".
-    NWID=
+      Required.
     FREQ=
-      Ignored if MODE=Managed.
-    CHANNEL=
-      Ignored if MODE=Managed.
-    SENS=<sensitivity threshold>
-    RATE=
-    KEY{1,2,3,4}=<WEP key with the given index>
-    DEFAULTKEY=<default key index>
+      Required if MODE=Ad-Hoc.
     KEY=<default WEP key>
-    SECURITYMODE=[on|off|open|restricted]
-    RTS=[auto|fixed|off|<rts threshold>]
-    FRAG=[off|<fragmentation threshold>]
-    IWCONFIG=<other iwconfig(8) options>
-    SPYIPS=<list of IP addresses to monitor for link quality>
-    IWPRIV=<iwpriv(8) commands>
 
   IPSEC specific items
      SRC=source address. Not required.

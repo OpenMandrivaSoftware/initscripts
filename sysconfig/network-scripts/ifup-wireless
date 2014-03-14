@@ -17,193 +17,38 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# Configure wireless network device options.  See iwconfig(8) for more info.
-# Mandriva prefixes the following variables with WIRELESS_ prefix.
+# Configure wireless network device options.  See iw(8) for more info.
 # Valid variables:
 #    MODE: Ad-Hoc, Managed, etc.
 #    ESSID: Name of the wireless network
-#    NWID: Name of this machine on the network.  Hostname is default
 #    FREQ: Frequency to operate on.  See CHANNEL
-#    CHANNEL: Numbered frequency to operate on.  See FREQ
-#    SENS: Sensitivity threshold for packet rejection.
-#    RATE: Transfer rate.  Usually one of Auto, 11, 5, 2, or 1.
-#    RTS: Explicit RTS handshake.  Usually not specified (auto)
-#    FRAG: Fragmentation threshold to split packets.  Usually not specified.
-#    IWCONFIG: Extra parameters to pass directly to IWCONFIG
-#    IWPRIV: Extra parameters to pass directly to IWPRIV
-#
-#    redhat-only variables:
 #    KEY: Encryption key for WEP.
-#    KEY[1-4]: Encryption key for WEP in position [1-4]
-#    SECURITYMODE: Security mode, e.g: 'open' or 'restricted'
-#    SPYIPS: List of IP addresses to "spy" on for link performance stats.
-#
-#    mandriva-only variables:
-#    WIRELESS_NICK: nickname for wireless connection
-#    WIRELESS_ENC_KEY: Encryption key for WEP.
-#    WIRELESS_ENC_MODE: Security mode, e.g: 'open' or 'restricted'
-#    WIRELESS_XSUPPLICANT: Enabling xsupplicant support
-#    WIRELESS_XSUPPLICANT_FILE: Custom location for xsupplicant.conf file
 
 # Only meant to be called from ifup.
 
-# unify variables common to RH and Mandriva-style ifcfg
-MODE=${MODE:-$WIRELESS_MODE}
-ESSID=${ESSID:-$WIRELESS_ESSID}
-NWID=${NWID:-$WIRELESS_NWID}
-FREQ=${FREQ:-$WIRELESS_FREQ}
-CHANNEL=${CHANNEL:-$WIRELESS_CHANNEL}
-SENS=${SENS:-$WIRELESS_SENS}
-RATE=${RATE:-$WIRELESS_RATE}
-POWER=${POWER:-$WIRELESS_POWER}
-RTS=${RTS:-$WIRELESS_RTS}
-FRAG=${FRAG:-$WIRELESS_FRAG}
-IWCONFIG=${IWCONFIG:-$WIRELESS_IWCONFIG}
-IWSPY=${IWSPY:-$WIRELESS_IWSPY}
-IWPRIV=${IWPRIV:-$WIRELESS_IWPRIV}
+IW=${IW:-iw}
 
-# Mode need to be first : some settings apply only in a specific mode !
-if [ -n "$MODE" ] ; then
-    # for some cards, the mode can only be set with the card is down
-    # so we bring the card down (and suspending ifplugd if it is running)
-    # in order to do so (mdv bug #43166)
-    ifplugd -S -i $DEVICE 2>/dev/null
-    /sbin/ip link set dev $DEVICE down
-    iwconfig $DEVICE mode $MODE
-    ifplugd -R -i $DEVICE 2>/dev/null
-fi
+[ "$KEY" ] && KEYS="key d:0:$KEY"
 
-# Set link up (some cards require this.)
-/sbin/ip link set dev ${DEVICE} up
+shopt -s nocasematch
 
-# Setup the card nickname
-# This is a bit hackish, but should do the job right...
-if [ -n "$ESSID" -o -n "$MODE" ] ; then
-    NICKNAME=$(/bin/hostname)
-    iwconfig $DEVICE nick "$NICKNAME" >/dev/null 2>&1
-fi
-if [ -n "$WIRELESS_NICK" ] ; then
-    iwconfig $DEVICE nick $WIRELESS_NICK >/dev/null 2>&1
-elif [ -n "$ESSID" ] || [ -n "$MODE" ] ; then
-   # This is a bit hackish, but should do the job right...
-    NICKNAME=`/bin/hostname`
-    iwconfig $DEVICE nick $NICKNAME >/dev/null 2>&1
-fi
-
-# Regular stuff...
-# network id
-if [ -n "$NWID" ] ; then
-    iwconfig $DEVICE nwid $NWID
-fi
-
-# frequency and channel
-if [ -n "$FREQ" -a "$MODE" != "Managed" ] ; then
-    iwconfig $DEVICE freq $FREQ
-elif [ -n "$CHANNEL" -a "$MODE" != "Managed" ] ; then
-    iwconfig $DEVICE channel $CHANNEL
-fi
-
-# sensitivity
-if [ -n "$SENS" ] ; then
-    iwconfig $DEVICE sens $SENS
-fi
-
-# rate
-if [ -n "$RATE" ] ; then
-    iwconfig $DEVICE rate "$RATE"
-fi
-
-# encryption
-# for redhat-style ifcfg
-if [ -n "$KEY" -o -n "$KEY1" -o -n "$KEY2" -o -n "$KEY3" -o -n "$KEY4" ] ; then
-    [ -n "$KEY1" ] && iwconfig $DEVICE key "[1]" $KEY1
-    [ -n "$KEY2" ] && iwconfig $DEVICE key "[2]" $KEY2
-    [ -n "$KEY3" ] && iwconfig $DEVICE key "[3]" $KEY3
-    [ -n "$KEY4" ] && iwconfig $DEVICE key "[4]" $KEY4
-    [ -n "$DEFAULTKEY" ] && iwconfig $DEVICE key "[${DEFAULTKEY}]"
-    [ -n "$KEY" ] && iwconfig $DEVICE key $KEY
-else
-    iwconfig $DEVICE key off
-fi
-
-# for mandriva-style ifcfg
-if [ -n "$WIRELESS_ENC_KEY" -o "$WIRELESS_ENC_MODE" ] ; then
-    if [ -n "$WIRELESS_ENC_MODE" ]; then
-        iwconfig $DEVICE key $WIRELESS_ENC_MODE "$WIRELESS_ENC_KEY"
-    else
-        # compatibility for older config files
-        # that used to contain enc mode in key
-        echo "$WIRELESS_ENC_KEY" | egrep -q '^(open|restricted) '
-        if [ $? == 0 ]; then
-                iwconfig $DEVICE key $WIRELESS_ENC_KEY
-        else
-                iwconfig $DEVICE key "$WIRELESS_ENC_KEY"
-        fi
+case "$MODE" in
+managed)
+    if [ "$ESSID" ]; then
+	$IW dev "$DEVICE" set type managed
+	$IW dev "$DEVICE" connect -w "$ESSID" $FREQ $KEYS
     fi
-fi
-
-# security mode
-if [ -n "$SECURITYMODE" ]; then
-    iwconfig $DEVICE enc $SECURITYMODE
-fi
-
-# power
-if [ -n "$POWER" ] ; then
-    iwconfig $DEVICE power $POWER
-fi
-
-# rts
-if [ -n "$RTS" ] ; then
-    iwconfig $DEVICE rts $RTS
-fi
-
-# fragmentation
-if [ -n "$FRAG" ] ; then
-    iwconfig $DEVICE frag $FRAG
-fi
-
-# More specific parameters passed directly to IWCONFIG
-if [ -n "$IWCONFIG" ] ; then
-    iwconfig $DEVICE $IWCONFIG
-fi
-
-# iwspy settings
-if [ -n "$SPYIPS" ] ; then
-    for IP in $SPYIPS; do
-        iwspy $DEVICE + $IP
-    done
-fi
-if [ -n "$IWSPY" ] ; then
-    /sbin/iwspy $DEVICE $IWSPY
-fi
-
-# private options
-if [ -n "$IWPRIV" ] ; then
-    IFS=$'\n' echo "$IWPRIV" | while read priv; do
-        [ -n -n "$priv" ] && eval "/sbin/iwpriv $DEVICE $priv"
-    done
-fi
-
-# ESSID need to be last : most device re-perform the scanning/discovery
-# when this is set, and things like encryption keys are better be
-# defined if we want to discover the right set of APs/nodes.
-if [ -n "$ESSID" ] ; then
-    iwconfig $DEVICE essid "$ESSID"
-else
-    # use any essid
-    iwconfig $DEVICE essid any >/dev/null 2>&1
-fi
-
-# settings for xsupplicant
-if [ -n "$WIRELESS_XSUPPLICANT" -a -x /usr/sbin/xsupplicant ]; then
-    if [ -f /var/run/console.lock ] ; then
-        WIRELESS_XSUPPLICANT_FILE=/home/$(cat /var/run/console.lock)/.xsupplicant.conf
-    elif [ -f /etc/xsupplicant.conf ] ; then
-        WIRELESS_XSUPPLICANT_FILE=/etc/xsupplicant.conf
+    ;;
+ad-hoc)
+    if [ "$ESSID" && "$FREQ" ]; then
+	$IW dev "$DEVICE" set type ibss
+	$IW dev "$DEVICE" ibss join "$ESSID" "$FREQ" $KEYS
     fi
-    if [ -n "$WIRELESS_XSUPPLICANT_FILE" ]; then
-        iwconfig $DEVICE key on
-        ifconfig $DEVICE allmulti
-        /usr/sbin/xsupplicant -i ${DEVICE} -c ${WIRELESS_XSUPPLICANT_FILE} &
+    ;;
+monitor)
+    if [ "$FREQ" ]; then 
+	$IW dev "$DEVICE" set type monitor
+	$IW dev "$DEVICE" set freq "$FREQ"
     fi
-fi
+    ;;
+esac

@@ -1,10 +1,10 @@
 Summary: The inittab file and the /etc/init.d scripts
 Name: initscripts
-Version: 9.45
+Version: 9.52
 # ppp-watch is GPLv2+, everything else is GPLv2
 License: GPLv2 and GPLv2+
 Group: System Environment/Base
-Release: 2%{?dist}
+Release: 1%{?dist}
 URL: http://fedorahosted.org/releases/i/n/initscripts/
 Source: http://fedorahosted.org/releases/i/n/initscripts/initscripts-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -15,7 +15,7 @@ Requires: grep
 Requires: module-init-tools
 Requires: util-linux >= 2.16
 Requires: bash >= 3.0
-Requires: sysvinit-tools >= 2.87-5
+Requires: procps-ng >= 3.3.8-16
 Conflicts: systemd < 23-1
 Conflicts: systemd-units < 23-1
 Conflicts: lvm2 < 2.02.98-3
@@ -28,6 +28,7 @@ Requires: udev >= 125-1
 Requires: cpio
 Requires: hostname
 Conflicts: ipsec-tools < 0.8.0-2
+Conflicts: NetworkManager < 0.9.9.0-37.git20140131.el7
 Requires(pre): /usr/sbin/groupadd
 Requires(post): /sbin/chkconfig, coreutils
 Requires(preun): /sbin/chkconfig
@@ -130,7 +131,6 @@ rm -rf $RPM_BUILD_ROOT
 /etc/sysconfig/network-scripts/network-functions-ipv6
 /etc/sysconfig/network-scripts/init.ipv6-global
 %config(noreplace) /etc/sysconfig/network-scripts/ifcfg-lo
-/etc/sysconfig/network-scripts/ifup-ipx
 /etc/sysconfig/network-scripts/ifup-post
 /etc/sysconfig/network-scripts/ifdown-ppp
 /etc/sysconfig/network-scripts/ifup-ppp
@@ -173,6 +173,7 @@ rm -rf $RPM_BUILD_ROOT
 %ghost %verify(not md5 size mtime) %config(noreplace,missingok) /etc/rc.d/rc.local
 %config(noreplace) /etc/sysctl.conf
 /usr/lib/sysctl.d/00-system.conf
+/etc/sysctl.d/99-sysctl.conf
 %exclude /etc/profile.d/debug*
 /etc/profile.d/*
 /usr/sbin/sys-unconfig
@@ -217,6 +218,64 @@ rm -rf $RPM_BUILD_ROOT
 /etc/profile.d/debug*
 
 %changelog
+* Tue Jan 14 2014 Lukáš Nykrýn <lnykryn@redhat.com> - 9.52-1
+- require procps-ng
+
+* Tue Jan 14 2014 Lukáš Nykrýn <lnykryn@redhat.com> 9.51-1
+- readonly-root: bind-mount only necessary subset of entries in rwtab
+- readonly-root: Add /var/log/audit/audit.log to rwtab
+- readonly-root: restore selinux context after bind mount
+- rename_device: remove comments and trailing whitespaces
+- service: suggest using systemctl if unknown action is used
+- ifup-eth: fix typo in error message
+- use iw instead of iwconfig and friends
+- update functions who call nmcli
+- ifdown: fix typo in nmcli call
+
+* Tue Sep 03 2013 Lukas Nykryn <lnykryn@redhat.com> - 9.50-1
+- ipcalc: support RFC3021 (#997271)
+- symlink /etc/sysctl.conf -> /etc/sysctl.d/
+- man: only action specified in LSB are redirected to systemd
+- service: filter actions that are not supported by systemctl in service (#947823)
+- install_bonding_driver: drop check for existing device (#991335)
+- consider IPV6INIT undefined as YES
+- don't care about network filesystems
+
+* Fri Jul 12 2013 Lukáš Nykrýn <lnykryn@redhat.com> - 9.48-1
+- man: add systemd man pages to service.8 "see also" section
+- add possibility to set domainname through /etc/sysconfig/network
+- rename_device: don't wait for lock with lower permissions
+- 256term.csh: remove quotes around variable (#979796)
+- drop useless variables from /etc/sysconfig/init
+- readonly-root: rpcidmapd restart is not needed anymore
+- ifup-eth: print error only if arping is really called (#974603)
+- readonly-root: Add /var/lib/samba to rwtab
+
+* Fri May 31 2013 Lukáš Nykrýn <lnykryn@redhat.com> - 9.47-1
+- network-functions: to determine state of nscd check socket not lock (#960779)
+- sysconfig.txt advised saslauthd -a instad of -v
+- update translations from transifex
+- drop translation for other initscripts
+- tweak ifup/ifdown usage and man page (#961917)
+- ctrl-alt-delete.target is provided by systemd package
+- remove some defaults from arch specific sysctl.conf
+- readonly-root: remount rpc_pipefs if readonly-root is used
+- service: mention legacy actions and systemctl redirection in man page
+
+* Fri Apr 12 2013 Lukáš Nykrýn <lnykryn@redhat.com> - 9.46-1
+- add /var/lib/NetworkManager
+- add ipip6 tunneling support (#928232, raorn@raorn.name)
+- bonding: set master up before slaves
+- set net.ipv6.conf.SYSCTLDEVICE.autoconf in ifup-ipv6
+- ifdown: don't call nmcli on interface that is alread down
+- remove some defaults from sysctl.conf (move to systemd)
+- call flush addresses with scope global
+- service: action should not be empty when calling legacy-actions (#947817)
+- ifup-eth: ignore arping errors (#928379)
+- replace tunctl with ip tuntap (#947875)
+- reload sysctl settings for vlans on ifup
+- try dhcpv6 after v4 failed (#846618)
+
 * Fri Mar 15 2013 Lukáš Nykrýn <lnykryn@redhat.com> - 9.45-2
 - provides /sbin/service
 

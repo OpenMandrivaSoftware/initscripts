@@ -65,6 +65,14 @@ runs all init scripts, in alphabetical order, with the
 .B status
 command.
 
+If the init script file does not exist, the script tries to use
+.B legacy actions.
+If there is no suitable legacy action found and
+.I COMMAND
+is one of actions specified in LSB Core Specification, input is redirected to the
+.B systemctl.
+Otherwise the command fails with return code 2.
+
 .SH FILES
 .TP
 \fB/etc/init.d\fR
@@ -77,4 +85,7 @@ The only environment variables passed to the init scripts.
 
 .SH SEE ALSO
 .BR chkconfig (8),
-.BR ntsysv(8)
+.BR ntsysv(8),
+.BR systemd (1),
+.BR systemctl (8),
+.BR systemd.service (5)

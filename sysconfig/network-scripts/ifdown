@@ -12,14 +12,14 @@ cd /etc/sysconfig/network-scripts
 CONFIG=$1
 
 [ -z "$CONFIG" ] && {
-    echo $"usage: ifdown <device name>" >&2
+    echo $"usage: ifdown <configuration>" >&2
     exit 1
 }
 
 need_config "${CONFIG}"
 
 [ -f "$CONFIG" ] || {
-    echo $"usage: ifdown <device name>" >&2
+    echo $"usage: ifdown <configuration>" >&2
     exit 1
 }
 
@@ -43,11 +43,14 @@ fi
 
 if [ "$_use_nm" = "true" ]; then
     if [ -n "$UUID" -a -z "$DEVICE" ]; then
-	DEVICE=$(nmcli -t --fields uuid,devices con status | awk -F ':' "\$1 == \"$UUID\" { print \$2 }")
+	DEVICE=$(nmcli -t --fields uuid,device con show --active | awk -F ':' "\$1 == \"$UUID\" { print \$2 }")
     fi
     if [ -n "$DEVICE" ] && ! is_nm_device_unmanaged "$DEVICE" ; then
-	nmcli dev disconnect iface "$DEVICE"
-	exit $?
+        if ! LC_ALL=C nmcli -t -f STATE,DEVICE dev status | egrep -q "^(failed|disconnected|unmanaged|unavailable):$DEVICE$"; then
+            nmcli dev disconnect "$DEVICE"
+            exit $?
+        fi
+        exit 0
     fi
 fi
 

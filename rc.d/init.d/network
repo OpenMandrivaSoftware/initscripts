@@ -8,10 +8,8 @@
 # probe: false
 #
 ### BEGIN INIT INFO
-# Provides: network
-# Should-Start: irda resolvconf iptables ip6tables NetworkManager
-# Should-Stop: irda resolvconf
-# Default-Start: 2 3 4 5
+# Provides: $network
+# Should-Start: iptables ip6tables NetworkManager-wait-online NetworkManager
 # Short-Description: Bring up/down networking
 # Description: Activates/Deactivates all network interfaces configured to
 #              start at boot time.
@@ -38,8 +36,6 @@ fi
 # if the ip configuration utility isn't around we can't function.
 [ -x /sbin/ip ] || exit 1
 
-# Even if IPX is configured, without the utilities we can't do much
-[ ! -x /sbin/ipx_internal_net ] || [ ! -x /sbin/ipx_configure ] && IPX=
 
 CWD=$(pwd)
 cd /etc/sysconfig/network-scripts
@@ -76,21 +72,6 @@ case "$1" in
 	
 	# bring up loopback interface
 	action "Bringing up loopback interface: " ./ifup ifcfg-lo
-
-	case "$IPX" in
-	  yes|true)
-	    /sbin/ipx_configure --auto_primary=$IPXAUTOPRIMARY \
-				   --auto_interface=$IPXAUTOFRAME
-	    if [ "$IPXINTERNALNETNUM" != "0" ]; then
-	       /sbin/ipx_internal_net add $IPXINTERNALNETNUM $IPXINTERNALNODENUM
-	    fi
-	    ;;
-	esac
-	# depreciated but we still use it.
-	if [ -f /proc/sys/net/ipv4/ip_forward ] && [[ "$FORWARD_IPV4" = "yes" || "$FORWARD_IPV4" = "true" ]]; 
-	    then
-		action "Enabling IPv4 packet forwarding" sysctl -w net.ipv4.ip_forward=1
-	fi
 
 	case "$VLAN" in
 	  yes)
@@ -200,15 +181,6 @@ case "$1" in
 		exit 1
 	fi
   
-  	# If this is a final shutdown/halt, check for network FS,
-	# and unmount them even if the user didn't turn on netfs
-	if [ "$RUNLEVEL" = "6" -o "$RUNLEVEL" = "0" -o "$RUNLEVEL" = "1" ]; then
-		NETMOUNTS=$(findmnt -n -m -t nfs,nfs4,smbfs,ncpfs,cifs 2>/dev/null)
-		if [ -n "$NETMOUNTS" ] ; then
-			/etc/init.d/netfs stop
-		fi
-	fi
-	
 	vlaninterfaces=""
 	vpninterfaces=""
 	xdslinterfaces=""
@@ -264,15 +236,7 @@ case "$1" in
 		)
 	done
 
-	case "$IPX" in
-	  yes|true)
-	    if [ "$IPXINTERNALNETNUM" != "0" ]; then
-	       /sbin/ipx_internal_net del
-	    fi
-	    ;;
-	esac
-
-	action "Shutting down loopback interface: " ./ifdown ifcfg-lo
+	action $"Shutting down loopback interface: " ./ifdown ifcfg-lo
 
 	if [ -d /proc/sys/net/ipv4 ]; then
 	  if [ -f /proc/sys/net/ipv4/ip_forward ]; then
