@@ -7,25 +7,6 @@
 
 [ -e /etc/sysconfig/system ] && . /etc/sysconfig/system
 
-#Clean up Tmp.
-if [ -n "$CLEAN_TMP" ] && [ "$CLEAN_TMP" -ge 1 ];then
-    ( 
-	TEXPR="! -ctime -$CLEAN_TMP"
-	echo -n "Clean-up /tmp directory: "
-	cd /tmp && \
-	    find . -xdev -depth \
-	    $TEXPR \
-	    ! -name . \
-	    ! \( -name lost+found -uid 0 \) \
-	    ! \( -name quota.user -uid 0 \) \
-	    ! \( -name quota.group -uid 0 \) \
-	    -print | while read i; do [ -d "$i" ] && rmdir "$i" 2>/dev/null ; rm -f "$i" 2>/dev/null; done
-       	if [ "$?" = "0" ];then echo_success;else echo_failure;fi
-	echo
-    )
-fi
-
-
 # Globetrotter support:
 #if [ -x /usr/share/harddrake/hwprofile ]; then
 #    action "Starting %s: " Globetrotter /usr/share/harddrake/hwprofile

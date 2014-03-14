@@ -9,15 +9,6 @@ elif [ "$LC_SOURCED_X11" = 1 -a -z "$DISPLAY" ]; then
 	unset LC_SOURCED_X11
 fi
 
-# if GDM_LANG is defined that means a language other than the user default
-# has been chosen trough gdm login for the session; so we define
-# LC_SOURCED=1 to not read the system/user i18n files
-if [ -n "$GDM_LANG" ]; then
-    LANG="$GDM_LANG"
-    LC_SOURCED=1
-    export LC_SOURCED
-fi
-
 # only source one of the possible files, and in that order;
 # if system wide and user config are mixed and different, umpredictable
 # things will happen...

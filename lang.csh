@@ -4,17 +4,12 @@ if (! $?LC_SOURCED) then
     set LC_SOURCED=0
 endif
 
-if ($?GDM_LANG) then
-    set LC_SOURCED=1
-    setenv LANG $GDM_LANG
-else
-    foreach file ("$HOME/.i18n" /etc/locale.conf )
+foreach file ("$HOME/.i18n" /etc/locale.conf /etc/sysconfig/i18n)
 	if ($LC_SOURCED != 1 && -f $file ) then
 	    eval `sed 's|=C$|=en_US|g' $file | sed 's|^#.*||' | sed 's|\([^=]*\)=\([^=]*\)|setenv \1 \2|g' | sed 's|$|;|' `
 	    setenv LC_SOURCED 1
 	endif
-    end
-endif
+end
 
 if ($LC_SOURCED == 1) then
     if ($?LC_ALL && $?LANG) then
