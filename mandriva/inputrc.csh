@@ -23,14 +23,4 @@ bindkey "\eOD" backward-char
 bindkey "\eOC" forward-char
 bindkey "\eOB" down-history
 bindkey "\eOA" up-history
-# the BackSpace key sends ^? or ^H, depending on config
-setenv BSNUM 14
-setenv BACKSPACE `dumpkeys |& grep "^keycode  $BSNUM" | awk '{print $4}'`
-if ($BACKSPACE == "BackSpace") then
-   bindkey "^?" delete-char
-   bindkey "^H" backward-delete-char
-else
-   bindkey "^?" backward-delete-char
-   bindkey "^H" delete-char
-endif
 
