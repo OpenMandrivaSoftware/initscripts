@@ -1,107 +1,79 @@
 #!/bin/sh
 # -*- Mode: shell-script -*-
 # Copyright (C) 2001 by Chmouel Boudjnah <chmouel@mandrakesoft.com>
-#			MandrakeSoft.
+#                      MandrakeSoft.
 # Redistribution of this file is permitted under the terms of the GNU
 # Public License (GPL)
 # Original version writen by RedHat.
 
-debug=
-service=
-opt=
-fullrestart=
-fullrestartall=
-statusall=
-
-servicedir=/etc/init.d
-xinetddir=/etc/xinetd.d
-
-basename=${0##*/}
-
 . /etc/init.d/functions
 
-service_available () {
-	local subsys
-	cd $servicedir
+VERSION="$(basename $0) ver. 1.1"
+USAGE="Usage: $(basename $0) < option > | --status-all | \
+[ service_name [ command | --full-restart ] ]"
+SERVICEDIR="/etc/init.d"
+ACTIONDIR="/etc/init.d"
+SERVICE=
+ACTION=
+OPTIONS=
 
-	for subsys in *;do
-		case $subsys in
-			kheader|numlock|sound|usb|netfs|kudzu|local|pcmcia| \
-			network|local|dm|harddrake|xfs) continue;;
-		esac
-		is_ignored_file "$service" && continue
-		grep -q chkconfig $subsys || continue
-		egrep -q 'restart.*\)' $subsys || continue
-		[[ -x $subsys ]] || continue
-		[[ -e /var/lock/subsys/$subsys ]] || continue
-		echo $(egrep -a '^#.*chkconfig: ' $subsys|awk '{print $4}') $subsys
-	done | sort -n|cut -d" " -f2
-}
+if [ $# -eq 0 ]; then
+   echo "${USAGE}" >&2
+   exit 1
+fi
 
-usage () {
-	cat <<EOF 1>&2
-Usage: $basename -[Rfshv] SERVICE ARGUMENTS
-	-f|--full-restart:	Do a fullrestart of the service.
-	-R|--full-restart-all:	Do a fullrestart of all running services.
-	-s|--status-all:	Print a status of all services.
-	--ignore-dependencies:  Do not start required systemd services
-	--skip-redirect:	Do not redirect to systemd
-	-d|--debug:		Launch with debug.
-	-h|--help:		This help.
-EOF
-exit 1
-}
-check_if_inetd() {
-    local serv=$1
-    if [[ ! -f ${servicedir}/${serv} ]];then
-	if [[ -f ${xinetddir}/${serv} ]];then
-	    if egrep -q ".*disable.*yes.*" ${xinetddir}/${serv};then
-		echo "$serv is a xinetd service and it is disabled"
-		echo "to activate it do the following command:"
-		echo "chkconfig ${serv} on"
-		service=
-		return
-	    fi
-	    service=xinetd
-	    [[ $options = "start" ]] && options=reload
-	    if [[ $options != reload ]] && [[ -z $fullrestart ]];then
-		echo "There is no such option for xinetd services"
-		echo "You can only use the start option to reload a xinetd service"
-		service=
-	    fi
-	    echo "${serv} is a xinetd service"
-	fi
-    fi
-    return
-}
-
-while [[ $1 = --* ]] || [[ $1 = -* ]];do
-    opt=$1
-    shift
-    case $opt in
-	--full-restart|-f) fullrestart=yes;;
-	--full-restart-all|-R) fullrestartall=yes;;
-	--status-all|-s) statusall=yes;;
-	--debug|-d) set -x ; debug="/bin/bash -x";;
-	--help|-h) usage;;
-	--ignore-dependencies) export SYSTEMCTL_IGNORE_DEPENDENCIES=1;;
-	--skip-redirect) export SYSTEMCTL_SKIP_REDIRECT=1;;
-	*) echo "Unknow option $opt"; usage;
-    esac
-done
-
-service=${1##*/}; shift;
-options="$@"
-
-#nuts ? (yes)
-while :;do
-    [[ -z $service && -n $statusall ]] && break
-    [[ -z $service && -n $fullrestartall ]] && break
-    [[ -n $service && -n $statusall ]] && { echo "--status-all doesn't need arguments"; usage ;}
-    [[ -n $service && -n $fullrestartall ]] && { echo "--full-restart-all doesn't need arguments"; usage ;}
-    [[ -z $service ]] && usage
-    [[ -n $service ]] && break
-
+cd /
+while [ $# -gt 0 ]; do
+  case "${1}" in
+    --help | -h | --h* )
+       echo "${USAGE}" >&2
+       exit 0
+       ;;
+    --version | -V )
+       echo "${VERSION}" >&2
+       exit 0
+       ;;
+    --ignore-dependencies)
+       export SYSTEMCTL_IGNORE_DEPENDENCIES=1
+       shift
+       ;;
+    --skip-redirect)
+       export SYSTEMCTL_SKIP_REDIRECT=1
+       shift
+       ;;
+    *)
+       if [ -z "${SERVICE}" -a $# -eq 1 -a "${1}" = "--status-all" ]; then
+          cd ${SERVICEDIR}
+          for SERVICE in * ; do
+            case "${SERVICE}" in
+              functions | halt | killall | single| linuxconf| kudzu)
+                  ;;
+              *)
+                if ! is_ignored_file "${SERVICE}" \
+		    && [ -x "${SERVICEDIR}/${SERVICE}" ]; then
+                  env -i PATH="$PATH" TERM="$TERM" "${SERVICEDIR}/${SERVICE}" status
+                fi
+                ;;
+            esac
+          done
+          exit 0
+       elif [ $# -eq 2 -a "${2}" = "--full-restart" ]; then
+          SERVICE="${1}"
+          if [ -x "${SERVICEDIR}/${SERVICE}" ]; then
+            env -i PATH="$PATH" TERM="$TERM" "${SERVICEDIR}/${SERVICE}" stop
+            env -i PATH="$PATH" TERM="$TERM" "${SERVICEDIR}/${SERVICE}" start
+            exit $?
+          fi
+       elif [ -z "${SERVICE}" ]; then
+         SERVICE="${1}"
+       elif [ -z "${ACTION}" ]; then
+         ACTION="${1}"
+       else
+         OPTIONS="${OPTIONS} ${1}"
+       fi
+       shift
+       ;;
+   esac
 done
 
 if [ -f "${SERVICEDIR}/${SERVICE}" ]; then
