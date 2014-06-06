@@ -54,7 +54,7 @@ if [ $SECURE_LEVEL -lt 4 ]; then
     fi
 fi
 
-SYSTEM=${SYSTEM="Mandriva"}
+SYSTEM=${SYSTEM="OpenMandriva Lx"}
 R=$(cat /etc/release)
 
 if [ -r /etc/sysconfig/oem ]; then
