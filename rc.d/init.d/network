@@ -81,6 +81,8 @@ case "$1" in
 	    ;;
 	esac
 
+	systemctl show --property=RequiredBy -- -.mount | grep -q 'remote-fs.target' && exit 1
+
 	vlaninterfaces=""
 	vpninterfaces=""
 	xdslinterfaces=""
