@@ -14,7 +14,7 @@ RELTAG := $(shell echo "V$(VERSION)_$(RELEASE)" | tr -- '-.' '__')
 RH_TAG:=rh$(subst .,_,$(VERSION))
 RPM := $(shell if [ -n "$$RPM" ]; then echo $$RPM; else rpm --eval '%{_topdir}'; fi)
 
-SUBDIRS = partmon vpn
+SUBDIRS = vpn
 PROFILE_LEVEL=10
 
 RPMOPT = --clean
