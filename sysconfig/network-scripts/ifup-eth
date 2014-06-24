@@ -412,7 +412,7 @@ else
 
         if ! LC_ALL=C ip addr ls ${REALDEVICE} | LC_ALL=C grep -q "${ipaddr[$idx]}/${prefix[$idx]}" ; then
             [ "${REALDEVICE}" != "lo" ] && [ "${arpcheck[$idx]}" != "no" ] && \
-            if ! /usr/sbin/arping -q -c 2 -w 3 -D -I ${REALDEVICE} ${ipaddr[$idx]} ; then
+            if ! /usr/sbin/arping -q -c 2 -w ${ARPING_WAIT:-3} -D -I ${REALDEVICE} ${ipaddr[$idx]}; then
                 net_log $"Error, some other host already uses address ${ipaddr[$idx]}."
                 mdv-network-event connection_failure ${DEVICE}
                 exit 1
