@@ -1,27 +1,12 @@
 #!/bin/bash
 # Description: Launch diverses Mandriva Scripts on boot.
 # (c) Mandriva, Chmouel Boudjnah <chmouel@mandriva.com>
-# 	$Id$	
+# 	$Id$
 
+# Source functions
 . /etc/rc.d/init.d/functions
 
 [ -e /etc/sysconfig/system ] && . /etc/sysconfig/system
-
-# Globetrotter support:
-#if [ -x /usr/share/harddrake/hwprofile ]; then
-#    action "Starting %s: " Globetrotter /usr/share/harddrake/hwprofile
-#else
-	# Call netprofile as it must be called before /etc/rc.d/rc to be able to change
-	# the active services.
-#	if [ -x /sbin/set-netprofile ]; then
-#	    INITLOG_ARGS="" action "Starting %s: " netprofile /sbin/set-netprofile
-#	fi
-#fi
-
-# check if /etc/resolv.conf exist - if not creates it
-#[ -f /etc/resolv.conf ] || {
-#               touch /etc/resolv.conf
-#}
 
 # /etc/issue and /etc/issue.net stuff
 
@@ -47,8 +32,6 @@ if [ -r /etc/sysconfig/oem ]; then
     fi
 fi
 
-# Source functions
-. /etc/init.d/functions
 
 if [ "$REWRITEISSUE" = "rewrite" -a -f /etc/release ]; then
 
@@ -58,7 +41,7 @@ if [ "$REWRITEISSUE" = "rewrite" -a -f /etc/release ]; then
 	    _a*) a="an";;
 	    _i*) a="an";;
     esac
-    
+
     NUMPROC=`egrep -c "^cpu[0-9]+" /proc/stat`
     if [ "$NUMPROC" -gt "1" ]; then
         SMP="$NUMPROC-processor "
@@ -80,7 +63,7 @@ if [ "$REWRITEISSUE" = "rewrite" -a -f /etc/release ]; then
 	echo "$R" > /etc/issue
 	echo "Kernel $(uname -r) on $a $SMP$(uname -m) / \l" >> /etc/issue
     fi
-    
+
     if [ "$REWRITEISSUENET" = "rewrite" ]; then
 	echo "Welcome to ${HOST}" > /etc/issue.net
 	echo "$R" >> /etc/issue.net
