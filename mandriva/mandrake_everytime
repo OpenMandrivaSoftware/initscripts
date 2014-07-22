@@ -23,24 +23,6 @@
 #               touch /etc/resolv.conf
 #}
 
-# start module build and hardware detection tools
-DKMS_TOOL=/usr/sbin/dkms_autoinstaller
-if [ "$DKMS_ONBOOT" != "no" ] && [ -x $DKMS_TOOL ]; then
-    $DKMS_TOOL start
-fi
-
-HARDDRAKE_TOOL=/usr/share/harddrake/service_harddrake
-if [ "$HARDDRAKE_ONBOOT" != "no" ] && [ -x $HARDDRAKE_TOOL ]; then
-    gprintf "Checking for new hardware"
-    SYSTEMCTL_NO_BLOCK=1 $HARDDRAKE_TOOL 2>/dev/null
-    RETVAL=$?
-    if [ "$RETVAL" -eq 0 ]; then
-        action "" /bin/true
-    else
-        action "" /bin/false
-    fi
-fi
-
 # /etc/issue and /etc/issue.net stuff
 
 [ -f /etc/sysconfig/system ] && source /etc/sysconfig/system
