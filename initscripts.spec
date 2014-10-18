@@ -1,6 +1,6 @@
 Summary: The inittab file and the /etc/init.d scripts
 Name: initscripts
-Version: 9.53
+Version: 9.54
 License: GPLv2
 Group: System Environment/Base
 Release: 1%{?dist}
