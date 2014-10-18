@@ -1,8 +1,7 @@
 Summary: The inittab file and the /etc/init.d scripts
 Name: initscripts
 Version: 9.53
-# ppp-watch is GPLv2+, everything else is GPLv2
-License: GPLv2 and GPLv2+
+License: GPLv2
 Group: System Environment/Base
 Release: 1%{?dist}
 URL: http://fedorahosted.org/releases/i/n/initscripts/
@@ -132,8 +131,6 @@ rm -rf $RPM_BUILD_ROOT
 /etc/sysconfig/network-scripts/init.ipv6-global
 %config(noreplace) /etc/sysconfig/network-scripts/ifcfg-lo
 /etc/sysconfig/network-scripts/ifup-post
-/etc/sysconfig/network-scripts/ifdown-ppp
-/etc/sysconfig/network-scripts/ifup-ppp
 /etc/sysconfig/network-scripts/ifup-routes
 /etc/sysconfig/network-scripts/ifdown-routes
 /etc/sysconfig/network-scripts/ifup-plip
@@ -187,17 +184,8 @@ rm -rf $RPM_BUILD_ROOT
 /lib/udev/rules.d/*
 /lib/udev/rename_device
 /sbin/service
-/sbin/ppp-watch
 %{_mandir}/man*/*
 %dir %attr(775,root,root) /var/run/netreport
-%dir /etc/ppp
-%dir /etc/ppp/peers
-/etc/ppp/ip-up
-/etc/ppp/ip-down
-/etc/ppp/ip-up.ipv6to4
-/etc/ppp/ip-down.ipv6to4
-/etc/ppp/ipv6-up
-/etc/ppp/ipv6-down
 %dir /etc/NetworkManager
 %dir /etc/NetworkManager/dispatcher.d
 /etc/NetworkManager/dispatcher.d/00-netreport

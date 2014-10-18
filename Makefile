@@ -50,7 +50,7 @@ install:
 	cp -af rc.d/init.d $(ROOT)/etc/rc.d/
 	install -m644 sysconfig/debug sysconfig/init sysconfig/netconsole sysconfig/readonly-root $(ROOT)/etc/sysconfig/
 	cp -af sysconfig/network-scripts $(ROOT)/etc/sysconfig/
-	cp -af ppp NetworkManager $(ROOT)/etc
+	cp -af NetworkManager $(ROOT)/etc
 	# (cg) Are the two lines below needed these days???
 	mkdir -p $(ROOT)/etc/sysconfig/console/consolefonts
 	mkdir -p $(ROOT)/etc/sysconfig/console/consoletrans
@@ -58,12 +58,9 @@ install:
 	cp -af systemd/* $(ROOT)/lib/systemd/
 	chmod 755 $(ROOT)/lib/systemd/mandriva-*
 	chmod 755 $(ROOT)/lib/systemd/mandriva-*
-	mkdir -p $(ROOT)/etc/ppp/peers
 	cp -af udev $(ROOT)/lib
 	chmod 755 $(ROOT)/etc/rc.d/* $(ROOT)/etc/rc.d/init.d/*
 	chmod 644 $(ROOT)/etc/rc.d/init.d/functions
-	chmod 755 $(ROOT)/etc/ppp/peers
-	chmod 755 $(ROOT)/etc/ppp/ip*
 	chmod 755 $(ROOT)/etc/sysconfig/network-scripts/ifup-*
 	chmod 755 $(ROOT)/etc/sysconfig/network-scripts/ifdown-*
 	chmod 755 $(ROOT)/etc/sysconfig/network-scripts/init*
