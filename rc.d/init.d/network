@@ -63,13 +63,18 @@ case "$1" in
 	if [ -x /etc/sysconfig/network-scripts/init.ipv6-global ]; then
 		/etc/sysconfig/network-scripts/init.ipv6-global start pre
 	fi
-  
+
 	apply_sysctl
 
 	if [ -r /etc/ethers -a -x /sbin/arp ]; then
 	    action "Storing ARP mapping" /sbin/arp -f /etc/ethers
 	fi
-	
+
+	#tell NM to reload its configuration
+	if [ "$(LANG=C nmcli -t --fields running general status 2>/dev/null)" = "running" ]; then
+		nmcli connection reload
+	fi
+
 	# bring up loopback interface
 	action "Bringing up loopback interface: " ./ifup ifcfg-lo
 
@@ -80,8 +85,6 @@ case "$1" in
 	    fi
 	    ;;
 	esac
-
-	systemctl show --property=RequiredBy -- -.mount | grep -q 'remote-fs.target' && exit 1
 
 	vlaninterfaces=""
 	vpninterfaces=""
@@ -102,10 +105,11 @@ case "$1" in
 		eval $(LANG=C grep -F "DEVICE=" "ifcfg-$i")
 		eval $(LANG=C grep -F "TYPE=" "ifcfg-$i")
 		eval $(LANG=C grep -F "SLAVE=" "ifcfg-$i")
+		eval $(LANG=C grep -F "NM_CONTROLLED=" ifcfg-$i)
 
 		if [ -z "$DEVICE" ] ; then DEVICE="$i"; fi
 
-		if [ "$SLAVE" = "yes" ]; then
+		if [ "$SLAVE" = "yes" ] && ( ! is_nm_running || is_false $NM_CONTROLLED ) ; then
 			continue
 		fi
 		if [ "$TYPE" = "Wireless" ]; then
@@ -116,7 +120,7 @@ case "$1" in
 			vpninterfaces="$vpninterfaces $i"
 			continue
 		fi
-		if [ "$TYPE" = "xDSL" -o "$TYPE" = "ADSL" ]; then
+		if [ "$TYPE" = "xDSL" -o "$TYPE" = "Modem" ]; then
 		        xdslinterfaces="$xdslinterfaces $i"
 			continue
 		fi
@@ -134,7 +138,7 @@ case "$1" in
 			vlaninterfaces="$vlaninterfaces $i"
 			continue
 		fi
-		
+
 		if LANG=C grep -EL "^ONBOOT=['\"]?[Nn][Oo]['\"]?" "ifcfg-$i" > /dev/null ; then
 		        # this loads the module, to preserve ordering
 			is_available $i
@@ -143,7 +147,7 @@ case "$1" in
 		action "Bringing up interface %s: " $i ./ifup $DEVICE boot
 		[ $? -ne 0 ] && rc=1
 	done
-	
+
 	# Bring up xDSL and VPN interfaces
 	for i in $vlaninterfaces $bridgeinterfaces $xdslinterfaces $vpninterfaces ; do
             if ! LANG=C grep -EL "^ONBOOT=['\"]?[Nn][Oo]['\"]?" "ifcfg-$i" >/dev/null 2>&1 ; then
@@ -161,7 +165,7 @@ case "$1" in
 	   else
 	       net_log $"Legacy static-route support not available: /sbin/route not found"
 	   fi
-	fi    
+	fi
 
  	# IPv6 hook (post IPv4 start)
  	if [ -x /etc/sysconfig/network-scripts/init.ipv6-global ]; then
@@ -178,11 +182,12 @@ case "$1" in
 	# block device.
         rootfs=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/" && $3 != "rootfs") { print $3; }}' /proc/mounts)
         rootopts=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
-	
-	if [[ "$rootfs" == nfs* || "$rootopts" =~ _r?netdev ]] ; then
-		exit 1
+
+	if [[ "$rootfs" == nfs* || "$rootopts" =~ _r?netdev ]] || systemctl show --property=RequiredBy -- -.mount | grep -q 'remote-fs.target' ; then
+	    net_log $"rootfs is on network filesystem, leaving network up"
+	    exit 1
 	fi
-  
+
 	vlaninterfaces=""
 	vpninterfaces=""
 	xdslinterfaces=""
@@ -214,7 +219,7 @@ case "$1" in
 		        bridgeinterfaces="$bridgeinterfaces $i"
 		        continue
 		fi
-		if [ "$TYPE" = "xDSL"  -o "$TYPE" = "ADSL" ]; then
+		if [ "$TYPE" = "xDSL" -o "$TYPE" = "Modem" ]; then
 		        xdslinterfaces="$xdslinterfaces $i"
 			continue
 		fi
@@ -225,7 +230,7 @@ case "$1" in
 		fi
 		remaining="$remaining $i"
 	done
-	
+
 	for i in $vpninterfaces $xdslinterfaces $bridgeinterfaces $vlaninterfaces $remaining; do
 		unset DEVICE TYPE
 		(. ./ifcfg-$i
@@ -262,7 +267,7 @@ case "$1" in
 	if [ -x /etc/sysconfig/network-scripts/init.ipv6-global ]; then
 		/etc/sysconfig/network-scripts/init.ipv6-global stop post
 	fi
-	
+
         rm -f /var/lock/subsys/network
         ;;
   status)

@@ -126,6 +126,7 @@ eval ` (
        echo default_BROADCAST=$BROADCAST\;;
        echo default_GATEWAY=$GATEWAY\;;
        echo default_NO_ALIASROUTING=$NO_ALIASROUTING\;;
+       echo default_ARPCHECK=$ARPCHECK\;;
 ) `
 [ -z "$default_GATEWAY" ] && default_GATEWAY=$network_GATEWAY
 
@@ -133,13 +134,14 @@ function ini_env ()
 {
        DEVICE=""
        IPADDR=""
+       IPV6ADDR=""
        PREFIX=$default_PREFIX
        NETMASK=$default_NETMASK
        BROADCAST=$default_BROADCAST
        GATEWAY=$default_GATEWAY
        NO_ALIASROUTING=$default_NO_ALIASROUTING
        ONPARENT=""
-       ARPCHECK=""
+       ARPCHECK=$default_ARPCHECK
 }
 
 function is_default_gateway ()
@@ -182,6 +184,10 @@ function new_interface ()
        fi
 
        if [ -z "$DEVICE" -o -z "$IPADDR" ]; then
+              if [ -n "$IPV6ADDR" -a -n "$DEVICE" ] && [[ "$IPV6INIT" != [nN0]* ]]; then
+                    /etc/sysconfig/network-scripts/ifup-ipv6 ${DEVICE}
+                    return $?
+              fi
               net_log $"error in $FILE: didn't specify device or ipaddr"
 	      return 1
        fi
@@ -257,13 +263,16 @@ function new_interface ()
        fi
 
        if [ "$setup_this" = "yes" ] ; then
-               [ "${parent_device}" != "lo" ] &&  [ "${ARPCHECK}" != "no" ] && \
+               if [ "${parent_device}" != "lo" ] && [ "${ARPCHECK}" != "no" ] && \
                is_available ${parent_device} && \
-               grep -qswi "up" /sys/class/net/${parent_device}/operstate && \
-               if ! /usr/sbin/arping -q -c 2 -w ${ARPING_WAIT:-3} -D -I ${parent_device} ${IPADDR} ; then
-                   net_log $"Error, some other host already uses address ${IPADDR}."
-                   return 1
-               fi
+               ( grep -qswi "up" /sys/class/net/${parent_device}/operstate ||  grep -qswi "1" /sys/class/net/${parent_device}/carrier ) ; then
+		    echo $"Determining if ip address ${IPADDR} is already in use for device ${parent_device}..."
+			/sbin/arping -q -c 2 -w ${ARPING_WAIT:-3} -D -I ${parent_device} ${IPADDR}
+			 if [ $? = 1 ]; then
+			    net_log $"Error, some other host already uses address ${IPADDR}."
+			    return 1
+			fi
+		    fi
 
                /sbin/ip addr add ${IPADDR}/${PREFIX} brd ${BROADCAST} dev ${parent_device} label ${DEVICE}
 
@@ -326,6 +335,7 @@ for FILE in ifcfg-${parent_device}-range* ; do
        while [ $ipaddr_num -le $ipaddr_endnum ]; do
                IPADDR="$ipaddr_prefix.$ipaddr_num"
                DEVICE="$parent_device:$ipaddr_clonenum"
+               IPV6INIT="no"
 	       [ "$ONPARENT" != "no" -a "$ONPARENT" != "NO" ] && new_interface;
                ipaddr_num=$(($ipaddr_num+1))
                ipaddr_clonenum=$(($ipaddr_clonenum+1))

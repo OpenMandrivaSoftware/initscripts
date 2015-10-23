@@ -63,36 +63,43 @@ if [ -n "$IN_HOTPLUG" ] && [ "${HOTPLUG}" = "no" -o "${HOTPLUG}" = "NO" ]
 then
     exit 0
 fi
-if [ -n "$IN_HOTPLUG" -a "${TYPE}" = "Bridge" ]; 
+if [ -n "$IN_HOTPLUG" -a "${TYPE}" = "Bridge" ];
 then
     exit 0
 fi
 
-if [ "$_use_nm" = "true" ]; then
- if [ -n "$UUID" ]; then
- nmcli con up uuid "$UUID"
- exit $?
- fi
- echo $"$0: interface ${CONFIG} is controlled by NetworkManager; skipping." >&2
- exit 0
+if [ "$_use_nm" = "true" -a -n "$UUID" -a "$DEVICE" != "lo" ]; then
+    if [ "foo$2" = "fooboot" ] && [ "${TYPE}" = "Wireless" ]; then
+        exit 0
+    fi
+    [ -n "${DEVICE}" ] && is_nm_handling ${DEVICE} && exit 0
+    nmcli con up uuid "$UUID"
+    exit $?
 fi
 
 # Ethernet 802.1Q VLAN support
-if [ "${VLAN}" = "yes" ] && [ "$ISALIAS" = "no" ]; then
-    VID=""
-    MATCH='^.+\.[0-9]{1,4}$'
-    if [[ "${DEVICE}" =~ $MATCH ]]; then
-	VID=$(echo "${DEVICE}" | LC_ALL=C sed 's/^.*\.\([0-9]\+\)/\1/')
-	PHYSDEV=${DEVICE%.*}
-    fi
-    MATCH='^vlan[0-9]{1,4}?'
-    if [[ "${DEVICE}" =~ $MATCH ]]; then
-	VID=$(echo "${DEVICE}" | LC_ALL=C sed 's/^vlan0*//')
-	# PHYSDEV should be set in ifcfg-vlan* file
-	if test -z "$PHYSDEV"; then
-		net_log $"PHYSDEV should be set for device ${DEVICE}"
-		exit 1
-	fi
+if [ "${VLAN}" = "yes" ] && [ "$ISALIAS" = "no" ] && [ -n "$DEVICE" ]; then
+    if [ -n "${VID}" ]; then
+        if test -z "$PHYSDEV"; then
+            net_log $"PHYSDEV should be set for device ${DEVICE}"
+            exit 1
+        fi
+    else
+        VID=""
+        MATCH='^.+\.[0-9]{1,4}$'
+        if [[ "${DEVICE}" =~ $MATCH ]]; then
+            VID=$(echo "${DEVICE}" | LC_ALL=C sed 's/^.*\.\([0-9]\+\)/\1/')
+            PHYSDEV=${DEVICE%.*}
+        fi
+        MATCH='^vlan[0-9]{1,4}?'
+         if [[ "${DEVICE}" =~ $MATCH ]]; then
+             VID=$(echo "${DEVICE}" | LC_ALL=C sed 's/^vlan0*//')
+             # PHYSDEV should be set in ifcfg-vlan* file
+             if test -z "$PHYSDEV"; then
+                net_log $"PHYSDEV should be set for device ${DEVICE}"
+                exit 1
+             fi
+        fi
     fi
     if [ -n "$VID" ]; then
 	if [ ! -d /proc/net/vlan ]; then
@@ -102,7 +109,7 @@ if [ "${VLAN}" = "yes" ] && [ "$ISALIAS" = "no" ]; then
 	    fi
 	fi
 
-	is_available ${PHYSDEV} || {
+	is_available_wait ${PHYSDEV} ${DEVTIMEOUT} || {
 	    if [ "$?" = "1" ] ; then
 		net_log $"$alias device ${DEVICE} does not seem to be present, delaying initialization."
 		exit 1

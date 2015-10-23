@@ -21,7 +21,6 @@ install:
 	mkdir -p $(ROOT)/var/lib/stateless/state
 
 	install -m644  adjtime $(ROOT)/etc
-	install -m644  inittab $(ROOT)/etc
 	install -m644  rwtab statetab networks $(ROOT)/etc
 	install -m755  service $(ROOT)/sbin
 	install -m644  lang.csh $(ROOT)/etc/profile.d/10lang.csh
@@ -38,8 +37,6 @@ install:
 	  install -m644 sysctl.conf.sparc $(ROOT)/usr/lib/sysctl.d/00-system.conf ; fi
 	if uname -m | grep -q s390 ; then \
 	  install -m644 sysctl.conf.s390 $(ROOT)/usr/lib/sysctl.d/00-system.conf ; fi
-	install -m 644 sysctl.conf.README $(ROOT)/etc/sysctl.conf
-	ln -s ../sysctl.conf $(ROOT)/etc/sysctl.d/99-sysctl.conf
 
 	mkdir -p $(ROOT)/etc/X11
 	install -m755 prefdm $(ROOT)/etc/X11/prefdm
@@ -84,9 +81,6 @@ install:
 	mkdir -p $(ROOT)/var/run/netreport $(ROOT)/var/log
 	chown $(SUPERUSER):$(SUPERGROUP) $(ROOT)/var/run/netreport
 	chmod u=rwx,g=rwx,o=rx $(ROOT)/var/run/netreport
-	touch $(ROOT)/var/run/utmp
-	touch $(ROOT)/var/log/wtmp
-	touch $(ROOT)/var/log/btmp
 
 	for i in 0 1 2 3 4 5 6 ; do \
 		dir=$(ROOT)/etc/rc.d/rc$$i.d; \

@@ -18,11 +18,15 @@ source_config
 
 /etc/sysconfig/network-scripts/ifdown-routes ${REALDEVICE} ${DEVNAME}
 
-if [ "$PEERDNS" != "no" -o -n "$RESOLV_MODS" -a "$RESOLV_MODS" != "no" ]; then
-    clear_resolv_conf
+if [ "$PEERDNS" != "no" -o -n "$RESOLV_MODS" -a "$RESOLV_MODS" != "no" ] && \
+   [ "${DEVICETYPE}" = "ppp" -o "${DEVICETYPE}" = "ippp" -o -n "${DNS1}" -o "${BOOTPROTO}" = "bootp" -o "${BOOTPROTO}" = "dhcp" ] ; then
+    if [ -f /etc/resolv.conf.save ]; then
+    change_resolv_conf /etc/resolv.conf.save
+    rm -f /etc/resolv.conf.save
+    fi
     if [ "${DEVICETYPE}" = "ppp" -o "${DEVICETYPE}" = "ippp" ]; then
-        if [ -f /etc/ppp/peers/$DEVICE -a "$TYPE" != "ADSL" ] ; then
-	    rm -f /etc/ppp/peers/$DEVICE
+        if [ -f /etc/ppp/peers/$DEVICE ] ; then
+        rm -f /etc/ppp/peers/$DEVICE
         fi
     fi
 fi
