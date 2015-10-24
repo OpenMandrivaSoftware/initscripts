@@ -37,7 +37,7 @@ usleep: $(USLEEP_OBJS)
 usernetctl.o: usernetctl.c
 	$(CC) $(CFLAGS) -c usernetctl.c -o usernetctl.o
 
-usernetctl: usernetctl.c usernetctl.o
+usernetctl: usernetctl.o
 	$(CC) $(LDFLAGS) -o $@ $@.o
 
 netreport.o: netreport.c
