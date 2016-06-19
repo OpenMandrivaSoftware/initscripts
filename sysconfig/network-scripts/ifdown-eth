@@ -56,7 +56,7 @@ fi
 fi
 
 if is_bonding_device ${DEVICE} ; then
-    for device in $(LANG=C grep -l "^[[:space:]]*MASTER=\"\?${DEVICE}\"\?\([[:space:]#]\|$\)" /etc/sysconfig/network-scripts/ifcfg-*) ; do
+    for device in $(LANG=C grep -l "^[[:space:]]*MASTER=['\"]\?${DEVICE}['\"]\?\([[:space:]#]\|$\)" /etc/sysconfig/network-scripts/ifcfg-*) ; do
 	is_ignored_file "$device" && continue
 	/sbin/ifdown ${device##*/}
     done
@@ -134,7 +134,7 @@ fi
 # instance instead.
 if [ -d "/sys/class/net/${REALDEVICE}" ]; then
         LABEL=
-	if [ "${REALDEVICE}" = "${DEVICE}" ]; then
+	if [ "${REALDEVICE}" != "${DEVICE}" ]; then
                LABEL="label ${DEVICE}"
         fi
 	if [ "${REALDEVICE}" = "lo" ]; then
@@ -143,7 +143,7 @@ if [ -d "/sys/class/net/${REALDEVICE}" ]; then
 		ip addr flush dev ${REALDEVICE} ${LABEL} scope global 2>/dev/null
 		ip -4 addr flush dev ${REALDEVICE} ${LABEL} scope host 2>/dev/null
 	fi
-	
+
 	if [ "${SLAVE}" = "yes" -a -n "${MASTER}" ]; then
 		echo "-${DEVICE}" > /sys/class/net/${MASTER}/bonding/slaves 2>/dev/null
 	fi

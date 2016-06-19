@@ -24,14 +24,14 @@ get_hwaddr ()
 
 get_config_by_device ()
 {
-    LANG=C grep -l "^[[:space:]]*DEVICE=\"\?${1}\"\?\([[:space:]#]\|$\)" \
+    LANG=C grep -l "^[[:space:]]*DEVICE=['\"]\?${1}['\"]\?\([[:space:]#]\|$\)" \
 	/etc/sysconfig/network-scripts/ifcfg-* \
 	| LC_ALL=C sed -e "$__sed_discard_ignored_files"
 }
 
 get_config_by_hwaddr ()
 {
-    LANG=C grep -il "^[[:space:]]*HWADDR=\"\?${1}\"\?\([[:space:]#]\|$\)" /etc/sysconfig/network-scripts/ifcfg-* \
+    LANG=C grep -il "^[[:space:]]*HWADDR=['\"]\?${1}['\"]\?\([[:space:]#]\|$\)" /etc/sysconfig/network-scripts/ifcfg-* \
 	| LC_ALL=C sed -e "$__sed_discard_ignored_files"
 }
 
@@ -172,10 +172,12 @@ source_config ()
     else
 	ISALIAS=no
     fi
-
-    ! is_false $NM_CONTROLLED && is_nm_running && _use_nm=true
-    if [ -z "$UUID" -a "$_use_nm" = "true" ]; then
-	UUID=$(get_uuid_by_config $CONFIG)
+    if is_nm_running && [ "$REALDEVICE" != "lo" ] ; then
+        nmcli con load "/etc/sysconfig/network-scripts/$CONFIG"
+        if ! is_false $NM_CONTROLLED; then
+            UUID=$(get_uuid_by_config $CONFIG)
+            [ -n "$UUID" ] && _use_nm=true
+        fi
     fi
 }
 
