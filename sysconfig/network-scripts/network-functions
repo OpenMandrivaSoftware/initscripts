@@ -17,8 +17,8 @@ get_hwaddr ()
 	awk '{ print toupper($0) }' < /sys/class/net/${1}/address
     elif [ -d "/sys/class/net/${1}" ]; then
 	LC_ALL= LANG= ip -o link show ${1} 2>/dev/null | \
-      	    awk '{ print toupper(gensub(/.*link\/[^ ]* ([[:alnum:]:]*).*/,
-					"\\1", 1)); }'
+	awk '{ print toupper(gensub(/.*link\/[^ ]* ([[:alnum:]:]*).*/,
+	"\\1", 1)); }'
     fi
 }
 
@@ -46,8 +46,8 @@ get_config_by_subchannel ()
 get_config_by_name ()
 {
     LANG=C grep -E -i -l \
-        "^[[:space:]]*NAME=\"(Auto |System )?${1}\"" \
-        /etc/sysconfig/network-scripts/ifcfg-* \
+	"^[[:space:]]*NAME=\"(Auto |System )?${1}\"" \
+	/etc/sysconfig/network-scripts/ifcfg-* \
 	| LC_ALL=C sed -e "$__sed_discard_ignored_files"
 }
 
@@ -62,23 +62,23 @@ get_uuid_by_config ()
 }
 
 generate_lease_file_name () {
-	local ver=$1
-	LEASEFILE="/var/lib/dhclient/dhclient$ver-${DEVICE}.leases"
-	if [ -f $LEASEFILE ]; then
-		 return
-	fi
-	LEASEFILE="/var/lib/dhclient/dhclient$ver-${UUID}-${DEVICE}.lease"
+    local ver=$1
+    LEASEFILE="/var/lib/dhclient/dhclient$ver-${DEVICE}.leases"
+    if [ -f $LEASEFILE ]; then
+	 return
+    fi
+    LEASEFILE="/var/lib/dhclient/dhclient$ver-${UUID}-${DEVICE}.lease"
 }
 
 generate_config_file_name () {
-	local ver=$1
-	if [ -s /etc/dhcp/dhclient$ver-${DEVICE}.conf ]; then
-		DHCLIENTCONF="-cf /etc/dhcp/dhclient$ver-${DEVICE}.conf";
-	elif [ -s /etc/dhclient$ver-${DEVICE}.conf ]; then
-		DHCLIENTCONF="-cf /etc/dhclient$ver-${DEVICE}.conf";
-	else
-		DHCLIENTCONF='';
-	fi
+    local ver=$1
+    if [ -s /etc/dhcp/dhclient$ver-${DEVICE}.conf ]; then
+	DHCLIENTCONF="-cf /etc/dhcp/dhclient$ver-${DEVICE}.conf";
+    elif [ -s /etc/dhclient$ver-${DEVICE}.conf ]; then
+	DHCLIENTCONF="-cf /etc/dhclient$ver-${DEVICE}.conf";
+    else
+	DHCLIENTCONF='';
+    fi
 }
 
 need_config ()
@@ -91,21 +91,21 @@ need_config ()
     [ -f "${CONFIG}" ] && return
     nconfig=$(get_config_by_name "${1}")
     if [ -n "$nconfig" ] && [ -f "$nconfig" ]; then
-      CONFIG=${nconfig##*/}
-      return
+	CONFIG=${nconfig##*/}
+	return
     fi
     local addr=$(get_hwaddr ${1})
     if [ -n "$addr" ]; then
-      nconfig=$(get_config_by_hwaddr ${addr})
-      if [ -n "$nconfig" ] ; then
-        CONFIG=${nconfig##*/}
-	[ -f "${CONFIG}" ] && return
-      fi
+	nconfig=$(get_config_by_hwaddr ${addr})
+	if [ -n "$nconfig" ] ; then
+	    CONFIG=${nconfig##*/}
+	    [ -f "${CONFIG}" ] && return
+	fi
     fi
     nconfig=$(get_config_by_device ${1})
     if [ -n "$nconfig" ] && [ -f "$nconfig" ]; then
-      CONFIG=${nconfig##*/}
-      return
+	CONFIG=${nconfig##*/}
+	return
     fi
 }
 
@@ -116,7 +116,7 @@ source_config ()
     . /etc/sysconfig/network-scripts/$CONFIG
     [ -r "keys-$DEVNAME" ] && . /etc/sysconfig/network-scripts/keys-$DEVNAME
     case "$TYPE" in
-    	Ethernet)
+	Ethernet)
 		DEVICETYPE="eth"
 		;;
 	CIPE)
@@ -157,10 +157,10 @@ source_config ()
 		;;
     esac
     if [ -n "$HWADDR" ]; then
-        HWADDR=$(echo $HWADDR | awk '{ print toupper($0) }')
+	HWADDR=$(echo $HWADDR | awk '{ print toupper($0) }')
     fi
     if [ -n "$MACADDR" ]; then
-        MACADDR=$(echo $MACADDR | awk '{ print toupper($0) }')
+	MACADDR=$(echo $MACADDR | awk '{ print toupper($0) }')
     fi
     [ -z "$DEVICE" -a -n "$HWADDR" ] && DEVICE=$(get_device_by_hwaddr $HWADDR)
     [ -z "$DEVICETYPE" ] && DEVICETYPE=$(echo ${DEVICE} | sed "s/[0-9]*$//")
@@ -168,16 +168,16 @@ source_config ()
     [ -z "$REALDEVICE" ] && REALDEVICE=${DEVICE%%:*}
     [ -z "$SYSCTLDEVICE" ] && SYSCTLDEVICE=${REALDEVICE/.//}
     if [ "${DEVICE}" != "${REALDEVICE}" ]; then
-        ISALIAS=yes
+	ISALIAS=yes
     else
 	ISALIAS=no
     fi
     if is_nm_running && [ "$REALDEVICE" != "lo" ] ; then
-        nmcli con load "/etc/sysconfig/network-scripts/$CONFIG"
-        if ! is_false $NM_CONTROLLED; then
-            UUID=$(get_uuid_by_config $CONFIG)
-            [ -n "$UUID" ] && _use_nm=true
-        fi
+	nmcli con load "/etc/sysconfig/network-scripts/$CONFIG"
+	if ! is_false $NM_CONTROLLED; then
+	    UUID=$(get_uuid_by_config $CONFIG)
+	    [ -n "$UUID" ] && _use_nm=true
+	fi
     fi
 }
 
@@ -188,11 +188,11 @@ ethtool_set()
     [ -n "${ETHTOOL_DELAY}" ] && /bin/usleep ${ETHTOOL_DELAY}
     for opts in $ETHTOOL_OPTS ; do
 	IFS=$oldifs;
-        if [[ "${opts}" =~ [[:space:]]*- ]]; then
+	if [[ "${opts}" =~ [[:space:]]*- ]]; then
 	    /sbin/ethtool $opts
-        else
+	else
 	    /sbin/ethtool -s ${REALDEVICE} $opts
-        fi
+	fi
 	IFS=';';
     done
     IFS=$oldifs;
@@ -202,48 +202,48 @@ expand_config ()
 {
     local i=0 val
     for idx in '' {0..255} ; do
-        ipaddr[$i]=$(eval echo '$'IPADDR$idx)
-        if [ -z "${ipaddr[$i]}" ]; then
-           [ "$idx" ] && [ $idx -ge 2 ] && break
-           continue
-        fi
-        prefix[$i]=$(eval echo '$'PREFIX$idx)
-        netmask[$i]=$(eval echo '$'NETMASK$idx)
-        broadcast[$i]=$(eval echo '$'BROADCAST$idx)
-        arpcheck[$i]=$(eval echo '$'ARPCHECK$idx)
+	ipaddr[$i]=$(eval echo '$'IPADDR$idx)
+	if [ -z "${ipaddr[$i]}" ]; then
+	    [ "$idx" ] && [ $idx -ge 2 ] && break
+	    continue
+	fi
+	prefix[$i]=$(eval echo '$'PREFIX$idx)
+	netmask[$i]=$(eval echo '$'NETMASK$idx)
+	broadcast[$i]=$(eval echo '$'BROADCAST$idx)
+	arpcheck[$i]=$(eval echo '$'ARPCHECK$idx)
 
-        if [ "${prefix[$i]}x" != "x" ]; then
-            val=$(/bin/ipcalc --netmask "${ipaddr[$i]}/${prefix[$i]}")
-            netmask[$i]=${val##NETMASK=}
-        fi
+	if [ "${prefix[$i]}x" != "x" ]; then
+	    val=$(/bin/ipcalc --netmask "${ipaddr[$i]}/${prefix[$i]}")
+	    netmask[$i]=${val##NETMASK=}
+	fi
 
-        if [ "${netmask[$i]}x" = "x" ]; then
-            val=$(/bin/ipcalc --netmask "${ipaddr[$i]}")
-            netmask[$i]=${val##NETMASK=}
-        fi
+	if [ "${netmask[$i]}x" = "x" ]; then
+	    val=$(/bin/ipcalc --netmask "${ipaddr[$i]}")
+	    netmask[$i]=${val##NETMASK=}
+	fi
 
-        if [ "${prefix[$i]}x" = "x" ]; then
-            val=$(/bin/ipcalc --prefix ${ipaddr[$i]} ${netmask[$i]})
-            prefix[$i]=${val##PREFIX=}
-        fi
-
-        if [ "${broadcast[$i]}x" = "x" ]; then
-            val=$(/bin/ipcalc --broadcast ${ipaddr[$i]} ${netmask[$i]})
-            broadcast[$i]=${val##BROADCAST=}
+	if [ "${prefix[$i]}x" = "x" ]; then
+	    val=$(/bin/ipcalc --prefix ${ipaddr[$i]} ${netmask[$i]})
+	    prefix[$i]=${val##PREFIX=}
         fi
 
-        if [ "${arpcheck[$i]}x" != "x" ]; then
-            arpcheck[$i]=${arpcheck[$i]##ARPCHECK=}
-            arpcheck[$i]=${arpcheck[$i],,*}
-        fi
+	if [ "${broadcast[$i]}x" = "x" ]; then
+	    val=$(/bin/ipcalc --broadcast ${ipaddr[$i]} ${netmask[$i]})
+	    broadcast[$i]=${val##BROADCAST=}
+	fi
 
-        i=$((i+1))
+	if [ "${arpcheck[$i]}x" != "x" ]; then
+	    arpcheck[$i]=${arpcheck[$i]##ARPCHECK=}
+	    arpcheck[$i]=${arpcheck[$i],,*}
+	fi
+
+	i=$((i+1))
     done
 
     [ -n "$DHCP_HOSTNAME" ] && DHCP_HOSTNAME=${DHCP_HOSTNAME%%.*}
 
     if [ -z "${NETWORK}" ]; then
-        eval $(/bin/ipcalc --network ${ipaddr[0]} ${netmask[0]})
+	eval $(/bin/ipcalc --network ${ipaddr[0]} ${netmask[0]})
     fi
 }
 
@@ -260,19 +260,19 @@ toggle_value ()
  
 do_netreport ()
 {
-  # Notify programs that have requested notification
-  ( cd /var/run/netreport || exit
-    for i in * ; do
-      if [ -f $i ]; then
-        if [ "$(id -u)" = "0" ]; then
-	  OWNER=$(stat -c %U $i)
-	  su -s /bin/bash $OWNER -c "kill -SIGIO $i >/dev/null 2>&1 || rm -f $i >/dev/null 2>&1" > /dev/null 2>&1
-	else
-	  kill -SIGIO $i >/dev/null 2>&1 || rm -f $i >/dev/null 2>&1
-	fi
-      fi
-    done
-  )
+    # Notify programs that have requested notification
+    ( cd /var/run/netreport || exit
+	for i in * ; do
+	    if [ -f $i ]; then
+		if [ "$(id -u)" = "0" ]; then
+		    OWNER=$(stat -c %U $i)
+		    su -s /bin/bash $OWNER -c "kill -SIGIO $i >/dev/null 2>&1 || rm -f $i >/dev/null 2>&1" > /dev/null 2>&1
+		else
+		    kill -SIGIO $i >/dev/null 2>&1 || rm -f $i >/dev/null 2>&1
+		fi
+	    fi
+	done
+    )
 }
 
 is_nm_running ()
@@ -324,13 +324,13 @@ END {
     [ $? -eq 0 ] || return 2
 
     modprobe $1 > /dev/null 2>&1 || {
-      return 1
+    return 1
     }
     if [ -n "$HWADDR" ]; then
-       local curdev=$(get_device_by_hwaddr "$HWADDR")
-       if [ -z "$curdev" ]; then
-          return 1
-       fi
+	local curdev=$(get_device_by_hwaddr "$HWADDR")
+	if [ -z "$curdev" ]; then
+	    return 1
+	fi
     fi
 
     if [ ${alias} = "bonding" ]; then
@@ -350,9 +350,9 @@ is_available_wait ()
     ret=$?
 
     while [ 0"$retry" -gt 0 ]; do
-        sleep 1
-        [ -d "/sys/class/net/$1" ] && return 0
-        retry=$(($retry -1))
+	sleep 1
+	[ -d "/sys/class/net/$1" ] && return 0
+	retry=$(($retry -1))
     done
 
     return $ret
@@ -375,12 +375,12 @@ set_hostname ()
     if ! grep search /etc/resolv.conf >/dev/null 2>&1; then
 	domain=$(echo $1 | sed 's/^[^\.]*\.//')
 	if [ -n "$domain" ]; then
-		rsctmp=$(mktemp /tmp/XXXXXX);
-		cat /etc/resolv.conf > $rsctmp
-		echo "search $domain" >> $rsctmp
-		change_resolv_conf $rsctmp
-		/bin/rm -f $rsctmp
-	fi	
+	    rsctmp=$(mktemp /tmp/XXXXXX);
+	    cat /etc/resolv.conf > $rsctmp
+	    echo "search $domain" >> $rsctmp
+	    change_resolv_conf $rsctmp
+	    /bin/rm -f $rsctmp
+	fi
     fi
     if [ -d /etc/sysconfig/network-scripts/hostname.d -a -x /usr/bin/run-parts ]; then
 	/usr/bin/run-parts --arg $1 /etc/sysconfig/network-scripts/hostname.d
@@ -389,12 +389,12 @@ set_hostname ()
 
 check_device_down ()
 {
-     [ ! -d /sys/class/net/$1 ] && return 0
-     if LC_ALL=C ip -o link show dev $1 2>/dev/null | grep -q ",UP" ; then
+    [ ! -d /sys/class/net/$1 ] && return 0
+    if LC_ALL=C ip -o link show dev $1 2>/dev/null | grep -q ",UP" ; then
 	return 1
-     else
+    else
 	return 0
-     fi
+    fi
 }
 
 check_link_down ()
@@ -402,18 +402,18 @@ check_link_down ()
     if [ "${MII_NOT_SUPPORTED}" = yes ]; then
 	return 1
     fi
-        if ! LC_ALL=C ip link show dev $1 2>/dev/null| grep -q UP ; then
-	   ip link set dev $1 up >/dev/null 2>&1
-	fi
-	timeout=0
-	delay=10
-	[ -n "$LINKDELAY" ] && delay=$(($LINKDELAY * 2))
-	while [ $timeout -le $delay ]; do
-	    [ "$(cat /sys/class/net/$REALDEVICE/carrier 2>/dev/null)" != "0" ] && return 1
-	    usleep 500000
-	    timeout=$((timeout+1))
-	done
-	return 0
+    if ! LC_ALL=C ip link show dev $1 2>/dev/null| grep -q UP ; then
+	ip link set dev $1 up >/dev/null 2>&1
+    fi
+    timeout=0
+    delay=10
+    [ -n "$LINKDELAY" ] && delay=$(($LINKDELAY * 2))
+    while [ $timeout -le $delay ]; do
+	[ "$(cat /sys/class/net/$REALDEVICE/carrier 2>/dev/null)" != "0" ] && return 1
+	usleep 500000
+	timeout=$((timeout+1))
+    done
+    return 0
 }
 
 check_default_route ()
@@ -429,7 +429,7 @@ find_gateway_dev ()
 	    sed -n 's/.* dev \([[:alnum:]]*\) .*/\1/p')
 	if [ -n "$dev" ]; then
 	    GATEWAYDEV="$dev"
-        fi
+	fi
     fi
 }
 
@@ -444,17 +444,17 @@ add_default_route ()
     check_default_route && return 0
     find_gateway_dev
     if [ "$GATEWAYDEV" != "" -a -n "${GATEWAY}" -a \
- 		"${GATEWAY}" != "none" ]; then
-        if ! check_device_down $1; then
-            if [ "$GATEWAY" = "0.0.0.0" ]; then
-                /sbin/ip route add default dev ${GATEWAYDEV}
-            else
-                /sbin/ip route add default via ${GATEWAY}
-            fi
-        fi
+	"${GATEWAY}" != "none" ]; then
+	if ! check_device_down $1; then
+	    if [ "$GATEWAY" = "0.0.0.0" ]; then
+		/sbin/ip route add default dev ${GATEWAYDEV}
+	    else
+		/sbin/ip route add default via ${GATEWAY}
+	    fi
+	fi
     elif [ -f /etc/default-routes ]; then
 	while read spec; do
-	    /sbin/ip route add $spec
+	/sbin/ip route add $spec
 	done < /etc/default-routes
 	rm -f /etc/default-routes
     fi
@@ -469,7 +469,7 @@ is_wireless_device ()
 
 phy_wireless_device ()
 {
-	cat /sys/class/net/$1/phy80211/name
+    cat /sys/class/net/$1/phy80211/name
 }
 
 bond_master_exists ()
@@ -479,79 +479,79 @@ bond_master_exists ()
     [ ! -f /sys/class/net/bonding_masters ] && return 1
 
     for bond_name in $(< /sys/class/net/bonding_masters); do
-       [ "${bond_name}" == "${1}" ] && return 0
+	[ "${bond_name}" == "${1}" ] && return 0
     done
     return 1
 }
 
 install_bonding_driver ()
 {
-   if ! bond_master_exists ${1}; then
-       modprobe bonding || return 1
-       echo "+$1" > /sys/class/net/bonding_masters 2>/dev/null
-   fi
-   (
+    if ! bond_master_exists ${1}; then
+	modprobe bonding || return 1
+	echo "+$1" > /sys/class/net/bonding_masters 2>/dev/null
+    fi
+    (
 	# Set config here
 	need_config "$1"
 	source_config
 	if [ -f /sys/class/net/${DEVICE}/bonding/slaves ] && [ $(wc -l < /sys/class/net/${DEVICE}/bonding/slaves) -eq 0 ]; then
-	        /sbin/ip link set dev ${DEVICE} down
+	    /sbin/ip link set dev ${DEVICE} down
 
-	        # parse options and put them to arrays
-	        for arg in $BONDING_OPTS ; do
-	            bopts_keys[${#bopts_keys[*]}]=${arg%%=*}
-	            bopts_vals[${#bopts_vals[*]}]=${arg##*=}
-	        done
+	    # parse options and put them to arrays
+	    for arg in $BONDING_OPTS ; do
+		bopts_keys[${#bopts_keys[*]}]=${arg%%=*}
+		bopts_vals[${#bopts_vals[*]}]=${arg##*=}
+	    done
 
-	        # add the bits to setup driver parameters here
-	        # first set mode, miimon
-	        for (( idx=0; idx < ${#bopts_keys[*]}; idx++ )) ; do
-	            key=${bopts_keys[$idx]}
-	            value=${bopts_vals[$idx]}
+	    # add the bits to setup driver parameters here
+	    # first set mode, miimon
+	    for (( idx=0; idx < ${#bopts_keys[*]}; idx++ )) ; do
+		key=${bopts_keys[$idx]}
+		value=${bopts_vals[$idx]}
 
-	            if [ "${key}" = "mode" ] ; then
-	                echo "${value}" > /sys/class/net/${DEVICE}/bonding/$key
-	                bopts_keys[$idx]=""
-	            fi
-	            if [ "${key}" = "miimon" ] ; then
-	                echo "${value}" > /sys/class/net/${DEVICE}/bonding/$key
-	                bopts_keys[$idx]=""
-	            fi
-	        done
+		if [ "${key}" = "mode" ] ; then
+		    echo "${value}" > /sys/class/net/${DEVICE}/bonding/$key
+		    bopts_keys[$idx]=""
+		fi
+		if [ "${key}" = "miimon" ] ; then
+		    echo "${value}" > /sys/class/net/${DEVICE}/bonding/$key
+		    bopts_keys[$idx]=""
+		fi
+	    done
 
-	        # set all other remaining options
-	        for (( idx=0; idx < ${#bopts_keys[*]}; idx++ )) ; do
-	            key=${bopts_keys[$idx]}
-	            value=${bopts_vals[$idx]}
+	    # set all other remaining options
+	    for (( idx=0; idx < ${#bopts_keys[*]}; idx++ )) ; do
+		key=${bopts_keys[$idx]}
+		value=${bopts_vals[$idx]}
 
-	            # option already set; take next
-	            [[ -z "$key" ]] && continue
+		# option already set; take next
+		[[ -z "$key" ]] && continue
 
-	            if [ "${key}" = "arp_ip_target" -a "${value:0:1}" != "+" ]; then
-	                OLDIFS=$IFS;
-	                IFS=',';
-	                for arp_ip in $value; do
-			    if ! grep -q $arp_ip /sys/class/net/${DEVICE}/bonding/$key; then
-	                        echo +$arp_ip > /sys/class/net/${DEVICE}/bonding/$key
-			    fi
-	                done
-	                IFS=$OLDIFS;
-	            elif [ "${key}" = "arp_ip_target" ]; then
-		        if ! grep -q ${value#+} /sys/class/net/${DEVICE}/bonding/$key; then
-	                    echo "$value" > /sys/class/net/${DEVICE}/bonding/$key
-		        fi
-		    elif [ "${key}" != "primary" ]; then
-	                echo $value > /sys/class/net/${DEVICE}/bonding/$key
-	            fi
-	        done
+		if [ "${key}" = "arp_ip_target" -a "${value:0:1}" != "+" ]; then
+		    OLDIFS=$IFS;
+		    IFS=',';
+		    for arp_ip in $value; do
+			if ! grep -q $arp_ip /sys/class/net/${DEVICE}/bonding/$key; then
+			    echo +$arp_ip > /sys/class/net/${DEVICE}/bonding/$key
+			fi
+		    done
+		    IFS=$OLDIFS;
+		elif [ "${key}" = "arp_ip_target" ]; then
+		    if ! grep -q ${value#+} /sys/class/net/${DEVICE}/bonding/$key; then
+			echo "$value" > /sys/class/net/${DEVICE}/bonding/$key
+		    fi
+		elif [ "${key}" != "primary" ]; then
+		    echo $value > /sys/class/net/${DEVICE}/bonding/$key
+		fi
+	    done
 	fi
-   )
-   return 0
+    )
+    return 0
 }
 
 is_bonding_device ()
 {
-   [ -f "/sys/class/net/$1/bonding/slaves" ]
+    [ -f "/sys/class/net/$1/bonding/slaves" ]
 }
 
 # Invoke this when /etc/resolv.conf has changed:
@@ -559,32 +559,32 @@ change_resolv_conf ()
 {
     s=$(/bin/grep '^[\ \	]*option' /etc/resolv.conf 2>/dev/null);
     if [ $# -gt 1 ]; then
-       if [ "x$s" != "x" ]; then
-          s="$s"$'\n';
-       fi;
-       n_args=$#;
-       while [ $n_args -gt 0 ]; 
-	 do 
+	if [ "x$s" != "x" ]; then
+	    s="$s"$'\n';
+	fi;
+    n_args=$#;
+    while [ $n_args -gt 0 ];
+	do
 	    case "$s" in *$1*)
-	       shift;
-	       n_args=$(($n_args-1));
-               continue;;
-            esac;
-	    s="$s$1";
-            shift; 
-	    if [ $# -gt 0 ]; then
-		s="$s"$'\n';
-	    fi;
+	    shift;
 	    n_args=$(($n_args-1));
-         done;       
+	continue;;
+	esac;
+	    s="$s$1";
+	shift;
+	if [ $# -gt 0 ]; then
+	    s="$s"$'\n';
+	fi;
+	    n_args=$(($n_args-1));
+	done;
     elif [ $# -eq 1 -a -r "$1" ]; then
-       if [ "x$s" != "x" ]; then
-	  s="$s"$'\n'$(/bin/grep -vF "$s" $1);
-       else
-	  s=$(cat $1);
-       fi;
+	if [ "x$s" != "x" ]; then
+	    s="$s"$'\n'$(/bin/grep -vF "$s" $1);
+	else
+	    s=$(cat $1);
+	fi;
     else
-       return
+	return
     fi;
     if [ -e "$RESOLVCONF_FLAGFILE" ]; then
 	echo "$s" | /sbin/resolvconf -a ${DEVICE}
@@ -617,33 +617,33 @@ clear_resolv_conf ()
 # Default level is 'err'.
 
 net_log() {
-	local message="$1"
-	local level="$2"
-	local name="$3"
+    local message="$1"
+    local level="$2"
+    local name="$3"
 
-	[ -z "$message" ] && return 1
-	[ -z "$level" ] && level=err
-	[ -z "$name" ] && name=$0
+    [ -z "$message" ] && return 1
+    [ -z "$level" ] && level=err
+    [ -z "$name" ] && name=$0
 
-	case $level in
-	    'debug')
-		local txt_level=$"DEBUG    "
-		;;
-	    'err')
-		local txt_level=$"ERROR    "
-		;;
-	    'warning')
-		local txt_level=$"WARN     "
-		;;
-	    'info')
-		local txt_level=$"INFO     "
-		;;
+    case $level in
+	'debug')
+	    local txt_level=$"DEBUG    "
+	    ;;
+	'err')
+	    local txt_level=$"ERROR    "
+	    ;;
+	'warning')
+	    local txt_level=$"WARN     "
+	    ;;
+	'info')
+	    local txt_level=$"INFO     "
+	    ;;
 	esac
 
 	echo "$txt_level: [$name] $message"
 
-	if [ -x /usr/bin/logger ]; then
-		/usr/bin/logger -p daemon.$level -t "$name" "$message"
-	fi
-	return 0
+    if [ -x /usr/bin/logger ]; then
+	/usr/bin/logger -p daemon.$level -t "$name" "$message"
+    fi
+    return 0
 }

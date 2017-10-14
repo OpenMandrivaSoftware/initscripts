@@ -50,31 +50,31 @@ case $ACTION in
 
 
 		if [ "$IPV6FORWARDING" = "yes" ]; then
-			ipv6_global_forwarding=1
-			ipv6_global_auto=0
+		    ipv6_global_forwarding=1
+		    ipv6_global_auto=0
 		else
-			ipv6_global_forwarding=0
-			if [ "$IPV6_AUTOCONF" = "no" ]; then
-				ipv6_global_auto=0
-			else
-				ipv6_global_auto=1
-			fi
+		    ipv6_global_forwarding=0
+		    if [ "$IPV6_AUTOCONF" = "no" ]; then
+			ipv6_global_auto=0
+		    else
+			ipv6_global_auto=1
+		    fi
 		fi
 
 		# Reset IPv6 sysctl switches for "all", "default" and still existing devices
-    if [ ! "$IPV6_SET_SYSCTLS" = "no" ]; then
-      for i in /proc/sys/net/ipv6/conf/* ; do
-        interface=${i##*/}
-        sinterface=${interface/.//}
-        # Host/Router behaviour for the interface
-        /sbin/sysctl -e -w net.ipv6.conf.$sinterface.forwarding=$ipv6_global_forwarding >/dev/null 2>&1
+		if [ ! "$IPV6_SET_SYSCTLS" = "no" ]; then
+		    for i in /proc/sys/net/ipv6/conf/* ; do
+		    interface=${i##*/}
+		    sinterface=${interface/.//}
+		    # Host/Router behaviour for the interface
+		    /sbin/sysctl -e -w net.ipv6.conf.$sinterface.forwarding=$ipv6_global_forwarding >/dev/null 2>&1
 
-        # Autoconfiguration and redirect handling for Hosts
-        /sbin/sysctl -e -w net.ipv6.conf.$sinterface.accept_ra=$ipv6_global_auto >/dev/null 2>&1
-        /sbin/sysctl -e -w net.ipv6.conf.$sinterface.accept_redirects=$ipv6_global_auto >/dev/null 2>&1
-      done
-    fi
-		;;
+		    # Autoconfiguration and redirect handling for Hosts
+		    /sbin/sysctl -e -w net.ipv6.conf.$sinterface.accept_ra=$ipv6_global_auto >/dev/null 2>&1
+		    /sbin/sysctl -e -w net.ipv6.conf.$sinterface.accept_redirects=$ipv6_global_auto >/dev/null 2>&1
+		    done
+		fi
+	    ;;
 
 	    post)
 		# IPv6 test, module loaded, exit if system is not IPv6-ready
@@ -82,8 +82,8 @@ case $ACTION in
 
 
 		if [ "$IPV6_AUTOTUNNEL" = "yes" ]; then
-			ipv6_enable_autotunnel
-			# autotunnel interface doesn't require a MTU setup
+		    ipv6_enable_autotunnel
+		    # autotunnel interface doesn't require a MTU setup
 		fi
 
 		## Add some routes which should never appear on the wire
@@ -106,17 +106,17 @@ case $ACTION in
 
 		# Set default route for autotunnel, if specified
 		if [ "$IPV6_DEFAULTDEV" = "sit0" -a "$IPV6_AUTOTUNNEL" = "yes" ]; then
-			if [ -n "$IPV6_DEFAULTGW" ]; then
-				ipv6_set_default_route $IPV6_DEFAULTGW $IPV6_DEFAULTDEV sit0
-			elif [ -n "$IPV6_DEFAULTDEV" ]; then
-				ipv6_set_default_route "" $IPV6_DEFAULTDEV sit0
-			fi
+		    if [ -n "$IPV6_DEFAULTGW" ]; then
+			ipv6_set_default_route $IPV6_DEFAULTGW $IPV6_DEFAULTDEV sit0
+		    elif [ -n "$IPV6_DEFAULTDEV" ]; then
+			ipv6_set_default_route "" $IPV6_DEFAULTDEV sit0
+		    fi
 		fi
-		;;
+	    ;;
 
 	    *)
 		echo "Usage: $0 $1 {pre|post}"
-		;;
+	    ;;
 
 	esac
 	;;
@@ -124,38 +124,37 @@ case $ACTION in
     stop)
 	case $POSITION in
 	    pre)
-		;;
+	    ;;
 
 	    post)
-		# IPv6 test, no module loaded, exit if system is not IPv6-ready
-		ipv6_test testonly || exit 0
+	    # IPv6 test, no module loaded, exit if system is not IPv6-ready
+	    ipv6_test testonly || exit 0
 
+	    if [ ! "$IPV6_SET_SYSCTLS" = "no" ]; then
+		for i in /proc/sys/net/ipv6/conf/* ; do
+		    interface=${i##*/}
+		    sinterface=${interface/.//}
+		    # Assume Host behaviour
+		    /sbin/sysctl -e -w net.ipv6.conf.$sinterface.forwarding=0 >/dev/null 2>&1
 
-    if [ ! "$IPV6_SET_SYSCTLS" = "no" ]; then
-      for i in /proc/sys/net/ipv6/conf/* ; do
-        interface=${i##*/}
-        sinterface=${interface/.//}
-        # Assume Host behaviour
-        /sbin/sysctl -e -w net.ipv6.conf.$sinterface.forwarding=0 >/dev/null 2>&1
+		    # Disable autoconfiguration and redirects
+		    /sbin/sysctl -e -w net.ipv6.conf.$sinterface.accept_ra=0 >/dev/null 2>&1
+		    /sbin/sysctl -e -w net.ipv6.conf.$sinterface.accept_redirects=0 >/dev/null 2>&1
+		done
+	    fi
 
-        # Disable autoconfiguration and redirects
-        /sbin/sysctl -e -w net.ipv6.conf.$sinterface.accept_ra=0 >/dev/null 2>&1
-        /sbin/sysctl -e -w net.ipv6.conf.$sinterface.accept_redirects=0 >/dev/null 2>&1
-      done
-    fi
+	    # Cleanup still existing tunnel devices
+	    ipv6_cleanup_tunnel_devices
 
-		# Cleanup still existing tunnel devices
-		ipv6_cleanup_tunnel_devices
-
-		# Shut down generic tunnel interface now
-		if ipv6_test_device_status sit0 ; then
-			/sbin/ip link set sit0 down
-		fi
-		;;
+	    # Shut down generic tunnel interface now
+	    if ipv6_test_device_status sit0 ; then
+		/sbin/ip link set sit0 down
+	    fi
+	;;
 
 	    *)
 		echo "Usage: $0 $1 {pre|post}"
-		;;
+	    ;;
 
 	esac
 	;;
@@ -163,5 +162,5 @@ case $ACTION in
     *)
 	echo $"Usage: $0 {start|stop|reload|restart|showsysctl}"
 	exit 1
-	;;
+    ;;
 esac

@@ -315,7 +315,7 @@ case $(basename $DHCP_CLIENT) in
     DHCP_ARGS="$DHCP_ARGS --wait $DEVICE"
     ;;
     dhclient)
-    if [[ "${PERSISTENT_DHCLIENT}" = [yY1]* ]]; then
+    if is_true "${PERSISTENT_DHCLIENT}"; then
 	ONESHOT=
     else
 	ONESHOT="-1"
@@ -347,7 +347,7 @@ fi
 if [ -n "${DYNCONFIG}" ]; then
     echo
     echo -n $"Determining IP information for ${DEVICE}..."
-    if [[ "${PERSISTENT_DHCLIENT}" !=  [yY1]* ]] && check_link_down ${DEVICE}; then
+    if ! is_true "${PERSISTENT_DHCLIENT}" && check_link_down ${DEVICE}; then
 	echo $" failed; no link present.  Check cable?"
 	ip link set dev ${DEVICE} down >/dev/null 2>&1
 	mdv-network-event connection_failure ${DEVICE}
@@ -425,7 +425,7 @@ else
 
         if ! LC_ALL=C ip addr ls ${REALDEVICE} | LC_ALL=C grep -q "${ipaddr[$idx]}/${prefix[$idx]}" ; then
             [ "${REALDEVICE}" != "lo" ] && [ "${arpcheck[$idx]}" != "no" ] && \
-            if ! /sbin/arping -q -c 2 -w ${ARPING_WAIT:-3} -D -I ${REALDEVICE} ${ipaddr[$idx]}; then
+            if ! /usr/sbin/arping -q -c 2 -w ${ARPING_WAIT:-3} -D -I ${REALDEVICE} ${ipaddr[$idx]}; then
                 net_log $"Error, some other host already uses address ${ipaddr[$idx]}."
                 mdv-network-event connection_failure ${DEVICE}
                 exit 1
@@ -443,9 +443,9 @@ else
 
         # update ARP cache of neighboring computers
         if [ "${REALDEVICE}" != "lo" ]; then
-          /sbin/arping -q -A -c 1 -I ${REALDEVICE} ${ipaddr[$idx]}
+          /usr/sbin/arping -q -A -c 1 -I ${REALDEVICE} ${ipaddr[$idx]}
           ( sleep 2;
-            /sbin/arping -q -U -c 1 -I ${REALDEVICE} ${ipaddr[$idx]} ) > /dev/null 2>&1 < /dev/null &
+            /usr/sbin/arping -q -U -c 1 -I ${REALDEVICE} ${ipaddr[$idx]} ) > /dev/null 2>&1 < /dev/null &
         fi
 
         # set lifetime of address to forever
@@ -464,11 +464,13 @@ else
 		atmarp -s ${GATEWAY} ${ATM_ADDR} null 2>/dev/null
 	    fi 
 	    ip route replace default ${METRIC:+metric $METRIC} \
+		${EXTRA_ROUTE_OPTS} \
 		via ${GATEWAY} ${WINDOW:+window $WINDOW} ${SRC} \
 		${GATEWAYDEV:+dev $GATEWAYDEV} ||
 			net_log $"Error adding default gateway ${GATEWAY} for ${DEVICE}."
 	elif [ "${GATEWAYDEV}" = "${DEVICE}" ]; then
 	    ip route replace default ${METRIC:+metric $METRIC} \
+		${EXTRA_ROUTE_OPTS} \
 		${SRC} ${WINDOW:+window $WINDOW} dev ${REALDEVICE} ||
 			net_log $"Error adding default gateway for ${REALDEVICE}."
 	fi
@@ -498,7 +500,7 @@ fi
 
 # IPv6 initialisation?
 /etc/sysconfig/network-scripts/ifup-ipv6 ${CONFIG}
-if [[ "${DHCPV6C}"  = [Yy1]* ]] && [ -x /sbin/dhclient ]; then
+if is_true "${DHCPV6C}" && [ -x /sbin/dhclient ]; then
     generate_config_file_name 6
     generate_lease_file_name 6
     echo

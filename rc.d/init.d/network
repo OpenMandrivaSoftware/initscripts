@@ -26,7 +26,7 @@ fi
 . /etc/sysconfig/network
 
 if [ -f /etc/sysconfig/pcmcia ]; then
-	. /etc/sysconfig/pcmcia
+    . /etc/sysconfig/pcmcia
 fi
 
 
@@ -45,23 +45,23 @@ cd /etc/sysconfig/network-scripts
 # find all the interfaces besides loopback.
 # ignore aliases, alternative configurations, and editor backup files
 interfaces=$(/bin/ls ifcfg* | \
-	    LC_ALL=C sed -e "$__sed_discard_ignored_files" \
-		       -e '/\(ifcfg-lo$\|:\|ifcfg-.*-range\)/d' \
-		       -e '/ifcfg-[ A-Za-z0-9#\._-]\+$/ { s/^ifcfg-//g;s/[0-9]/ &/}' | \
-	    LC_ALL=C grep -v '^ifcfg-' | \
-	    LC_ALL=C sort -k 1,1 -k 2n | \
-	    LC_ALL=C sed -e 's/ \([0-9]\)/\1/')
+    LC_ALL=C sed -e "$__sed_discard_ignored_files" \
+    -e '/\(ifcfg-lo$\|:\|ifcfg-.*-range\)/d' \
+    -e '/ifcfg-[ A-Za-z0-9#\._-]\+$/ { s/^ifcfg-//g;s/[0-9]/ &/}' | \
+    LC_ALL=C grep -v '^ifcfg-' | \
+    LC_ALL=C sort -k 1,1 -k 2n | \
+    LC_ALL=C sed -e 's/ \([0-9]\)/\1/')
 rc=0
 
 # See how we were called.
 case "$1" in
-  start)
+    start)
 	[ "$EUID" != "0" ] && exit 4
 
 	rc=0
 	# IPv6 hook (pre IPv4 start)
 	if [ -x /etc/sysconfig/network-scripts/init.ipv6-global ]; then
-		/etc/sysconfig/network-scripts/init.ipv6-global start pre
+	    /etc/sysconfig/network-scripts/init.ipv6-global start pre
 	fi
 
 	apply_sysctl
@@ -72,17 +72,17 @@ case "$1" in
 
 	#tell NM to reload its configuration
 	if [ "$(LANG=C nmcli -t --fields running general status 2>/dev/null)" = "running" ]; then
-		nmcli connection reload
+	    nmcli connection reload
 	fi
 
 	# bring up loopback interface
 	action "Bringing up loopback interface: " ./ifup ifcfg-lo
 
 	case "$VLAN" in
-	  yes)
-	    if [ ! -d /proc/net/vlan ] && ! modprobe 8021q >/dev/null 2>&1 ; then
-		gprintf "No 802.1Q VLAN support available in kernel.\n"
-	    fi
+	    yes)
+		if [ ! -d /proc/net/vlan ] && ! modprobe 8021q >/dev/null 2>&1 ; then
+		    gprintf "No 802.1Q VLAN support available in kernel.\n"
+		fi
 	    ;;
 	esac
 
@@ -96,53 +96,53 @@ case "$1" in
 	has_wifi=$?
 	# configure CRDA domain
 	if [ -n "${CRDA_DOMAIN}" -a -x /sbin/iw -a "$has_wifi" == 0  ]; then
-		action "Configuring wireless regulatory domain " /sbin/iw reg set ${CRDA_DOMAIN}
+	    action "Configuring wireless regulatory domain " /sbin/iw reg set ${CRDA_DOMAIN}
 	fi
 
 	# bring up all other interfaces configured to come up at boot time
 	for i in $interfaces; do
-		unset DEVICE TYPE SLAVE NM_CONTROLLED
-		eval $(LANG=C grep -F "DEVICE=" "ifcfg-$i")
-		eval $(LANG=C grep -F "TYPE=" "ifcfg-$i")
-		eval $(LANG=C grep -F "SLAVE=" "ifcfg-$i")
-		eval $(LANG=C grep -F "NM_CONTROLLED=" ifcfg-$i)
+	    unset DEVICE TYPE SLAVE NM_CONTROLLED
+	    eval $(LANG=C grep -F "DEVICE=" "ifcfg-$i")
+	    eval $(LANG=C grep -F "TYPE=" "ifcfg-$i")
+	    eval $(LANG=C grep -F "SLAVE=" "ifcfg-$i")
+	    eval $(LANG=C grep -F "NM_CONTROLLED=" ifcfg-$i)
 
-		if [ -z "$DEVICE" ] ; then DEVICE="$i"; fi
+	    if [ -z "$DEVICE" ] ; then DEVICE="$i"; fi
 
 		if [ "$SLAVE" = "yes" ] && ( ! is_nm_running || is_false $NM_CONTROLLED ) ; then
-			continue
+		    continue
 		fi
 		if [ "$TYPE" = "Wireless" ]; then
-			continue
+		    continue
 		fi
 
 		if [ "${DEVICE##cipcb}" != "$DEVICE" ] ; then
-			vpninterfaces="$vpninterfaces $i"
-			continue
+		    vpninterfaces="$vpninterfaces $i"
+		    continue
 		fi
 		if [ "$TYPE" = "xDSL" -o "$TYPE" = "Modem" ]; then
-		        xdslinterfaces="$xdslinterfaces $i"
-			continue
+		    xdslinterfaces="$xdslinterfaces $i"
+		    continue
 		fi
 
 		if [ "$TYPE" = "Bridge" ]; then
-		        bridgeinterfaces="$bridgeinterfaces $i"
-			continue
+		    bridgeinterfaces="$bridgeinterfaces $i"
+		    continue
 		fi
 		if [ "$TYPE" = "IPSEC" ] || [ "$TYPE" = "IPIP" ] || [ "$TYPE" = "GRE" ]; then
-			vpninterfaces="$vpninterfaces $i"
-			continue
+		    vpninterfaces="$vpninterfaces $i"
+		    continue
 		fi
 
 		if [ "${DEVICE%%.*}" != "$DEVICE"  -o  "${DEVICE##vlan}" != "$DEVICE" ] ; then
-			vlaninterfaces="$vlaninterfaces $i"
-			continue
+		    vlaninterfaces="$vlaninterfaces $i"
+		    continue
 		fi
 
 		if LANG=C grep -EL "^ONBOOT=['\"]?[Nn][Oo]['\"]?" "ifcfg-$i" > /dev/null ; then
-		        # this loads the module, to preserve ordering
-			is_available $i
-			continue
+		    # this loads the module, to preserve ordering
+		    is_available $i
+		    continue
 		fi
 		action "Bringing up interface %s: " $i ./ifup $DEVICE boot
 		[ $? -ne 0 ] && rc=1
@@ -150,7 +150,7 @@ case "$1" in
 
 	# Bring up xDSL and VPN interfaces
 	for i in $vlaninterfaces $bridgeinterfaces $xdslinterfaces $vpninterfaces ; do
-            if ! LANG=C grep -EL "^ONBOOT=['\"]?[Nn][Oo]['\"]?" "ifcfg-$i" >/dev/null 2>&1 ; then
+	    if ! LANG=C grep -EL "^ONBOOT=['\"]?[Nn][Oo]['\"]?" "ifcfg-$i" >/dev/null 2>&1 ; then
 		action "Bringing up interface %s: " $i ./ifup $i boot
 		[ $? -ne 0 ] && rc=1
 	    fi
@@ -158,30 +158,30 @@ case "$1" in
 
 	# Add non interface-specific static-routes.
 	if [ -f /etc/sysconfig/static-routes ]; then
-	   if [ -x /sbin/route ]; then
-	       grep "^any" /etc/sysconfig/static-routes | while read ignore args ; do
-                   /sbin/route add -$args
-	       done
-	   else
-	       net_log $"Legacy static-route support not available: /sbin/route not found"
-	   fi
+	    if [ -x /sbin/route ]; then
+		grep "^any" /etc/sysconfig/static-routes | while read ignore args ; do
+		/sbin/route add -$args
+		done
+	    else
+		net_log $"Legacy static-route support not available: /sbin/route not found"
+	    fi
 	fi
 
- 	# IPv6 hook (post IPv4 start)
- 	if [ -x /etc/sysconfig/network-scripts/init.ipv6-global ]; then
- 		/etc/sysconfig/network-scripts/init.ipv6-global start post
- 	fi
+	# IPv6 hook (post IPv4 start)
+	if [ -x /etc/sysconfig/network-scripts/init.ipv6-global ]; then
+	    /etc/sysconfig/network-scripts/init.ipv6-global start post
+	fi
 	# Run this again to catch any interface-specific actions
 	apply_sysctl
- 
-        touch /var/lock/subsys/network
-        ;;
-  stop)
+
+	touch /var/lock/subsys/network
+	;;
+    stop)
 	[ "$EUID" != "0" ] && exit 4
-  	# Don't shut the network down if root is on NFS or a network
+	# Don't shut the network down if root is on NFS or a network
 	# block device.
-        rootfs=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/" && $3 != "rootfs") { print $3; }}' /proc/mounts)
-        rootopts=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
+	rootfs=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/" && $3 != "rootfs") { print $3; }}' /proc/mounts)
+	rootopts=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
 
 	if [[ "$rootfs" == nfs* || "$rootopts" =~ _r?netdev ]] || systemctl show --property=RequiredBy -- -.mount | grep -q 'remote-fs.target' ; then
 	    net_log $"rootfs is on network filesystem, leaving network up"
@@ -197,48 +197,48 @@ case "$1" in
 
 	# get list of bonding, vpn, and xdsl interfaces
 	for i in $interfaces; do
-		unset DEVICE TYPE
-		eval $(LANG=C grep -F "DEVICE=" "ifcfg-$i")
-		eval $(LANG=C grep -F "TYPE=" "ifcfg-$i")
+	    unset DEVICE TYPE
+	    eval $(LANG=C grep -F "DEVICE=" "ifcfg-$i")
+	    eval $(LANG=C grep -F "TYPE=" "ifcfg-$i")
 
-		if [ -z "$DEVICE" ] ; then DEVICE="$i"; fi
+	    if [ -z "$DEVICE" ] ; then DEVICE="$i"; fi
 
 		if [ "$TYPE" = "Wireless" ]; then
-			continue
+		    continue
 		fi
 
 		if [ "${DEVICE##cipcb}" != "$DEVICE" ] ; then
-			vpninterfaces="$vpninterfaces $i"
-			continue
+		    vpninterfaces="$vpninterfaces $i"
+		    continue
 		fi
 		if [ "$TYPE" = "IPSEC" ] || [ "$TYPE" = "IPIP" ] || [ "$TYPE" = "GRE" ]; then
-			vpninterfaces="$vpninterfaces $i"
-			continue
+		    vpninterfaces="$vpninterfaces $i"
+		    continue
 		fi
 		if [ "$TYPE" = "Bridge" ]; then
-		        bridgeinterfaces="$bridgeinterfaces $i"
-		        continue
+		    bridgeinterfaces="$bridgeinterfaces $i"
+		    continue
 		fi
 		if [ "$TYPE" = "xDSL" -o "$TYPE" = "Modem" ]; then
-		        xdslinterfaces="$xdslinterfaces $i"
-			continue
+		    xdslinterfaces="$xdslinterfaces $i"
+		    continue
 		fi
 
 		if [ "${DEVICE%%.*}" != "$DEVICE"  -o  "${DEVICE##vlan}" != "$DEVICE" ] ; then
-			vlaninterfaces="$vlaninterfaces $i"
-			continue
+		    vlaninterfaces="$vlaninterfaces $i"
+		    continue
 		fi
 		remaining="$remaining $i"
-	done
+	    done
 
 	for i in $vpninterfaces $xdslinterfaces $bridgeinterfaces $vlaninterfaces $remaining; do
-		unset DEVICE TYPE
-		(. ./ifcfg-$i
+	    unset DEVICE TYPE
+	    (. ./ifcfg-$i
 		if [ -z "$DEVICE" ] ; then DEVICE="$i"; fi
 
 		if ! check_device_down $DEVICE; then
-		   action "Shutting down interface %s: " $i ./ifdown $i boot
-		   [ $? -ne 0 ] && rc=1
+		    action "Shutting down interface %s: " $i ./ifdown $i boot
+		    [ $? -ne 0 ] && rc=1
 		fi
 		)
 	done
@@ -246,26 +246,26 @@ case "$1" in
 	action $"Shutting down loopback interface: " ./ifdown ifcfg-lo
 
 	if [ -d /proc/sys/net/ipv4 ]; then
-	  if [ -f /proc/sys/net/ipv4/ip_forward ]; then
+	    if [ -f /proc/sys/net/ipv4/ip_forward ]; then
 		if [ $(cat /proc/sys/net/ipv4/ip_forward) != 0 ]; then
-			action "Disabling IPv4 packet forwarding: " sysctl -w net.ipv4.ip_forward=0
+		    action "Disabling IPv4 packet forwarding: " sysctl -w net.ipv4.ip_forward=0
 		fi
-	  fi
-	  if [ -f /proc/sys/net/ipv4/ip_always_defrag ]; then
-	        if [ $(cat /proc/sys/net/ipv4/ip_always_defrag) != 0 ]; then
-		        action "Disabling IPv4 automatic defragmentation: " sysctl -w net.ipv4.ip_always_defrag=0
+	    fi
+	    if [ -f /proc/sys/net/ipv4/ip_always_defrag ]; then
+		if [ $(cat /proc/sys/net/ipv4/ip_always_defrag) != 0 ]; then
+		    action "Disabling IPv4 automatic defragmentation: " sysctl -w net.ipv4.ip_always_defrag=0
 		fi
-	  fi
+	    fi
 	fi
 	if [ -f /proc/sys/net/ipv4/tcp_syncookies ];then
-	        if [ `cat /proc/sys/net/ipv4/tcp_syncookies` != 0 ]; then
-		    sysctl -w net.ipv4.tcp_syncookies=0
-		fi
+	    if [ `cat /proc/sys/net/ipv4/tcp_syncookies` != 0 ]; then
+		sysctl -w net.ipv4.tcp_syncookies=0
+	    fi
 	fi
 
 	# IPv6 hook (post IPv4 stop)
 	if [ -x /etc/sysconfig/network-scripts/init.ipv6-global ]; then
-		/etc/sysconfig/network-scripts/init.ipv6-global stop post
+	    /etc/sysconfig/network-scripts/init.ipv6-global stop post
 	fi
 
         rm -f /var/lock/subsys/network
@@ -278,14 +278,14 @@ case "$1" in
 	echo $(/sbin/ip -o link show up | awk -F ": " '{ print $2 }')
 	;;
   restart|reload|force-reload)
-        cd "$CWD"
+	cd "$CWD"
 	$0 stop
 	$0 start
 	rc=$?
 	;;
   *)
-        gprintf "Usage: %s\n" "$(basename $0) {start|stop|restart|reload|status}"
-        exit 2
+	gprintf "Usage: %s\n" "$(basename $0) {start|stop|restart|reload|status}"
+	exit 2
 esac
 
 exit $rc
