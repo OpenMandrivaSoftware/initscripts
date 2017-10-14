@@ -21,7 +21,7 @@ PATH="/sbin:/usr/sbin:/bin:/usr/bin"
 export PATH
 
 if [ $PPID -ne 1 -a -z "$SYSTEMCTL_SKIP_REDIRECT" ] && \
-		( /bin/mountpoint -q /cgroup/systemd || /bin/mountpoint -q /sys/fs/cgroup/systemd ) ; then
+		[ -d /run/systemd/system ] ; then
         case "$0" in
         /etc/init.d/*|/etc/rc.d/init.d/*)
 		_use_systemctl=1
@@ -57,11 +57,8 @@ systemctl_redirect () {
                 options="$options --no-block"
         fi
 
-        if systemctl show -p LoadState "$prog.service" | grep -q 'not-found' ; then
-                action $"Reloading systemd: " /bin/systemctl daemon-reload
-        fi
-
-        if systemctl show -p LoadState "$prog.service" | grep -q 'not-found' ; then
+        if ! systemctl show "$prog.service" > /dev/null 2>&1 || \
+           systemctl show -p LoadState "$prog.service" | grep -q 'not-found' ; then
                 action $"Reloading systemd: " /bin/systemctl daemon-reload
         fi
 
