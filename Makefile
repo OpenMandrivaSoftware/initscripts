@@ -1,4 +1,4 @@
-ROOT=/
+ROOT=
 SUPERUSER=root
 SUPERGROUP=root
 
@@ -25,18 +25,9 @@ install:
 	install -m755  service $(ROOT)/sbin
 	install -m644  lang.csh $(ROOT)/etc/profile.d/10lang.csh
 	install -m644  lang.sh $(ROOT)/etc/profile.d/10lang.sh
-	install -m644  256term.csh $(ROOT)/etc/profile.d/10term256.csh
-	install -m644  256term.sh $(ROOT)/etc/profile.d/10term256.sh
 	install -m644  debug.csh debug.sh $(ROOT)/etc/profile.d
 	install -m755  sys-unconfig $(ROOT)/usr/sbin
 	install -m644  service.8 sys-unconfig.8 $(ROOT)$(mandir)/man8
-	mkdir -p -m 755 $(ROOT)/usr/lib/sysctl.d
-	mkdir -p -m 755 $(ROOT)/etc/sysctl.d
-	install -m644 sysctl.conf $(ROOT)/usr/lib/sysctl.d/00-system.conf
-	if uname -m | grep -q sparc ; then \
-	  install -m644 sysctl.conf.sparc $(ROOT)/usr/lib/sysctl.d/00-system.conf ; fi
-	if uname -m | grep -q s390 ; then \
-	  install -m644 sysctl.conf.s390 $(ROOT)/usr/lib/sysctl.d/00-system.conf ; fi
 
 	mkdir -p $(ROOT)/etc/X11
 	install -m755 prefdm $(ROOT)/etc/X11/prefdm
@@ -78,9 +69,9 @@ install:
 	make install ROOT=$(ROOT) mandir=$(mandir) -C src
 	make install PREFIX=$(ROOT) -C po
 
-	mkdir -p $(ROOT)/var/run/netreport $(ROOT)/var/log
-	chown $(SUPERUSER):$(SUPERGROUP) $(ROOT)/var/run/netreport
-	chmod u=rwx,g=rwx,o=rx $(ROOT)/var/run/netreport
+	mkdir -p $(ROOT)/run/netreport $(ROOT)/var/log
+	chown $(SUPERUSER):$(SUPERGROUP) $(ROOT)/run/netreport
+	chmod u=rwx,g=rwx,o=rx $(ROOT)/run/netreport
 
 	for i in 0 1 2 3 4 5 6 ; do \
 		dir=$(ROOT)/etc/rc.d/rc$$i.d; \
@@ -102,8 +93,6 @@ install:
 	mkdir -p -m 755 $(ROOT)/lib/systemd/system/basic.target.wants
 	mkdir -p -m 755 $(ROOT)/lib/systemd/system/sysinit.target.wants
 	ln -s ../fedora-loadmodules.service $(ROOT)/lib/systemd/system/basic.target.wants
-	ln -s ../fedora-autorelabel.service $(ROOT)/lib/systemd/system/basic.target.wants
-	ln -s ../fedora-autorelabel-mark.service $(ROOT)/lib/systemd/system/basic.target.wants
 	ln -s ../fedora-readonly.service $(ROOT)/lib/systemd/system/local-fs.target.wants
 	ln -s ../fedora-import-state.service $(ROOT)/lib/systemd/system/local-fs.target.wants
 	ln -s ../mandriva-everytime.service $(ROOT)/lib/systemd/system/basic.target.wants

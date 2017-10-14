@@ -7,9 +7,13 @@
 PATH="/sbin:/usr/sbin:/bin:/usr/bin"
 export PATH
 
+# We need to initialize the $HOSTNAME variable by ourselves now:
+# (It was previously done for RHEL-6 branch, but got lost in time.)
+HOSTNAME="$(hostname)"
+
 [ -z "$__sed_discard_ignored_files" ] && . /etc/init.d/functions
 
-RESOLVCONF_FLAGFILE=/var/run/resolvconf/enable-updates
+RESOLVCONF_FLAGFILE=/run/resolvconf/enable-updates
 
 get_hwaddr ()
 {
@@ -173,7 +177,7 @@ source_config ()
 	ISALIAS=no
     fi
     if is_nm_running && [ "$REALDEVICE" != "lo" ] ; then
-	nmcli con load "/etc/sysconfig/network-scripts/$CONFIG"
+	nm_con_load "$CONFIG"
 	if ! is_false $NM_CONTROLLED; then
 	    UUID=$(get_uuid_by_config $CONFIG)
 	    [ -n "$UUID" ] && _use_nm=true
@@ -181,11 +185,23 @@ source_config ()
     fi
 }
 
+nm_con_load () {
+    dbus-send --system --print-reply \
+	--dest=org.freedesktop.NetworkManager \
+	/org/freedesktop/NetworkManager/Settings \
+	org.freedesktop.NetworkManager.Settings.LoadConnections \
+	array:string:"/etc/sysconfig/network-scripts/${1}" >/dev/null 2>&1
+}
+
 ethtool_set()
 {
     oldifs=$IFS;
     IFS=';';
-    [ -n "${ETHTOOL_DELAY}" ] && /bin/usleep ${ETHTOOL_DELAY}
+    if [ -n "${ETHTOOL_DELAY}" ]; then
+	# Convert microseconds to seconds:
+	local ETHTOOL_DELAY_SEC=$(awk "BEGIN {printf \"%f\", ${ETHTOOL_DELAY} / 1000000}")
+	sleep ${ETHTOOL_DELAY_SEC}
+    fi
     for opts in $ETHTOOL_OPTS ; do
 	IFS=$oldifs;
 	if [[ "${opts}" =~ [[:space:]]*- ]]; then
@@ -261,7 +277,7 @@ toggle_value ()
 do_netreport ()
 {
     # Notify programs that have requested notification
-    ( cd /var/run/netreport || exit
+    ( cd /run/netreport || exit
 	for i in * ; do
 	    if [ -f $i ]; then
 		if [ "$(id -u)" = "0" ]; then
@@ -277,7 +293,11 @@ do_netreport ()
 
 is_nm_running ()
 {
-    [ "$(LC_ALL=C nmcli -t -f RUNNING nm 2>/dev/null)" = "running" ]
+    dbus-send --system --print-reply \
+	--dest=org.freedesktop.DBus \
+	/org/freedesktop/DBus \
+	org.freedesktop.DBus.GetNameOwner \
+	string:"org.freedesktop.NetworkManager" >/dev/null 2>&1
 }
 
 is_nm_device_unavailable ()
@@ -360,9 +380,8 @@ is_available_wait ()
 
 need_hostname ()
 {
-    CHECK_HOSTNAME=$(hostname)
-    if [ "$CHECK_HOSTNAME" = "(none)" -o "$CHECK_HOSTNAME" = "localhost" -o \
-	"$CHECK_HOSTNAME" = "localhost.localdomain" ]; then
+    if [ "${HOSTNAME}" = "(none)" -o "${HOSTNAME}" = "localhost" -o \
+	"${HOSTNAME}" = "localhost.localdomain" ]; then
 	return 0
     else
 	return 1
@@ -410,7 +429,7 @@ check_link_down ()
     [ -n "$LINKDELAY" ] && delay=$(($LINKDELAY * 2))
     while [ $timeout -le $delay ]; do
 	[ "$(cat /sys/class/net/$REALDEVICE/carrier 2>/dev/null)" != "0" ] && return 1
-	usleep 500000
+	sleep 0.5
 	timeout=$((timeout+1))
     done
     return 0
@@ -595,7 +614,7 @@ change_resolv_conf ()
     if [ $r -eq 0 ]; then
 	[ -x /sbin/restorecon ] && /sbin/restorecon /etc/resolv.conf >/dev/null 2>&1 # reset the correct context
 	/usr/bin/logger -p local7.notice -t "NET" -i "$0 : updated /etc/resolv.conf";
-	[ -e /var/run/nscd/socket ] && /usr/sbin/nscd -i hosts; # invalidate cache
+	[ -e /run/nscd/socket ] && /usr/sbin/nscd -i hosts; # invalidate cache
     fi;
     return $r;
 }

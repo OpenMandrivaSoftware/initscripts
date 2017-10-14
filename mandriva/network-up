@@ -17,8 +17,8 @@ DEFAULT_LINK_DETECTION_DELAY=2
 MIN_LINK_DETECTION_DELAY=0
 MAX_LINK_DETECTION_DELAY=$MIN_LINK_DETECTION_DELAY
 ELAPSED_TIME=0
-RESOLVCONF_FLAGFILE=/var/run/resolvconf/enable-updates
-RESOLVCONF_DIR=/var/run/resolvconf/interface
+RESOLVCONF_FLAGFILE=/run/resolvconf/enable-updates
+RESOLVCONF_DIR=/run/resolvconf/interface
 
 # source network configuration
 . /etc/sysconfig/network

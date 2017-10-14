@@ -9,7 +9,7 @@ fi
 
 DIR=/etc/sysconfig/network-scripts/vpn.d/"$TYPE"
 CONFIG="$DIR"/"$NAME".conf
-PID=/var/run/"$TYPE"-"$NAME".pid
+PID=/run/"$TYPE"-"$NAME".pid
 
 . /etc/init.d/functions
 

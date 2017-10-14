@@ -230,7 +230,7 @@ if [ -n "${BRIDGE}" ] && [ -x /usr/sbin/brctl ]; then
       done
       # Upon adding a device to a bridge,
       # it's necessary to make radvd reload its config
-      [ -r /var/run/radvd/radvd.pid ] && kill -HUP $(cat /var/run/radvd/radvd.pid)
+      [ -r /run/radvd/radvd.pid ] && kill -HUP $(cat /run/radvd/radvd.pid)
       exit 0
 fi
 		     
@@ -292,7 +292,7 @@ case $(basename $DHCP_CLIENT) in
     fi
 
     DHCP_ARGS="${DHCP_ARGS} ${DEVICE}"
-    PIDF=/var/run/dhcpcd-${DEVICE}.pid
+    PIDF=/run/dhcpcd-${DEVICE}.pid
     if [[ -f ${PIDF} ]]; then
         PID=$(cat ${PIDF})
         if [[ -n ${PID} ]]; then
@@ -322,7 +322,7 @@ case $(basename $DHCP_CLIENT) in
     fi
     generate_config_file_name
     generate_lease_file_name
-    DHCP_ARGS="$DHCP_ARGS $ONESHOT -q ${DHCLIENTCONF} -lf ${LEASEFILE} -pf /var/run/dhclient-${DEVICE}.pid $DEVICE"
+    DHCP_ARGS="$DHCP_ARGS $ONESHOT -q ${DHCLIENTCONF} -lf ${LEASEFILE} -pf /run/dhclient-${DEVICE}.pid $DEVICE"
     if [ -n "$DHCP_HOSTNAME" ]; then
 	if [ ! -e /etc/dhclient-${DEVICE}.conf ] || ! grep -q "[^# ]*send *host-name" /etc/dhclient-${DEVICE}.conf; then
 	    echo "send host-name \"${DHCP_HOSTNAME}\";  $BLURB" >> /etc/dhclient-${DEVICE}.conf
@@ -505,7 +505,7 @@ if is_true "${DHCPV6C}" && [ -x /sbin/dhclient ]; then
     generate_lease_file_name 6
     echo
     echo -n $"Determining IPv6 information for ${DEVICE}..."
-    if /sbin/dhclient -6 -1 ${DHCPV6C_OPTIONS} ${DHCLIENTCONF} -lf ${LEASEFILE} -pf /var/run/dhclient6-${DEVICE}.pid -H ${DHCP_HOSTNAME:-${HOSTNAME%%.*}} ${DEVICE} ; then
+    if /sbin/dhclient -6 -1 ${DHCPV6C_OPTIONS} ${DHCLIENTCONF} -lf ${LEASEFILE} -pf /run/dhclient6-${DEVICE}.pid -H ${DHCP_HOSTNAME:-${HOSTNAME%%.*}} ${DEVICE} ; then
         echo $" done."
     else
         echo $" failed."

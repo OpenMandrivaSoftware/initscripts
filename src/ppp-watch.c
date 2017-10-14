@@ -257,7 +257,7 @@ detach(char *device) {
     setpgid(0, 0);
 }
 
-/* Do magic with the pid file (/var/run/pppwatch-$DEVICE.pid):
+/* Do magic with the pid file (/run/pppwatch-$DEVICE.pid):
  * Try to open it for writing.  If it exists, send a SIGHUP to whatever PID
  * is already listed in it and remove it.  Repeat until we can open it.
  * Write out our PID, and return. */
@@ -275,7 +275,7 @@ doPidFile(char *device) {
 	}
     } else  {
 	/* Set up the name of the pid file, used only the first time. */
-        snprintf(pidFilePath, sizeof(pidFilePath), "/var/run/pppwatch-%s.pid",
+        snprintf(pidFilePath, sizeof(pidFilePath), "/run/pppwatch-%s.pid",
 	         device);
 
 	/* Create the pid file. */
@@ -453,7 +453,7 @@ pppLogicalToPhysical(int *pppdPid, char *logicalName, char **physicalName) {
     int fd, n;
     char *physicalDevice = NULL;
 
-    snprintf(mapFileName, sizeof(mapFileName), "/var/run/ppp-%s.pid",
+    snprintf(mapFileName, sizeof(mapFileName), "/run/ppp-%s.pid",
 	     logicalName);
     fd = open(mapFileName, O_RDONLY);
     if (fd != -1) {

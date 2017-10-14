@@ -6,7 +6,7 @@ if [ -z "$TYPE" ] || [ -z "$NAME" ]; then
    echo "usage: $0: <VPN type> <VPN name>"
 fi
 
-PID=/var/run/"$TYPE"-"$NAME".pid
+PID=/run/"$TYPE"-"$NAME".pid
 
 . /etc/init.d/functions
 if [ -e "$PID" ]; then

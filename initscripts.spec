@@ -1,6 +1,6 @@
 Summary: Scripts to bring up network interfaces and legacy utilities
 Name: initscripts
-Version: 9.66
+Version: 9.77
 License: GPLv2
 Group: System Environment/Base
 Release: 1%{?dist}

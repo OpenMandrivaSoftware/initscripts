@@ -241,7 +241,7 @@ __kill_pids_term_kill() {
     [ -z "$kill_list" ] && return 0
 
     kill -TERM $kill_list >/dev/null 2>&1
-    usleep 100000
+    sleep 0.1
 
     kill_list=$(__kill_pids_term_kill_checkpids $base_stime $kill_list)
     if [ -n "$kill_list" ] ; then
@@ -253,7 +253,7 @@ __kill_pids_term_kill() {
 	done
 	if [ -n "$kill_list" ] ; then
 	    kill -KILL $kill_list >/dev/null 2>&1
-	    usleep 100000
+	    sleep 0.1
 	    kill_list=$(__kill_pids_term_kill_checkpids $base_stime $kill_list)
 	fi
     fi
@@ -268,8 +268,9 @@ __kill_pids_term_kill() {
 # Returns LSB exit code for the 'status' action.
 __pids_var_run() {
     local base=${1##*/}
-    local pid_file=${2:-/var/run/$base.pid}
+    local pid_file=${2:-/run/$base.pid}
     local pid_dir=$(/usr/bin/dirname $pid_file > /dev/null)
+    local binary=$3
 
     [ -d "$pid_dir" -a ! -r "$pid_dir" ] && return 4
 
@@ -282,7 +283,13 @@ __pids_var_run() {
 	    read line
 	    [ -z "$line" ] && break
 	    for p in $line ; do
-	    [ -z "${p//[0-9]/}" ] && [ -d "/proc/$p" ] && pid="$pid $p"
+	    if [ -z "${p//[0-9]/}" ] && [ -d "/proc/$p" ] ; then
+		if [ -n "$binary" ] ; then
+		    local b=$(readlink /proc/$p/exe | sed -e 's/\s*(deleted)$//')
+		    [ "$b" != "$binary" ] && continue
+		fi
+		pid="$pid $p"
+	    fi
 	    done
 	done < "$pid_file"
 
@@ -394,7 +401,7 @@ daemon() {
 
 # A function to stop a program.
 killproc() {
-	local RC killlevel= base pid pid_file= delay try
+	local RC killlevel= base pid pid_file= delay try binary=
 
 	RC=0; delay=3; try=0
 	# Test syntax.
@@ -405,6 +412,15 @@ killproc() {
 	if [ "$1" = "-p" ]; then
 		pid_file=$2
 		shift 2
+	fi
+	if [ "$1" = "-b" ]; then
+	    if [ -z $pid_file ]; then
+		echo $"-b option can be used only with -p"
+		echo $"Usage: killproc -p pidfile -b binary program"
+		return 1
+	    fi
+	    binary=$2
+	    shift 2
 	fi
 	if [ "$1" = "-d" ]; then
 		delay=$(echo $2 | awk -v RS=' ' -v IGNORECASE=1 '{if($1!~/^[0-9.]+[smhd]?$/) exit 1;d=$1~/s$|^[0-9.]*$/?1:$1~/m$/?60:$1~/h$/?60*60:$1~/d$/?24*60*60:-1;if(d==-1) exit 1;delay+=d*$1} END {printf("%d",delay+0.5)}')
@@ -423,7 +439,7 @@ killproc() {
         base=${1##*/}
 
         # Find pid.
-	__pids_var_run "$1" "$pid_file"
+	__pids_var_run "$1" "$pid_file" "$binary"
 	RC=$?
 	if [ -z "$pid" ]; then
 		if [ -z "$pid_file" ]; then
@@ -464,7 +480,7 @@ killproc() {
 
         # Remove pid file if any.
 	if [ -z "$killlevel" ]; then
-            rm -f "${pid_file:-/var/run/$base.pid}"
+            rm -f "${pid_file:-/run/$base.pid}"
 	fi
     return $RC
 }
@@ -499,7 +515,7 @@ pidofproc() {
 	fi
 	fail_code=3 # "Program is not running"
 
-	# First try "/var/run/*.pid" files
+	# First try "/run/*.pid" files
 	__pids_var_run "$1" "$pid_file"
 	RC=$?
 	if [ -n "$pid" ]; then
@@ -512,7 +528,7 @@ pidofproc() {
 }
 
 status() {
-	local base pid lock_file= pid_file=
+	local base pid lock_file= pid_file= binary=
 
 	# Test syntax.
 	if [ "$#" = 0 ] ; then
@@ -526,6 +542,15 @@ status() {
 	if [ "$1" = "-l" ]; then
 		lock_file=$2
 		shift 2
+	fi
+	if [ "$1" = "-b" ]; then
+	    if [ -z $pid_file ]; then
+		echo $"-b option can be used only with -p"
+		echo $"Usage: status -p pidfile -b binary program"
+		return 1
+	    fi
+	    binary=$2
+	    shift 2
 	fi
 	base=${1##*/}
 
@@ -542,7 +567,7 @@ status() {
 	fi
 
 	# First try "pidof"
-	__pids_var_run "$1" "$pid_file"
+	__pids_var_run "$1" "$pid_file" "$binary"
 	RC=$?
 	if [ -z "$pid_file" -a -z "$pid" ]; then
 		pid="$(__pids_pidof "$1")"
@@ -691,7 +716,7 @@ strstr() {
 # Check whether file $1 is a backup or rpm-generated file and should be ignored
 is_ignored_file() {
     case "$1" in
-	*~ | *.bak | *.orig | *.rpmnew | *.rpmorig | *.rpmsave)
+	*~ | *.bak | *.old | *.orig | *.rpmnew | *.rpmorig | *.rpmsave)
 	return 0
 	;;
     esac
@@ -701,7 +726,7 @@ is_ignored_file() {
 # Evaluate shvar-style booleans
 is_true() {
     case "$1" in
-	[tT] | [yY] | [yY][eE][sS] | [tT][rR][uU][eE] | 1)
+	[tT] | [yY] | [yY][eE][sS] | [oO][nN] | [tT][rR][uU][eE] | 1)
 	return 0
 	;;
     esac
@@ -711,7 +736,7 @@ is_true() {
 # Evaluate shvar-style booleans
 is_false() {
     case "$1" in
-	[fF] | [nN] | [nN][oO] | [fF][aA][lL][sS][eE] | 0)
+	[fF] | [nN] | [nN][oO] | [oO][fF][fF] | [fF][aA][lL][sS][eE] | 0)
 	return 0
 	;;
     esac
@@ -743,7 +768,7 @@ apply_sysctl() {
 }
 
 # A sed expression to filter out the files that is_ignored_file recognizes
-__sed_discard_ignored_files='/\(~\|\.bak\|\.orig\|\.rpmnew\|\.rpmorig\|\.rpmsave\)$/d'
+__sed_discard_ignored_files='/\(~\|\.bak\|\.old\|\.orig\|\.rpmnew\|\.rpmorig\|\.rpmsave\)$/d'
 
 if [ "$_use_systemctl" = "1" ]; then
     if [ "x$1" = xstart -o \

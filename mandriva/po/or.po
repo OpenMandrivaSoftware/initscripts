@@ -1512,7 +1512,7 @@ msgid "Flushing buffers for collectl"
 msgstr ""
 
 #: /etc/rc.d/init.d/collectl:59
-msgid "Can't find pid file /var/run/collectl.pid"
+msgid "Can't find pid file /run/collectl.pid"
 msgstr ""
 
 #: /etc/rc.d/init.d/connman:28
@@ -3013,7 +3013,7 @@ msgid "Starting InterfaceLED ("
 msgstr ""
 
 #: /etc/rc.d/init.d/ifled:52
-msgid "Stopping InterfaceLED: (`cat /var/run/ifled`)"
+msgid "Stopping InterfaceLED: (`cat /run/ifled`)"
 msgstr ""
 
 #: /etc/rc.d/init.d/ifled:57 /etc/rc.d/init.d/ifled:76
@@ -5620,7 +5620,7 @@ msgid "RSIP is running.\n"
 msgstr ""
 
 #: /etc/rc.d/init.d/rsipd:57
-msgid "rsipd: `cat /var/run/rsipd.pid` (`pidof rsipd`)\n"
+msgid "rsipd: `cat /run/rsipd.pid` (`pidof rsipd`)\n"
 msgstr ""
 
 #: /etc/rc.d/init.d/rsipd:58 /etc/rc.d/init.d/rsipd:64
@@ -6247,7 +6247,7 @@ msgid "%s stopped"
 msgstr "ବ୍ଯବହାର: %s\n"
 
 #: /etc/rc.d/init.d/tenshi:58
-msgid "Running: `cat /var/run/tenshi/tenshi.pid`"
+msgid "Running: `cat /run/tenshi/tenshi.pid`"
 msgstr ""
 
 #: /etc/rc.d/init.d/tenshi:77

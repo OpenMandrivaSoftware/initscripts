@@ -1516,8 +1516,8 @@ msgid "Flushing buffers for collectl"
 msgstr "Puhvri uhtmine collectl tarbeks"
 
 #: /etc/rc.d/init.d/collectl:59
-msgid "Can't find pid file /var/run/collectl.pid"
-msgstr "PID-faili /var/run/collectl.pid ei leitud"
+msgid "Can't find pid file /run/collectl.pid"
+msgstr "PID-faili /run/collectl.pid ei leitud"
 
 #: /etc/rc.d/init.d/connman:28
 msgid "Starting connman daemon: \n"
@@ -3017,8 +3017,8 @@ msgid "Starting InterfaceLED ("
 msgstr "InterfaceLED käivitamine ("
 
 #: /etc/rc.d/init.d/ifled:52
-msgid "Stopping InterfaceLED: (`cat /var/run/ifled`)"
-msgstr "InterfaceLED peatamine: (`cat /var/run/ifled`)"
+msgid "Stopping InterfaceLED: (`cat /run/ifled`)"
+msgstr "InterfaceLED peatamine: (`cat /run/ifled`)"
 
 #: /etc/rc.d/init.d/ifled:57 /etc/rc.d/init.d/ifled:76
 msgid "InterfaceLED is not running\n"
@@ -5620,8 +5620,8 @@ msgid "RSIP is running.\n"
 msgstr "RSIP töötab.\n"
 
 #: /etc/rc.d/init.d/rsipd:57
-msgid "rsipd: `cat /var/run/rsipd.pid` (`pidof rsipd`)\n"
-msgstr "rsipd: `cat /var/run/rsipd.pid` (`pidof rsipd`)\n"
+msgid "rsipd: `cat /run/rsipd.pid` (`pidof rsipd`)\n"
+msgstr "rsipd: `cat /run/rsipd.pid` (`pidof rsipd`)\n"
 
 #: /etc/rc.d/init.d/rsipd:58 /etc/rc.d/init.d/rsipd:64
 #, c-format
@@ -6241,8 +6241,8 @@ msgid "%s stopped"
 msgstr "%s on peatatud"
 
 #: /etc/rc.d/init.d/tenshi:58
-msgid "Running: `cat /var/run/tenshi/tenshi.pid`"
-msgstr "Töötab: `cat /var/run/tenshi/tenshi.pid`"
+msgid "Running: `cat /run/tenshi/tenshi.pid`"
+msgstr "Töötab: `cat /run/tenshi/tenshi.pid`"
 
 #: /etc/rc.d/init.d/tenshi:77
 msgid "Flushing Queues: "

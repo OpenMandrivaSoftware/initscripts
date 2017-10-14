@@ -14,7 +14,7 @@
 # On other SysV-based systems, you would do something like:
 #   ln -s ../init.d/hibernate-cleanup.sh /etc/rcS.d/S31hibernate-cleanup.sh
 
-HIBERNATE_FILEWRITER_TRAIL="/var/run/suspend2_filewriter_image_exists"
+HIBERNATE_FILEWRITER_TRAIL="/run/suspend2_filewriter_image_exists"
 
 get_part_label() {
 	local ID_FS_LABEL
