@@ -11,3 +11,6 @@ ExecStart=/lib/systemd/fedora-loadmodules
 Type=oneshot
 TimeoutSec=0
 RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target

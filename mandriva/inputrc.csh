@@ -23,4 +23,3 @@ bindkey "\eOD" backward-char
 bindkey "\eOC" forward-char
 bindkey "\eOB" down-history
 bindkey "\eOA" up-history
-

@@ -1,6 +1,6 @@
 Summary: Scripts to bring up network interfaces and legacy utilities
 Name: initscripts
-Version: 9.77
+Version: 9.79
 License: GPLv2
 Group: System Environment/Base
 Release: 1%{?dist}
@@ -61,10 +61,7 @@ make ROOT=%{buildroot} SUPERUSER=`id -un` SUPERGROUP=`id -gn` mandir=%{_mandir} 
 
 %ifnarch s390 s390x
 rm -f \
-  %{buildroot}%{_sysconfdir}/sysconfig/network-scripts/ifup-ctc \
-%else
-rm -f \
-  %{buildroot}%{_sysconfdir}/sysconfig/init.s390
+  %{buildroot}%{_sysconfdir}/sysconfig/network-scripts/ifup-ctc
 %endif
 
 rm -f %{buildroot}%{_sysconfdir}/rc.d/rc.local %{buildroot}%{_sysconfdir}/rc.local
@@ -93,7 +90,6 @@ fi
 %defattr(-,root,root)
 %dir %{_sysconfdir}/sysconfig/network-scripts
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/adjtime
-%config(noreplace) %{_sysconfdir}/sysconfig/init
 %config(noreplace) %{_sysconfdir}/sysconfig/netconsole
 %config(noreplace) %{_sysconfdir}/sysconfig/readonly-root
 %{_sysconfdir}/sysconfig/network-scripts/ifdown

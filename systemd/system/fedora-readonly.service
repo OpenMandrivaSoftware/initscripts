@@ -10,3 +10,6 @@ ExecStart=/lib/systemd/fedora-readonly
 Type=oneshot
 TimeoutSec=0
 RemainAfterExit=yes
+
+[Install]
+WantedBy=local-fs.target

@@ -25,7 +25,6 @@ install:
 	install -m755  service $(ROOT)/sbin
 	install -m644  lang.csh $(ROOT)/etc/profile.d/10lang.csh
 	install -m644  lang.sh $(ROOT)/etc/profile.d/10lang.sh
-	install -m644  debug.csh debug.sh $(ROOT)/etc/profile.d
 	install -m755  sys-unconfig $(ROOT)/usr/sbin
 	install -m644  service.8 sys-unconfig.8 $(ROOT)$(mandir)/man8
 
@@ -36,7 +35,7 @@ install:
 
 	install -m755 -d $(ROOT)/etc/rc.d $(ROOT)/etc/sysconfig
 	cp -af rc.d/init.d $(ROOT)/etc/rc.d/
-	install -m644 sysconfig/debug sysconfig/init sysconfig/netconsole sysconfig/readonly-root $(ROOT)/etc/sysconfig/
+	install -m644 sysconfig/netconsole sysconfig/readonly-root $(ROOT)/etc/sysconfig/
 	cp -af sysconfig/network-scripts $(ROOT)/etc/sysconfig/
 	cp -af NetworkManager $(ROOT)/etc
 	# (cg) Are the two lines below needed these days???
@@ -44,7 +43,6 @@ install:
 	mkdir -p $(ROOT)/etc/sysconfig/console/consoletrans
 	mkdir -p $(ROOT)/lib/systemd/
 	cp -af systemd/* $(ROOT)/lib/systemd/
-	chmod 755 $(ROOT)/lib/systemd/mandriva-*
 	chmod 755 $(ROOT)/lib/systemd/mandriva-*
 	cp -af udev $(ROOT)/lib
 	chmod 755 $(ROOT)/etc/rc.d/* $(ROOT)/etc/rc.d/init.d/*
@@ -55,9 +53,6 @@ install:
 	chmod 755 $(ROOT)/etc/NetworkManager/dispatcher.d/00-netreport
 	mkdir -p $(ROOT)/etc/sysconfig/modules
 	mkdir -p $(ROOT)/etc/sysconfig/console
-	if uname -m | grep -q s390 ; then \
-	  install -m644 sysconfig/init.s390 $(ROOT)/etc/sysconfig/init ; \
-	fi
 
 	mv $(ROOT)/etc/sysconfig/network-scripts/ifup $(ROOT)/sbin
 	mv $(ROOT)/etc/sysconfig/network-scripts/ifdown $(ROOT)/sbin
@@ -87,20 +82,9 @@ install:
 	done	
 
 # Can't store symlinks in a CVS archive
-	mkdir -p -m 755 $(ROOT)/lib/systemd/system/multi-user.target.wants
-	mkdir -p -m 755 $(ROOT)/lib/systemd/system/graphical.target.wants
-	mkdir -p -m 755 $(ROOT)/lib/systemd/system/local-fs.target.wants
-	mkdir -p -m 755 $(ROOT)/lib/systemd/system/basic.target.wants
-	mkdir -p -m 755 $(ROOT)/lib/systemd/system/sysinit.target.wants
-	ln -s ../fedora-loadmodules.service $(ROOT)/lib/systemd/system/basic.target.wants
-	ln -s ../fedora-readonly.service $(ROOT)/lib/systemd/system/local-fs.target.wants
-	ln -s ../fedora-import-state.service $(ROOT)/lib/systemd/system/local-fs.target.wants
-	ln -s ../mandriva-everytime.service $(ROOT)/lib/systemd/system/basic.target.wants
-
 	mkdir -p $(ROOT)/lib/tmpfiles.d
 	install -m 644 initscripts.tmpfiles.d $(ROOT)/lib/tmpfiles.d/initscripts.conf
 	install -m 644 mandriva.tmpfiles.d $(ROOT)/lib/tmpfiles.d/mandriva.conf
-
 
 # These are LSB compatibility symlinks.  At some point in the future
 # the actual files will be here instead of symlinks

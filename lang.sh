@@ -2,19 +2,19 @@
 
 # revert special console/X11 settings if needed
 if [ "$LC_SOURCED_CONSOLE" = 1 -a -n "$DISPLAY" ]; then
-	unset LC_SOURCED
-	unset LC_SOURCED_CONSOLE
+    unset LC_SOURCED
+    unset LC_SOURCED_CONSOLE
 elif [ "$LC_SOURCED_X11" = 1 -a -z "$DISPLAY" ]; then
-	unset LC_SOURCED
-	unset LC_SOURCED_X11
+    unset LC_SOURCED
+    unset LC_SOURCED_X11
 fi
 
 # only source one of the possible files, and in that order;
 # if system wide and user config are mixed and different, umpredictable
 # things will happen...
 for langfile in "$HOME/.i18n" /etc/locale.conf ; do
-	[ -f $langfile -a "$LC_SOURCED" != 1 ] && . $langfile && LC_SOURCED=1 && export LC_SOURCED
-done    
+    [ -f $langfile -a "$LC_SOURCED" != 1 ] && . $langfile && LC_SOURCED=1 && export LC_SOURCED
+done
 
 if [ "$LC_SOURCED" = 1 ]; then
     if [ -n "$LANG" ] ; then
@@ -48,7 +48,7 @@ if [ "$LC_SOURCED" = 1 ]; then
     [ -n "$LANGUAGE" ] && export LANGUAGE || unset LANGUAGE
     [ -n "$LINGUAS" ] && export LINGUAS || unset LINGUAS
     [ -n "$_XKB_CHARSET" ] && export _XKB_CHARSET || unset _XKB_CHARSET
-    
+
     consoletype=$CONSOLETYPE
     if [ -z "$consoletype" ]; then
       consoletype=$(/sbin/consoletype stdout)
@@ -76,7 +76,7 @@ if [ "$LC_SOURCED" = 1 ]; then
 	*)
 	if [ "$TERM" = "linux" ]; then
 	    if [ "$consoletype" = "vt" ]; then
-    	    	case $LANG in 
+    	    	case $LANG in
     	    		ja*) LANG=en_US ;;
     	    		ko*) LANG=en_US ;;
 			si*) LANG=en_US ;;

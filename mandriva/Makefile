@@ -1,4 +1,4 @@
-# $Id$	
+# $Id$
 NAME=initscripts
 CFLAGS=-g -O2 -Wall
 SVNROOT = svn+ssh://svn.mandriva.com/svn/soft/initscripts
@@ -44,11 +44,11 @@ install: all check
 	install -m755 rc.modules $(ROOT)/etc/
 	install -m644 modules $(ROOT)/etc/
 	install -m755 lookupdm $(ROOT)/etc/X11/
-	for profile in {inputrc,tmpdir}.{c,}sh; do \
+	for profile in inputrc.{c,}sh; do \
 	  install -m644 $$profile $(ROOT)/etc/profile.d/$(PROFILE_LEVEL)$$profile; \
 	done
 	install -m755 listhome $(ROOT)/usr/bin/
-	install -m755 mandrake_{firstime,everytime} network-auth network-up $(ROOT)/etc/rc.d/init.d/
+	install -m755 mandrake_everytime network-auth network-up $(ROOT)/etc/rc.d/init.d/
 	install -D -m644 autofsck $(ROOT)/etc/sysconfig/autofsck
 	@for i in $(SUBDIRS);do	make -C $$i install;done
 

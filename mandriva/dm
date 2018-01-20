@@ -25,7 +25,7 @@
 
 ret=0
 
-case $1 in 
+case $1 in
     start)
 	gprintf "Starting display manager: "
 	/etc/X11/prefdm -nodaemon &

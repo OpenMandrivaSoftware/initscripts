@@ -1,7 +1,7 @@
 #!/bin/bash
 # Description: Launch diverses Mandriva Scripts on boot.
 # (c) Mandriva, Chmouel Boudjnah <chmouel@mandriva.com>
-# 	$Id$
+# $Id$
 
 # Source functions
 . /etc/rc.d/init.d/functions
@@ -32,7 +32,6 @@ if [ -r /etc/sysconfig/oem ]; then
     fi
 fi
 
-
 if [ "$REWRITEISSUE" = "rewrite" -a -f /etc/release ]; then
 
     arch=$(uname -m)
@@ -42,16 +41,16 @@ if [ "$REWRITEISSUE" = "rewrite" -a -f /etc/release ]; then
 	    _i*) a="an";;
     esac
 
-    NUMPROC=`egrep -c "^cpu[0-9]+" /proc/stat`
+    NUMPROC=`grep -c 'model name' /proc/cpuinfo`
     if [ "$NUMPROC" -gt "1" ]; then
-        SMP="$NUMPROC-processor "
+	SMP="$NUMPROC-processor "
 	[ "$NUMPROC" = "2" ] && \
 	SMP="Dual-processor "
-        if [ "$NUMPROC" = "8" -o "$NUMPROC" = "11" ]; then
-            a="an"
+	if [ "$NUMPROC" = "8" -o "$NUMPROC" = "11" ]; then
+	    a="an"
 	else
 	    a="a"
-        fi
+	fi
     fi
 
     # This will overwrite /etc/issue at every boot.  So, make any changes you

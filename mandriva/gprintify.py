@@ -51,7 +51,7 @@ def process_line(line):
         str=process_vars(res[1], start[1])
         end=res[2]
         final=start[0] + str + start[2]
-        
+
         res=i18n_regex.findall(end)
         if res:
             res=res[0]
@@ -73,7 +73,7 @@ def process_file(filename):
     for l in lines:
         fd.write(process_line(l))
     fd.close()
-    
+
 def main(args):
     for f in args:
         process_file(f)
