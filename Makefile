@@ -43,7 +43,6 @@ install:
 	mkdir -p $(ROOT)/etc/sysconfig/console/consoletrans
 	mkdir -p $(ROOT)/lib/systemd/
 	cp -af systemd/* $(ROOT)/lib/systemd/
-	chmod 755 $(ROOT)/lib/systemd/mandriva-*
 	cp -af udev $(ROOT)/lib
 	chmod 755 $(ROOT)/etc/rc.d/* $(ROOT)/etc/rc.d/init.d/*
 	chmod 644 $(ROOT)/etc/rc.d/init.d/functions
